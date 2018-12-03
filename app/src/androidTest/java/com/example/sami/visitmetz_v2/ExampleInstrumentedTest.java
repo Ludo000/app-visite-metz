@@ -1,4 +1,4 @@
-package com.example.moi.app_visite_metz;
+package com.example.sami.visitmetz_v2;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.example.moi.app_visite_metz", appContext.getPackageName());
+        assertEquals("com.example.sami.visitmetz_v2", appContext.getPackageName());
     }
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_map"
+            android:icon="@drawable/ic_map"
+            android:title="Map Metz" />
+        <item
+            android:id="@+id/nav_histoire"
+            android:icon="@drawable/ic_histoire"
+            android:title="Consultation/Modification" />
+        <item
+            android:id="@+id/nav_metz"
+            android:icon="@drawable/ic_metz"
+            android:title="A ne pas rater" />
+
+    </group>
+
+
+</menu>

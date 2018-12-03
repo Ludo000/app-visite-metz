@@ -1,4 +1,4 @@
-package com.example.moi.app_visite_metz;
+package com.example.sami.visitmetz_v2;
 
 import org.junit.Test;
 

@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">app-visite-metz</string>
+
+    <string name="app_name">Sortir à Metz</string>
+
+    <string name="google_maps_API_key">AIzaSyAkUuT6c0xMaqR3wne-yFMl8KQjnN90GWs</string>
+    <string name="navigation_drawer_open"> Open navigation drawer </string>
+    <string name="navigation_drawer_close"> Close navigation drawer </string>
+    <string name="title_activity_maps">Map</string>
 </resources>

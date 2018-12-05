@@ -21,18 +21,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -42,8 +47,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener {
 
+
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
 
     private GoogleMap mMap;
 
@@ -55,7 +66,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
         View v = inflater.inflate(R.layout.fragment_map, container, false);
-        mSearchText = (EditText) v.findViewById(R.id.input_search);
+        mSearchText = (AutoCompleteTextView) v.findViewById(R.id.input_search);
         mGps = (ImageView) v.findViewById(R.id.ic_gps);
 
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.nav_map);
@@ -77,6 +88,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private void init() {
         Log.d(TAG, "init: initializing");
+
+
+        mGoogleApiClient = new GoogleApiClient
+                .Builder(this.getActivity())
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this.getActivity(), this)
+                .build();
+
+        mPlaceAutocompleteAdapter = new PlaceAutocompleteAdapter(this.getActivity(), mGoogleApiClient,
+                LAT_LNG_BOUNDS, null);
+
+        mSearchText.setAdapter(mPlaceAutocompleteAdapter);
 
         mSearchText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -158,13 +182,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
     private static final float DEFAULT_ZOOM = 15f;
 
+
+    //double radiusDegrees = 1.0;
+    //Location currentLocation = (Location) task.getResult();
+    //LatLng center = currentLocation; /* the user's location */;
+    //LatLng northEast = new LatLng(center.latitude + radiusDegrees, center.longitude + radiusDegrees);
+    //LatLng southWest = new LatLng(center.latitude - radiusDegrees, center.longitude - radiusDegrees);
+    //LatLngBounds bounds = LatLngBounds.builder()
+            //.include(northEast)
+            //.include(southWest)
+           // .build();
+    private static final LatLngBounds  LAT_LNG_BOUNDS = new LatLngBounds(
+            new LatLng(-40, -168), new LatLng(71, 136));
+
     //widgets
-    private EditText mSearchText;
+    private AutoCompleteTextView mSearchText;
     private ImageView mGps;
 
     //vars
     private Boolean mLocationPermissionsGranted = false;
     private FusedLocationProviderClient mFusedLocationProviderClient;
+    private PlaceAutocompleteAdapter mPlaceAutocompleteAdapter;
+    private GoogleApiClient mGoogleApiClient;
 
 
     private void getDeviceLocation() {
@@ -268,4 +307,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
 
     }
+
+
 }

@@ -54,9 +54,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,7 +78,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     private AutoCompleteTextView mSearchText;
     private ImageView mGps, mInfo, mPlacePicker;
     public PlaceInfo  mPlace;
-    public Marker mMarker;
+    public Marker mMarker,mMarkerB;
+
+
+
 
     //vars
     private Boolean mLocationPermissionsGranted = false;
@@ -92,6 +96,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     private static final float DEFAULT_ZOOM = 15f;
 
     private static final int PLACE_PICKER_REQUEST = 1;
+
+    double latitude, longitude;
 
 
     private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
@@ -134,13 +140,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                 .addApi(Places.PLACE_DETECTION_API)
                 .enableAutoManage(this.getActivity(), 0,this)
                 .build();
-
-      /*  mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .enableAutoManage(getActivity(), this)
-                .build(); */
-
 
         mPlaceAutocompleteAdapter = new PlaceAutocompleteAdapter(this.getActivity(), mGoogleApiClient,
                 LAT_LNG_BOUNDS, null);
@@ -233,9 +232,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         }
         if (list.size() > 0) {
             Address address = list.get(0);
+
             Log.d(TAG, "geoLocate: found a location: " + address.toString());
-            //Toast.makeText(this, address.toString(), Toast.LENGTH_SHORT).show();
-            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM,
+             moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM,
                     address.getAddressLine(0));
         }
     }
@@ -243,11 +242,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
-        // Add a marker in Sydney and move the camera
-       /* LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney)); */
 
         if (mLocationPermissionsGranted) {
             getDeviceLocation();
@@ -277,6 +271,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                         if (task.isSuccessful()) {
                             Log.d(TAG, "onComplete: found location!");
                             Location currentLocation = (Location) task.getResult();
+
+                            latitude = currentLocation.getLatitude();
+                            longitude = currentLocation.getLongitude();
+
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
                                     DEFAULT_ZOOM, "Moi !");
 
@@ -301,18 +299,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
 
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(this.getActivity()));
-
         if(placeInfo != null){
+
             try{
+                float results[] = new float[10];
+
+                Location.distanceBetween(latitude, longitude, latLng.latitude , latLng.longitude, results);
+
                 String snippet = "Address: " + placeInfo.getAddress() + "\n" +
                         "Phone Number: " + placeInfo.getPhoneNumber() + "\n" +
                         "Website: " + placeInfo.getWebsiteUri() + "\n" +
+                        "Destination: " +   formatNumber(results[0]) + "\n" +
                         "Price Rating: " + placeInfo.getRating() + "\n";
                 MarkerOptions options = new MarkerOptions()
                         .position(latLng)
                         .title(placeInfo.getName())
                         .snippet(snippet);
                 mMarker = mMap.addMarker(options);
+                 Toast.makeText(this.getActivity(), formatNumber(results[0]), Toast.LENGTH_LONG).show();
             }catch (NullPointerException e){
                 Log.e(TAG, "moveCamera: NullPointerException: " + e.getMessage() );
             }
@@ -322,15 +326,30 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         hideSoftKeyboard();
     }
 
+
+    private String formatNumber(float distance) {
+        String unit = "m";
+        if (distance < 1) {
+            distance *= 1000;
+            unit = "mm";
+        } else if (distance > 1000) {
+            distance /= 1000;
+            unit = "km";
+        }
+
+        return String.format("%4.3f%s", distance, unit);
+    }
+
     private void moveCamera(LatLng latLng, float zoom, String title) {
         Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
 
-        if (!title.equals("Moi !")) {
+     if (!title.equals("Moi !")) {
             MarkerOptions options = new MarkerOptions()
                     .position(latLng)
                     .title(title);
-            mMap.addMarker(options);
+        mMarkerB =   mMap.addMarker(options);
+
         }
         hideSoftKeyboard();
     }
@@ -374,14 +393,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     }
 
     /// ici pour évité le crache de l'app j'ai fais cette foction Quand on change fragment
-   /* @Override
-    public void onPause() {
-        super.onPause();
-
-        mGoogleApiClient.stopAutoManage(getActivity());
-        mGoogleApiClient.disconnect();
-    } */
-
     @Override
     public void onStop() {
         super.onStop();
@@ -448,8 +459,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                 Log.d(TAG, "onResult: name: " + place.getName());
                 mPlace.setAddress(place.getAddress().toString());
                 Log.d(TAG, "onResult: address: " + place.getAddress());
-//                mPlace.setAttributions(place.getAttributions().toString());
-//                Log.d(TAG, "onResult: attributions: " + place.getAttributions());
                 mPlace.setId(place.getId());
                 Log.d(TAG, "onResult: id:" + place.getId());
                 mPlace.setLatlng(place.getLatLng());
@@ -459,11 +468,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                 mPlace.setPhoneNumber(place.getPhoneNumber().toString());
                 Log.d(TAG, "onResult: phone number: " + place.getPhoneNumber());
                 mPlace.setWebsiteUri(place.getWebsiteUri());
+
                 Log.d(TAG, "onResult: website uri: " + place.getWebsiteUri());
                 Log.d(TAG, "onResult: place: " + mPlace.toString());
             }catch (NullPointerException e){
                 Log.e(TAG, "onResult: NullPointerException: " + e.getMessage() );
             }
+
             moveCamera(new LatLng(place.getViewport().getCenter().latitude,
                     place.getViewport().getCenter().longitude), DEFAULT_ZOOM, mPlace);
             places.release();

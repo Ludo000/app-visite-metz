@@ -59,6 +59,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
 
+            case R.id.nav_ajouter:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new AjouterSiteFragment()).commit();
+                break;
+
+            case R.id.nav_tous:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new SitesOverviewFragment()).commit();
+                break;
+
+            case R.id.nav_favoris:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new MesSitesFavorisFragment()).commit();
+                break;
+
             case R.id.nav_map:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new MapFragment()).commit();
@@ -67,6 +82,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_histoire:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new HistoireFragment()).commit();
+                break;
+
+            case R.id.nav_monuments:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new SitesHistoriquesMonumentFragment()).commit();
+                break;
+
+            case R.id.nav_gastronomie:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new GastronomieFragment()).commit();
+                break;
+
+            case R.id.nav_autour:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new AutourMetzFragment()).commit();
+                break;
+
+            case R.id.nav_hebergements:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new HebergementFragment()).commit();
+                break;
+
+            case R.id.nav_jeux_divertissements:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new JeuxDivertissementFragment()).commit();
+                break;
+
+            case R.id.nav_nature:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new NatureParcFragment()).commit();
+                break;
+
+            case R.id.nav_nocturne:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new VieNocturneFragment()).commit();
+                break;
+
+            case R.id.nav_shopping:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new DestinationShoppingFragment()).commit();
                 break;
 
             case R.id.nav_metz:

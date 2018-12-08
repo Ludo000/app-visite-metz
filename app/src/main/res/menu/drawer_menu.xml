@@ -6,17 +6,74 @@
     <group android:checkableBehavior="single">
 
         <item
-            android:id="@+id/nav_map"
-            android:icon="@drawable/ic_map"
-            android:title="Map Metz" />
+            android:id="@+id/nav_ajouter"
+            android:icon="@drawable/ic_add_black"
+            android:title="Ajouter un site" />
+
+        <item
+            android:id="@+id/nav_tous"
+            android:icon="@drawable/ic_apps_black_24dp"
+            android:title="Tous les sites" />
+
+        <item
+            android:id="@+id/nav_favoris"
+            android:icon="@drawable/ic_thumb_up_black_24dp"
+            android:title="Mes sites préferés" />
+
         <item
             android:id="@+id/nav_histoire"
             android:icon="@drawable/ic_histoire"
-            android:title="Consultation/Modification" />
+            android:title="Histoire de la ville de Metz" />
+
+        <item
+            android:id="@+id/nav_monuments"
+            android:icon="@drawable/ic_histoire"
+            android:title="Sites historiques, Monuments, musées et statues" />
+
+        <item
+            android:id="@+id/nav_gastronomie"
+            android:icon="@drawable/ic_histoire"
+            android:title="La gastronomie" />
+
+        <item
+            android:id="@+id/nav_nocturne"
+            android:icon="@drawable/ic_histoire"
+            android:title="Vie nocturne" />
+
+        <item
+            android:id="@+id/nav_nature"
+            android:icon="@drawable/ic_histoire"
+            android:title="Nature et parcs" />
+
+        <item
+            android:id="@+id/nav_hebergements"
+            android:icon="@drawable/ic_histoire"
+            android:title="Hébergements" />
+
+        <item
+            android:id="@+id/nav_map"
+            android:icon="@drawable/ic_map"
+            android:title="Map Metz" />
+
         <item
             android:id="@+id/nav_metz"
             android:icon="@drawable/ic_metz"
             android:title="A ne pas rater" />
+
+        <item
+            android:id="@+id/nav_shopping"
+            android:icon="@drawable/ic_histoire"
+            android:title="Destinations shopping" />
+
+        <item
+            android:id="@+id/nav_jeux_divertissements"
+            android:icon="@drawable/ic_histoire"
+            android:title="Jeux et divertissements" />
+
+        <item
+            android:id="@+id/nav_autour"
+            android:icon="@drawable/ic_histoire"
+            android:title="Autour de Metz" />
 
     </group>
 

@@ -6,4 +6,15 @@
     <string name="navigation_drawer_open"> Open navigation drawer </string>
     <string name="navigation_drawer_close"> Close navigation drawer </string>
     <string name="title_activity_maps">Map</string>
+    <string name="prompt_nom">Nom du site</string>
+    <string name="prendre_photo">Prendre photo</string>
+    <string name="prompt_latitude">Latitude</string>
+    <string name="prompt_longitude"> Longitude</string>
+    <string name="prompt_adresse_postale">Adresse Postale</string>
+    <string name="prompt_categorie">Catégorie</string>
+    <string name="prompt_resume">Résumé</string>
+    <string name="action_ajouter_site">Ajouter</string>
+    <string name="image_site">Image du Site</string>
+    <string name="nom_du_site">Nom du Site</string>
+    <string name="send_to">Partager</string>
 </resources>

@@ -296,11 +296,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
         mMap.clear();
-
-
         mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(this.getActivity()));
         if(placeInfo != null){
-
             try{
                 float results[] = new float[10];
 

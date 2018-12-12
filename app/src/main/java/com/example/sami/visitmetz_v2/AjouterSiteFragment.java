@@ -70,7 +70,7 @@ public class AjouterSiteFragment extends Fragment {
                 bouton_choisir_image.setVisibility(View.GONE);
             }
         });
-
+        bouton_choisir_image.setVisibility(View.VISIBLE);
         //When the button is clicked, the button in the text field is added to the database
         bouton_ajouter_site.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,7 +93,7 @@ public class AjouterSiteFragment extends Fragment {
 
                     // Replace whatever is in the fragment_container view with this fragment,
                     // and add the transaction to the back stack
-                    transaction.replace(R.id.nav_map, newFragment);
+                    transaction.replace(R.id.fragment_container, newFragment);
                     transaction.addToBackStack(null);
 
                     // Commit the transaction
@@ -127,7 +127,7 @@ public class AjouterSiteFragment extends Fragment {
     }
 
     @NonNull
-    private byte[] getByteFromDrawable(@NonNull Drawable drawable) {
+    public byte[] getByteFromDrawable(@NonNull Drawable drawable) {
         final Bitmap bmp = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bmp);
         drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());

@@ -4,22 +4,30 @@ import android.content.ContentResolver;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.example.sami.visitmetz_v2.models.SiteCard;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import static android.support.v4.content.ContextCompat.getDrawable;
@@ -27,7 +35,7 @@ import static android.support.v4.content.ContextCompat.getDrawable;
 
 public class SitesOverviewFragment extends Fragment {
 
-    ArrayList<SiteData> listitems = new ArrayList<>();
+    ArrayList<SiteCard> listitems = new ArrayList<>();
     RecyclerView MyRecyclerView;
     DatabaseHelper databaseHelper;
 
@@ -84,9 +92,9 @@ public class SitesOverviewFragment extends Fragment {
     }
 
     public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
-        ArrayList<SiteData> list;
+        ArrayList<SiteCard> list;
 
-        MyAdapter(ArrayList<SiteData> Data) {
+        MyAdapter(ArrayList<SiteCard> Data) {
             list = Data;
         }
 
@@ -102,10 +110,14 @@ public class SitesOverviewFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
 
-            holder.titleTextView.setText(list.get(position).getNom());
-            holder.coverImageView.setTag(list.get(position).getImage());
+            byte[] img = list.get(position).getImage();
+            Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
+
+            holder.titleTextView.setText(list.get(position).getNomCard());
+            holder.coverImageView.setImageBitmap(bitmap);
+            holder.coverImageView.setTag(bitmap);
             holder.likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
-            holder.editImageView.setTag(R.drawable.ic_add_black);
+            holder.editImageView.setTag(R.drawable.edit_black_24dp);
 
         }
 
@@ -131,7 +143,7 @@ public class SitesOverviewFragment extends Fragment {
             shareImageView = v.findViewById(R.id.shareImageView);
             editImageView = v.findViewById(R.id.editImageView);
 
-            /*editImageView.setOnClickListener(new View.OnClickListener() {
+            editImageView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
@@ -139,50 +151,52 @@ public class SitesOverviewFragment extends Fragment {
                     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                         mDatabaseHelper1 = new DatabaseHelper(getContext());
                     }
-                    int id = (int)editImageView.getTag();
-                    if( id == R.drawable.ic_add_black)
-                    {
-                        AjouterSiteFragment ajouterSiteFragment = new AjouterSiteFragment();
-                        String newSoilTemp = null, newAirTemp = null, newSoilMoist = null, newAirMoist = null;
 
-                        String newName = titleTextView.getText().toString();
-                        byte[] imageOut = ajouterSiteFragment.imageViewToByte(coverImageView);
+                    String newName = titleTextView.getText().toString();
 
-                        for (String[] aPlantsSelection : plantsSelection) {
+                    //Checks if it is not empty
+                    if (newName.trim().length() > 0) {
 
-                            if (aPlantsSelection[0].equals(newName)) {
-                                newSoilTemp = aPlantsSelection[1];
-                                newAirTemp = aPlantsSelection[2];
-                                newSoilMoist = aPlantsSelection[3];
-                                newAirMoist = aPlantsSelection[4];
-                            }
-                        }
-
-                        //Checks if it is not empty
-                        if (titleTextView.getText().length() != 0) {
-
-                            assert mDatabaseHelper1 != null;
-                            mDatabaseHelper1.addData(newName, imageOut, newSoilTemp, newAirTemp, newSoilMoist, newAirMoist);
-
-                            editImageView.setTag(R.drawable.ic_add_colored); //ic_liked
-                            editImageView.setImageResource(R.drawable.ic_add_colored); //ic_liked
-
-                            Toast.makeText(getActivity(),titleTextView.getText()+" wurde erfolgreich zu 'Meine Pflanzen' hinzugefügt", Toast.LENGTH_SHORT).show();
-
-                        } else {
-                            Toast.makeText(getActivity(),"Formular ist leer",Toast.LENGTH_SHORT).show();
-                        }
-
-                    }else{
                         assert mDatabaseHelper1 != null;
-                        mDatabaseHelper1.DeleteRecord(titleTextView.getText().toString());
-                        editImageView.setTag(R.drawable.ic_add_black);
-                        editImageView.setImageResource(R.drawable.ic_add_black);
-                        Toast.makeText(getActivity(),titleTextView.getText()+" wurde von 'Meine Pflanzen' entfernt", Toast.LENGTH_SHORT).show();
-                    }
+                        Cursor data = mDatabaseHelper1.getItem(newName);
 
+                        byte[] ImageSite = data.getBlob(7);
+                        Double longSite = Double.valueOf(data.getString(3));
+                        Double latSite = Double.valueOf(data.getString(2));
+                        String adressSite = data.getString(4);
+                        String categorieSite = data.getString(5);
+                        String resumeSite = data.getString(6);
+
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(ImageSite, 0, ImageSite.length);
+                        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
+                        byte[] byteArray = byteArrayOutputStream.toByteArray();
+                        String encodedBitmap = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                        Fragment newFragment = new AjouterSiteFragment();
+                        Bundle args = new Bundle();
+
+                        //Add the site name in the arguments that are to be sent to other fragment giving the necessary values
+                        args.putString("Nom", newName);
+                        args.putString("Image", encodedBitmap);
+
+                        newFragment.setArguments(args);
+
+                        // consider using Java coding conventions (upper first char class names!!!)
+                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                        // Replace whatever is in the fragment_container view with this fragment,
+                        // and add the transaction to the back stack
+                        transaction.replace(R.id.fragment_container, newFragment);
+                        transaction.addToBackStack(null);
+
+                        // Commit the transaction
+                        transaction.commit();
+
+                    } else {
+                        Toast.makeText(getActivity(),"Formular ist leer",Toast.LENGTH_SHORT).show();
+                    }
                 }
-            });*/
+            });
 
             /*likeImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -211,7 +225,7 @@ public class SitesOverviewFragment extends Fragment {
 
                 Uri imageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
                         "://" + getResources().getResourcePackageName(coverImageView.getId())
-                        + '/' + "drawable" + '/' + getResources().getResourceEntryName((int)coverImageView.getTag()));
+                        + '/' + "drawable" + '/' + getResources().getResourceEntryName((int) coverImageView.getTag()));
 
                 Intent shareIntent = new Intent();
                 shareIntent.setAction(Intent.ACTION_SEND);
@@ -231,15 +245,18 @@ public class SitesOverviewFragment extends Fragment {
         Cursor data = databaseHelper.getData();
         while(data.moveToNext())
         {
-            String nom = data.getString(1);
-            Double latitude = Double.valueOf(data.getString(2));
-            Double longitude = Double.valueOf(data.getString(3));
-            String adresse = data.getString(4);
-            String categorie = data.getString(5);
-            String resume = data.getString(6);
-            byte image[] = data.getBlob(7);
+            SiteCard item = new SiteCard();
+            item.setNomCard(data.getString(1));
+            item.setLatitude(Double.valueOf(data.getString(2)));
+            item.setLongitude(Double.valueOf(data.getString(3)));
+            item.setAdresse(data.getString(4));
+            item.setCategorie(data.getString(5));
+            item.setResume(data.getString(6));
+            item.setImage(data.getBlob(7));
 
-            listitems.add(new SiteData(nom, latitude, longitude, adresse, categorie, resume, image));
+            listitems.add(item);
+
+           // byte image[] = data.getBlob(7);
         }
     }
 }

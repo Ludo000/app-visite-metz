@@ -2,7 +2,7 @@
 
     <string name="app_name">Sortir à Metz</string>
 
-    <string name="google_maps_API_key">AIzaSyAkUuT6c0xMaqR3wne-yFMl8KQjnN90GWs</string>
+    <string name="google_maps_API_key">AIzaSyBrgOC_4PB0jRhCBxzLzEwoliT2DFwdQVo</string>
     <string name="navigation_drawer_open"> Open navigation drawer </string>
     <string name="navigation_drawer_close"> Close navigation drawer </string>
     <string name="title_activity_maps">Map</string>
@@ -17,4 +17,5 @@
     <string name="image_site">Image du Site</string>
     <string name="nom_du_site">Nom du Site</string>
     <string name="send_to">Partager</string>
+    <string name="annuler_ajouter_site">Annuler</string>
 </resources>

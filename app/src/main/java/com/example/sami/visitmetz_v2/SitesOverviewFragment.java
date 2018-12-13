@@ -26,6 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
@@ -129,6 +130,7 @@ public class SitesOverviewFragment extends Fragment {
         public int getItemCount() {
             return list.size();
         }
+
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -153,7 +155,7 @@ public class SitesOverviewFragment extends Fragment {
 
                 @Override
                 public void onClick(View v) {
-                    Cursor currentData  = databaseHelper.getItem(titleTextView.getText().toString());
+                    Cursor currentData  = databaseHelper.getData(titleTextView.getText().toString());
                     currentData.moveToFirst();
                     if(currentData.moveToFirst()) {
                         SiteData currentSite = new SiteData(currentData.getString(2),
@@ -196,8 +198,9 @@ public class SitesOverviewFragment extends Fragment {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Toast.makeText(getActivity(), titleTextView.getText() + " a été supprimé!", Toast.LENGTH_SHORT).show();
-                            databaseHelper.DeleteData(titleTextView.getText().toString());
-                            databaseHelper.getItem(titleTextView.getText().toString());
+                            databaseHelper.deleteData(titleTextView.getText().toString());
+                            databaseHelper.getData(titleTextView.getText().toString());
+                            //list.notifyDataSetChanged();
                         }
                     });
                     builder.setNegativeButton("Non", new DialogInterface.OnClickListener() {
@@ -255,7 +258,7 @@ public class SitesOverviewFragment extends Fragment {
         listitems.clear();
 
         databaseHelper = new DatabaseHelper(getActivity());
-        Cursor data = databaseHelper.getData();
+        Cursor data = databaseHelper.getAllData();
         while(data.moveToNext())
         {
             SiteData item = new SiteData();

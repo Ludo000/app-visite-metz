@@ -137,7 +137,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
 
                 //Checks if it is not empty
                 if (nom.length() == 0) {
-                    AddData(nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
+                    mDatabaseHelper1.updateData(nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
                     // Create new fragment and transaction
                     Fragment newFragment = new SitesOverviewFragment();
                     // consider using Java coding conventions (upper first char class names!!!)

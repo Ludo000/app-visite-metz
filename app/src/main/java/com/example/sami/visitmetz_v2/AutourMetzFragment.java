@@ -227,7 +227,7 @@ public class AutourMetzFragment extends Fragment {
         listitems.clear();
 
         databaseHelper = new DatabaseHelper(getActivity());
-        Cursor data = databaseHelper.getData();
+        Cursor data = databaseHelper.getAllData();
         while(data.moveToNext())
         {
             String nom = data.getString(1);

@@ -2,9 +2,10 @@ package com.example.sami.visitmetz_v2;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -13,11 +14,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.provider.FontsContractCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -27,12 +26,14 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.models.PlaceInfo;
+import com.example.sami.visitmetz_v2.models.SiteData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -50,14 +51,14 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,10 +77,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
     //widgets
     private AutoCompleteTextView mSearchText;
-    private ImageView mGps, mInfo, mPlacePicker;
+    private ImageView mGps, mInfo, mPlacePicker, mRestaurant;
     public PlaceInfo  mPlace;
     public Marker mMarker,mMarkerB;
+    private EditText mRoyen;
+    private Button  mValide;
 
+    public DatabaseHelper dbh;
 
 
 
@@ -97,6 +101,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
     private static final int PLACE_PICKER_REQUEST = 1;
 
+    int PROXIMITY_RADIUS = 200;
+
     double latitude, longitude;
 
 
@@ -113,7 +119,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         mInfo = (ImageView) v.findViewById(R.id.place_info);
         mPlacePicker = (ImageView) v.findViewById(R.id.place_picker);
 
+        mRoyen = (EditText)v.findViewById(R.id.input_cercle);
+        mValide = (Button)v.findViewById(R.id.btn_valide);
+
+      /*  mRestaurant = (ImageView) v.findViewById(R.id.ic_restaurant); */
+
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.nav_map);
+
+        dbh = new DatabaseHelper(getContext());
+
 
         mSearchText.setOnItemClickListener(mAutocompleteClickListener);
 
@@ -175,7 +189,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         mInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Log.d(TAG, "onClick: clicked place info");
+
+                Log.d(TAG, "onClick: clicked place info : ");
                 try{
 
                     if(mMarker.isInfoWindowShown()){
@@ -205,9 +220,75 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             }
         });
 
+
+        mValide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Drawing circle on the map
+                drawCircle(new LatLng(latitude, longitude));
+        }});
+
+     /*   mRestaurant.setOnClickListener(new View.OnClickListener() {
+            Object dataTransfer[] = new Object[2];
+            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+
+            @Override
+            public void onClick(View view) {
+                mMap.clear();
+                String resturant = "resturant";
+                String  url = getUrl(latitude, longitude, resturant);
+                dataTransfer[0] = mMap;
+                dataTransfer[1] = url;
+
+                getNearbyPlacesData.execute(dataTransfer);
+                Toast.makeText(getActivity(), "Showing Nearby Restaurants", Toast.LENGTH_SHORT).show();
+
+            }
+        }); */
+
         hideSoftKeyboard();
     }
 
+    private void drawCircle(LatLng point){
+
+        // Instantiating CircleOptions to draw a circle around the marker
+        CircleOptions circleOptions = new CircleOptions();
+
+        // Specifying the center of the circle
+        circleOptions.center(point);
+
+        // Radius of the circle
+        circleOptions.radius(20);
+
+        // Border color of the circle
+        circleOptions.strokeColor(Color.BLACK);
+
+        // Fill color of the circle
+        circleOptions.fillColor(0x30ff0000);
+
+        // Border width of the circle
+        circleOptions.strokeWidth(2);
+
+        // Adding the circle to the GoogleMap
+        mMap.addCircle(circleOptions);
+
+    }
+
+
+    public void AddMarker (){
+        MarkerOptions options = new MarkerOptions();
+        ArrayList<SiteData> listItems = new ArrayList<>();
+        listItems.clear();
+        Cursor dataCursor =  dbh.getData();
+        while(dataCursor.moveToNext())
+        {
+            LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
+            options.position(point);
+            options.title(dataCursor.getString(2));
+            options.snippet(dataCursor.getString(7));
+            mMap.addMarker(options);
+        }
+    }
     public void  onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
@@ -219,6 +300,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             }
         }
     }
+
 
     private void geoLocate() {
         Log.d(TAG, "geoLocate: geolocating");
@@ -252,6 +334,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             }
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
+            AddMarker();
             init();
         }
 
@@ -313,7 +396,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                         .title(placeInfo.getName())
                         .snippet(snippet);
                 mMarker = mMap.addMarker(options);
+
+
+
+
                  Toast.makeText(this.getActivity(), formatNumber(results[0]), Toast.LENGTH_LONG).show();
+         //       Toast.makeText(this.getActivity(),item.getNomCard() , Toast.LENGTH_LONG).show();
             }catch (NullPointerException e){
                 Log.e(TAG, "moveCamera: NullPointerException: " + e.getMessage() );
             }
@@ -336,6 +424,74 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
         return String.format("%4.3f%s", distance, unit);
     }
+
+    /* --------------------------------------------------------------------------------------------- */
+
+   /*
+    public void onClick(View v)
+    {
+        Object dataTransfer[] = new Object[2];
+        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
+
+        switch(v.getId())
+        { */
+
+          /*  case R.id.B_hopistals:
+                mMap.clear();
+                String hospital = "hospital";
+                String url = getUrl(latitude, longitude, hospital);
+                dataTransfer[0] = mMap;
+                dataTransfer[1] = url;
+
+                getNearbyPlacesData.execute(dataTransfer);
+                Toast.makeText(MapsActivity.this, "Showing Nearby Hospitals", Toast.LENGTH_SHORT).show();
+                break;
+
+
+            case R.id.B_schools:
+                mMap.clear();
+                String school = "school";
+                url = getUrl(latitude, longitude, school);
+                dataTransfer[0] = mMap;
+                dataTransfer[1] = url;
+
+                getNearbyPlacesData.execute(dataTransfer);
+                Toast.makeText(MapsActivity.this, "Showing Nearby Schools", Toast.LENGTH_SHORT).show();
+                break; */
+       /*     case R.id.ic_restaurant:
+                mMap.clear();
+                String resturant = "restuarant";
+                String  url = getUrl(latitude, longitude, resturant);
+                dataTransfer[0] = mMap;
+                dataTransfer[1] = url;
+
+                getNearbyPlacesData.execute(dataTransfer);
+                Toast.makeText(getActivity(), "Showing Nearby Restaurants", Toast.LENGTH_SHORT).show();
+                break;
+
+        }
+    }
+      */
+
+ /*   private String getUrl(double latitude , double longitude , String nearbyPlace)
+    {
+
+        StringBuilder googlePlaceUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
+        googlePlaceUrl.append("location="+latitude+","+longitude);
+        googlePlaceUrl.append("&radius="+PROXIMITY_RADIUS);
+        googlePlaceUrl.append("&type="+nearbyPlace);
+       // googlePlaceUrl.append("&keyword="+nearbyPlace);
+        googlePlaceUrl.append("&sensor=true");
+        googlePlaceUrl.append("&key="+"AIzaSyD5k31sShLlOA_yZOMsEqJ5oy2SPB9ojBE");
+
+        Log.d("MapsActivity", "url = "+googlePlaceUrl.toString());
+
+        return googlePlaceUrl.toString();
+    } */
+
+
+    /* --------------------------------------------------------------------------------------------- */
+
 
     private void moveCamera(LatLng latLng, float zoom, String title) {
         Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude);

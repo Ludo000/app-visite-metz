@@ -1,17 +1,20 @@
 package com.example.sami.visitmetz_v2;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,9 +27,9 @@ import android.widget.Toast;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Objects;
 
-
-public class AjouterSiteFragment extends Fragment {
+public class AjouterSiteDetailsFragment extends Fragment {
 
     final int REQUEST_CODE_GALLERY = 42;
     DatabaseHelper mDatabaseHelper1;
@@ -39,7 +42,10 @@ public class AjouterSiteFragment extends Fragment {
     EditText categorie;
     EditText resume;
     ImageView editImage;
+    Bitmap bitmap;
 
+
+    @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -47,28 +53,63 @@ public class AjouterSiteFragment extends Fragment {
         View v = inflater.inflate(R.layout.ajouter_site_activity, container, false);
         bouton_ajouter_site = v.findViewById(R.id.bouton_ajouter_site);
         bouton_choisir_image = v.findViewById(R.id.bouton_choisir_image);
-        editImage = v.findViewById(R.id.imageView4);
-        nom = v.findViewById(R.id.nom);
-        longitude = v.findViewById(R.id.longitude);
-        latitude = v.findViewById(R.id.latitude);
-        adresse_postale = v.findViewById(R.id.adresse_postale);
-        categorie = v.findViewById(R.id.categorie);
-        resume = v.findViewById(R.id.resume);
+
+        Bundle bundle = getArguments();
+        SiteData site = null;
+        if (bundle != null) {
+            site = (SiteData) bundle.getSerializable("site");
+        }
+
+
+        this.editImage = v.findViewById(R.id.imageView4);
+        this.longitude = v.findViewById(R.id.longitude);
+        this.latitude = v.findViewById(R.id.latitude);
+        this.adresse_postale = v.findViewById(R.id.adresse_postale);
+        this.categorie = v.findViewById(R.id.categorie);
+        this.resume = v.findViewById(R.id.resume);
+        this.editImage.setVisibility(View.VISIBLE);
+        this.nom = v.findViewById(R.id.nom);
+
+        if (site != null) {
+            bitmap = BitmapFactory.decodeByteArray(site.getImage(), 0, site.getImage().length);
+            this.editImage.setImageBitmap(bitmap);
+            this.nom.setText(site.getNom());
+            this. longitude.setText(Double.toString(site.getLongitude()));
+            this.latitude.setText(Double.toString(site.getLatitude()));
+            this.adresse_postale.setText(site.getAdresse());
+            this.categorie.setText(site.getCategorie());
+            this.resume.setText(site.getResume());
+        }
 
         btnAnnuler = v.findViewById(R.id.bouton_annuler);
         btnAnnuler.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getContext(), MainActivity.class);
-                startActivity(intent);
+            // Create new fragment, give it an object and start transaction
+            Fragment newFragment = new SitesOverviewFragment();
+
+            // consider using Java coding conventions (upper first char class names!!!)
+            FragmentTransaction transaction = null;
+            if (getFragmentManager() != null) {
+                transaction = getFragmentManager().beginTransaction();
+            }
+            if (transaction != null) {
+                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                // Replace whatever is in the fragment_container view with this fragment,
+                // and add the transaction to the back stack
+                transaction.replace(R.id.fragment_container, newFragment);
+                transaction.addToBackStack(null);
+
+                // Commit the transaction
+                transaction.commit();
+            }
+
             }
         });
 
-
         mDatabaseHelper1 = new DatabaseHelper(this.getActivity());
 
-        editImage.setVisibility(View.GONE);
-
+        bouton_choisir_image.setVisibility(View.VISIBLE);
         bouton_choisir_image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -79,7 +120,7 @@ public class AjouterSiteFragment extends Fragment {
                 bouton_choisir_image.setVisibility(View.GONE);
             }
         });
-        bouton_choisir_image.setVisibility(View.VISIBLE);
+
         //When the button is clicked, the button in the text field is added to the database
         bouton_ajouter_site.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,20 +134,22 @@ public class AjouterSiteFragment extends Fragment {
                 String resumeSite = resume.getText().toString();
 
                 //Checks if it is not empty
-                if (nom.length() != 0) {
+                if (nom.length() == 0) {
                     AddData(nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
                     // Create new fragment and transaction
                     Fragment newFragment = new SitesOverviewFragment();
                     // consider using Java coding conventions (upper first char class names!!!)
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    FragmentTransaction transaction;
+                    if (getFragmentManager() != null) {
+                        transaction = getFragmentManager().beginTransaction();
+                        // Replace whatever is in the fragment_container view with this fragment,
+                        // and add the transaction to the back stack
+                        transaction.replace(R.id.fragment_container, newFragment);
+                        transaction.addToBackStack(null);
 
-                    // Replace whatever is in the fragment_container view with this fragment,
-                    // and add the transaction to the back stack
-                    transaction.replace(R.id.fragment_container, newFragment);
-                    transaction.addToBackStack(null);
-
-                    // Commit the transaction
-                    transaction.commit();
+                        // Commit the transaction
+                        transaction.commit();
+                    }
                 } else {
                     Toast("Le formulaire est vide !");
                 }
@@ -147,6 +190,7 @@ public class AjouterSiteFragment extends Fragment {
     }
 
     Intent intent;
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if(requestCode == REQUEST_CODE_GALLERY){
@@ -166,7 +210,7 @@ public class AjouterSiteFragment extends Fragment {
                 startActivityForResult(intent, REQUEST_CODE_GALLERY);
             }
             else {
-                Toast.makeText(getActivity().getApplicationContext(), "Vous ne disposez pas d'autorisation pour mener cette action !", Toast.LENGTH_SHORT).show();
+                Toast("Vous ne disposez pas d'autorisation pour mener cette action !");
             }
             return;
         }
@@ -174,6 +218,7 @@ public class AjouterSiteFragment extends Fragment {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent data) {
@@ -190,7 +235,7 @@ public class AjouterSiteFragment extends Fragment {
             Uri uri = data.getData();
             try {
                 assert uri != null;
-                InputStream inputStream = this.getActivity().getContentResolver().openInputStream(uri);
+                InputStream inputStream = Objects.requireNonNull(this.getActivity()).getContentResolver().openInputStream(uri);
                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                 editImage.setVisibility(View.VISIBLE);
                 editImage.setImageBitmap(bitmap);

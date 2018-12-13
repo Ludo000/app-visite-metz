@@ -1,5 +1,6 @@
 package com.example.sami.visitmetz_v2.models;
 
+
 public class SiteCard {
 
     private String nomCard;

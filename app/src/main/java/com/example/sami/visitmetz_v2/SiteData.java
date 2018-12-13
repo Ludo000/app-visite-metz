@@ -1,6 +1,8 @@
 package com.example.sami.visitmetz_v2;
 
-public class SiteData {
+import java.io.Serializable;
+
+public class SiteData implements Serializable {
 
     private String nom;
     private Double latitude;

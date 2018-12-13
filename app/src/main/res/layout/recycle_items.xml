@@ -85,6 +85,14 @@
                 android:padding="@dimen/icon_padding"
                 android:src="@drawable/ic_menu_share"
                 tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:id="@+id/deleteImageView"
+                android:layout_width="@dimen/icon_width"
+                android:layout_height="@dimen/icon_height"
+                android:padding="@dimen/icon_padding"
+                android:src="@drawable/ic_delete_black_24dp"
+                tools:ignore="ContentDescription" />
         </LinearLayout>
 
     </LinearLayout>

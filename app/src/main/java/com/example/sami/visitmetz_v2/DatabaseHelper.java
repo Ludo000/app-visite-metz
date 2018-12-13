@@ -24,7 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         // Ajouter le nom de la table et les lignes de celle-ci
-        db.execSQL("CREATE TABLE " + Table_Name + "(_ID INTEGER PRIMARY KEY AUTOINCREMENT, NOM TEXT, LATITUDE DOUBLE, LONGITUDE DOUBLE, ADRESSE_POSTALE TEXT, CATEGORIE TEXT, RESUME TEXT, IMAGE BLOB)");
+        db.execSQL("CREATE TABLE " + Table_Name + "(_ID INTEGER PRIMARY KEY AUTOINCREMENT, ID_EXT INTEGER, NOM TEXT, LATITUDE DOUBLE, LONGITUDE DOUBLE, ADRESSE_POSTALE TEXT, CATEGORIE TEXT, RESUME TEXT, IMAGE BLOB)");
     }
 
     @Override
@@ -40,6 +40,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db  = this.getWritableDatabase();
         //Permits to add new info in the table
         ContentValues contentValues = new ContentValues();
+        contentValues.put("id_ext",0);
         contentValues.put("nom",nom);
         contentValues.put("image",image);
         contentValues.put("latitude",latitude);
@@ -68,7 +69,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(query, null);
     }
 
-    void DeleteRecord(String nom_site)
+    void DeleteData(String nom_site)
     {
         try {
             SQLiteDatabase db  = this.getWritableDatabase();

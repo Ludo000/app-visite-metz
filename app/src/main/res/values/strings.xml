@@ -18,4 +18,6 @@
     <string name="nom_du_site">Nom du Site</string>
     <string name="send_to">Partager</string>
     <string name="annuler_ajouter_site">Annuler</string>
+    <string name="labelButtonUpload">Téléverser</string>
+    <string name="labelButtonDownload">Télécharger</string>
 </resources>

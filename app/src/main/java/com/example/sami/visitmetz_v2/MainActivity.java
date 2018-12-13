@@ -128,6 +128,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new MetzFragment()).commit();
                 break;
+            case R.id.nav_sync:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new SyncFragment()).commit();
+                break;
+
         }
 
         drawer.closeDrawer(GravityCompat.START);

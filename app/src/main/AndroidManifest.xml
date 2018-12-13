@@ -51,15 +51,7 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
-        <activity
-            android:name=".AjouterSiteActivity"
-            android:label="Ajouter un site" />
-        <activity
-            android:name=".AjouterSiteDetailsActivity"
-            android:label="Détails d'un site" />
-        <activity
-            android:name=".SitesOverviewActivity"
-            android:label="Liste des sites" />
+        <activity android:name=".SyncFragment"></activity>
     </application>
 
 </manifest>

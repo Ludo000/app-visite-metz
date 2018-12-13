@@ -74,6 +74,11 @@
             android:id="@+id/nav_autour"
             android:icon="@drawable/ic_histoire"
             android:title="Autour de Metz" />
+        <item
+            android:id="@+id/nav_sync"
+            android:icon="@drawable/ic_sync"
+            android:title="Synchroniser" />
+
 
     </group>
 

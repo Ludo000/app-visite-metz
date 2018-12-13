@@ -54,7 +54,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return result != -1;
     }
 
-    Cursor getData()
+    void updateData(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("nom",nom);
+        contentValues.put("image",image);
+        contentValues.put("latitude",latitude);
+        contentValues.put("longitude",longitude);
+        contentValues.put("adresse_postale",adresse);
+        contentValues.put("categorie",categorie);
+        contentValues.put("resume",resume);
+        String query = "Update "+ Table_Name + " Where NOM"  + " = '" +  nom + "'";
+        db.execSQL(query);
+    }
+
+    Cursor getAllData()
     {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "Select * from " + Table_Name;
@@ -62,14 +76,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(query,null);
     }
 
-    Cursor getItem(String name)
+    Cursor getData(String name)
     {
         SQLiteDatabase db = this.getWritableDatabase();
         String query = "Select * from "+ Table_Name + " Where NOM"  + " = '" +  name + "'";
         return db.rawQuery(query, null);
     }
 
-    void DeleteData(String nom_site)
+    void deleteData(String nom_site)
     {
         try {
             SQLiteDatabase db  = this.getWritableDatabase();

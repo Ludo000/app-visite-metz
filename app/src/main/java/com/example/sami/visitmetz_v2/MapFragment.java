@@ -272,7 +272,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                             Log.d(TAG, "onComplete: found location!");
                             Location currentLocation = (Location) task.getResult();
 
-                            latitude = currentLocation.getLatitude();
+                            if (currentLocation != null) {
+                                latitude = currentLocation.getLatitude();
+                            }
                             longitude = currentLocation.getLongitude();
 
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),

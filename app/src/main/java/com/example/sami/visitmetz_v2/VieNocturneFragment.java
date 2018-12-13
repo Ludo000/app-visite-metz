@@ -1,15 +1,22 @@
 package com.example.sami.visitmetz_v2;
 
+import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -17,11 +24,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
+import java.util.Objects;
+
+import static android.support.v4.content.ContextCompat.getDrawable;
 
 
 public class VieNocturneFragment extends Fragment {
@@ -30,28 +42,18 @@ public class VieNocturneFragment extends Fragment {
     RecyclerView MyRecyclerView;
     DatabaseHelper databaseHelper;
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         databaseHelper = new DatabaseHelper(getContext());
 
-        // get image from drawable
-        Bitmap bitmap1=BitmapFactory.decodeResource(getResources(), R.drawable.cathedrale_st_etienne);
-        // convert bitmap to byte
-        ByteArrayOutputStream bos1=new ByteArrayOutputStream();
-        bitmap1.compress(Bitmap.CompressFormat.JPEG, 100, bos1);
-        byte[] img1=bos1.toByteArray();
+        byte[] img1=getByteFromDrawable(Objects.requireNonNull(getDrawable(Objects.requireNonNull(getContext()), R.drawable.cathedrale_st_etienne)));
 
-        Bitmap bitmap2=BitmapFactory.decodeResource(getResources(), R.drawable.centre_pompidou);
-        ByteArrayOutputStream bos2=new ByteArrayOutputStream();
-        bitmap2.compress(Bitmap.CompressFormat.JPEG, 100, bos2);
-        byte[] img2=bos2.toByteArray();
+        byte[] img2=getByteFromDrawable(Objects.requireNonNull(getDrawable(getContext(), R.drawable.centre_pompidou)));
 
-        Bitmap bitmap3=BitmapFactory.decodeResource(getResources(), R.drawable.stade_st_symphorien);
-        ByteArrayOutputStream bos3=new ByteArrayOutputStream();
-        bitmap3.compress(Bitmap.CompressFormat.JPEG, 100, bos3);
-        byte[] img3=bos3.toByteArray();
+        byte[] img3=getByteFromDrawable(Objects.requireNonNull(getDrawable(getContext(), R.drawable.stade_st_symphorien)));
 
         databaseHelper.addData("Cathédrale Saint-Étienne", 49.120484, 6.176334,"Place d'Armes, 57000 Metz, France", "Sites historiques, monuments, musées et statues", "La cathédrale Saint-Étienne de Metz est la cathédrale catholique du diocèse de Metz, dans le département français de la Moselle en région Grand Est.",  img1);
         databaseHelper.addData("Centre Pompidou-Metz", 49.108465, 6.181730, "1 Parvis des Droits de l'Homme, 57020 Metz, France","Sites historiques, monuments, musées et statues", "Le centre Pompidou-Metz est un établissement public de coopération culturelle d’art situé à Metz, entre le parc de la Seille et la gare. Sa construction est réalisée dans le cadre de l’opération d’aménagement du quartier de l’Amphithéâtre.", img2);
@@ -82,8 +84,19 @@ public class VieNocturneFragment extends Fragment {
 
     }
 
+    @NonNull
+    public byte[] getByteFromDrawable(@NonNull Drawable drawable) {
+        final Bitmap bmp = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        final Canvas canvas = new Canvas(bmp);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG,100,stream);
+        return stream.toByteArray();
+    }
+
     public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
-        ArrayList<SiteData> list;
+        public ArrayList<SiteData> list;
 
         MyAdapter(ArrayList<SiteData> Data) {
             list = Data;
@@ -101,10 +114,15 @@ public class VieNocturneFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
 
+            byte[] img = list.get(position).getImage();
+            Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
+
             holder.titleTextView.setText(list.get(position).getNom());
-            holder.coverImageView.setTag(list.get(position).getImage());
+            holder.coverImageView.setImageBitmap(bitmap);
+            holder.coverImageView.setTag(bitmap);
             holder.likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
-            holder.editImageView.setTag(R.drawable.ic_add_black);
+            holder.editImageView.setTag(R.drawable.edit_black_24dp);
+            holder.deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
 
         }
 
@@ -112,6 +130,7 @@ public class VieNocturneFragment extends Fragment {
         public int getItemCount() {
             return list.size();
         }
+
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
@@ -121,6 +140,7 @@ public class VieNocturneFragment extends Fragment {
         ImageView likeImageView;
         ImageView shareImageView;
         ImageView editImageView;
+        ImageView deleteImageView;
 
         MyViewHolder(View v) {
             super(v);
@@ -129,59 +149,70 @@ public class VieNocturneFragment extends Fragment {
             likeImageView = v.findViewById(R.id.likeImageView);
             shareImageView = v.findViewById(R.id.shareImageView);
             editImageView = v.findViewById(R.id.editImageView);
+            deleteImageView = v.findViewById(R.id.deleteImageView);
 
-            /*editImageView.setOnClickListener(new View.OnClickListener() {
+            editImageView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
                 public void onClick(View v) {
-                    DatabaseHelper mDatabaseHelper1 = null;
-                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                        mDatabaseHelper1 = new DatabaseHelper(getContext());
-                    }
-                    int id = (int)editImageView.getTag();
-                    if( id == R.drawable.ic_add_black)
-                    {
-                        AjouterSiteFragment ajouterSiteFragment = new AjouterSiteFragment();
-                        String newSoilTemp = null, newAirTemp = null, newSoilMoist = null, newAirMoist = null;
+                    Cursor currentData  = databaseHelper.getData(titleTextView.getText().toString());
+                    currentData.moveToFirst();
+                    if(currentData.moveToFirst()) {
+                        SiteData currentSite = new SiteData(currentData.getString(2),
+                                Double.valueOf(currentData.getString(3)), Double.valueOf(currentData.getString(4)),
+                                currentData.getString(5), currentData.getString(6), currentData.getString(7),
+                                currentData.getBlob(8));
 
-                        String newName = titleTextView.getText().toString();
-                        byte[] imageOut = ajouterSiteFragment.imageViewToByte(coverImageView);
+                        // Create new fragment, give it an object and start transaction
+                        Fragment newFragment = new AjouterSiteDetailsFragment();
+                        Bundle bundle = new Bundle();
+                        bundle.putSerializable("site", currentSite);
+                        newFragment.setArguments(bundle);
 
-                        for (String[] aPlantsSelection : plantsSelection) {
+                        // consider using Java coding conventions (upper first char class names!!!)
+                        FragmentTransaction transaction;
+                        if (getFragmentManager() != null) {
+                            transaction = getFragmentManager().beginTransaction();
+                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 
-                            if (aPlantsSelection[0].equals(newName)) {
-                                newSoilTemp = aPlantsSelection[1];
-                                newAirTemp = aPlantsSelection[2];
-                                newSoilMoist = aPlantsSelection[3];
-                                newAirMoist = aPlantsSelection[4];
-                            }
+                            // Replace whatever is in the fragment_container view with this fragment,
+                            // and add the transaction to the back stack
+                            transaction.replace(R.id.fragment_container, newFragment);
+                            transaction.addToBackStack(null);
+
+                            // Commit the transaction
+                            transaction.commit();
                         }
-
-                        //Checks if it is not empty
-                        if (titleTextView.getText().length() != 0) {
-
-                            assert mDatabaseHelper1 != null;
-                            mDatabaseHelper1.addData(newName, imageOut, newSoilTemp, newAirTemp, newSoilMoist, newAirMoist);
-
-                            editImageView.setTag(R.drawable.ic_add_colored); //ic_liked
-                            editImageView.setImageResource(R.drawable.ic_add_colored); //ic_liked
-
-                            Toast.makeText(getActivity(),titleTextView.getText()+" wurde erfolgreich zu 'Meine Pflanzen' hinzugefügt", Toast.LENGTH_SHORT).show();
-
-                        } else {
-                            Toast.makeText(getActivity(),"Formular ist leer",Toast.LENGTH_SHORT).show();
-                        }
-
-                    }else{
-                        assert mDatabaseHelper1 != null;
-                        mDatabaseHelper1.DeleteRecord(titleTextView.getText().toString());
-                        editImageView.setTag(R.drawable.ic_add_black);
-                        editImageView.setImageResource(R.drawable.ic_add_black);
-                        Toast.makeText(getActivity(),titleTextView.getText()+" wurde von 'Meine Pflanzen' entfernt", Toast.LENGTH_SHORT).show();
                     }
-
                 }
-            });*/
+            });
+
+            deleteImageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setCancelable(false);
+                    builder.setTitle("Supprimer le site " + titleTextView.getText().toString());
+                    builder.setMessage("Êtes-vous sûr?");
+                    builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(getActivity(), titleTextView.getText() + " a été supprimé!", Toast.LENGTH_SHORT).show();
+                            databaseHelper.deleteData(titleTextView.getText().toString());
+                            databaseHelper.getData(titleTextView.getText().toString());
+                            //list.notifyDataSetChanged();
+                        }
+                    });
+                    builder.setNegativeButton("Non", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    builder.create().show();
+                }
+            });
 
             /*likeImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -195,28 +226,28 @@ public class VieNocturneFragment extends Fragment {
 
                     Toast.makeText(getActivity(),titleTextView.getText()+" wurde erfolgreich zu 'Favoriten' hinzugefügt",Toast.LENGTH_SHORT).show();
 
-                }else{
+                } else{
 
                     likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
                     likeImageView.setImageResource(R.drawable.ic_thumb_up_black_24dp);
                     Toast.makeText(getActivity(),titleTextView.getText()+" wurde von 'Favoriten' entfernt",Toast.LENGTH_SHORT).show();
                 }
-                }
+               }
             });*/
 
             shareImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
-                Uri imageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
-                        "://" + getResources().getResourcePackageName(coverImageView.getId())
-                        + '/' + "drawable" + '/' + getResources().getResourceEntryName((int)coverImageView.getTag()));
+                    Uri imageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
+                            "://" + getResources().getResourcePackageName(coverImageView.getId())
+                            + '/' + "drawable" + '/' + getResources().getResourceEntryName((int) coverImageView.getTag()));
 
-                Intent shareIntent = new Intent();
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM,imageUri);
-                shareIntent.setType("image/jpeg");
-                startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
+                    Intent shareIntent = new Intent();
+                    shareIntent.setAction(Intent.ACTION_SEND);
+                    shareIntent.putExtra(Intent.EXTRA_STREAM,imageUri);
+                    shareIntent.setType("image/jpeg");
+                    startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
 
                 }
             });
@@ -227,18 +258,19 @@ public class VieNocturneFragment extends Fragment {
         listitems.clear();
 
         databaseHelper = new DatabaseHelper(getActivity());
-        Cursor data = databaseHelper.getData();
+        Cursor data = databaseHelper.getAllData();
         while(data.moveToNext())
         {
-            String nom = data.getString(1);
-            Double latitude = Double.valueOf(data.getString(2));
-            Double longitude = Double.valueOf(data.getString(3));
-            String adresse = data.getString(4);
-            String categorie = data.getString(5);
-            String resume = data.getString(6);
-            byte image[] = data.getBlob(7);
+            SiteData item = new SiteData();
+            item.setNom(data.getString(2));
+            item.setLatitude(Double.valueOf(data.getString(3)));
+            item.setLongitude(Double.valueOf(data.getString(4)));
+            item.setAdresse(data.getString(5));
+            item.setCategorie(data.getString(6));
+            item.setResume(data.getString(7));
+            item.setImage(data.getBlob(8));
 
-            listitems.add(new SiteData(nom, latitude, longitude, adresse, categorie, resume, image));
+            listitems.add(item);
         }
     }
 }

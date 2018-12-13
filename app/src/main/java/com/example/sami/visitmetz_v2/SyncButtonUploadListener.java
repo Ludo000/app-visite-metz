@@ -14,8 +14,8 @@ public class SyncButtonUploadListener extends SyncButtonListener {
         String currentText = this.syncFragment.textSyncOutput.getText().toString();
 
         String nom ="nomTest";
-        String latitude="latitudeTest";
-        String longitude="longitudeTest";
+        String latitude="3";
+        String longitude="4";
         String adresse_postale="adressePostaleTest";
         String categorie="categorieTest";
         String resume="resumeTest";

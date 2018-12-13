@@ -2,11 +2,9 @@ package com.example.sami.visitmetz_v2;
 
 import android.view.View;
 
-public class SyncButtonUploadListener implements View.OnClickListener {
-    public SyncFragment syncFragment;
-
+public class SyncButtonUploadListener extends SyncButtonListener {
     public SyncButtonUploadListener(SyncFragment syncFragment){
-        this.syncFragment=syncFragment;
+        super(syncFragment);
 
     }
     @Override
@@ -14,12 +12,26 @@ public class SyncButtonUploadListener implements View.OnClickListener {
         this.syncFragment.buttonDownload.setEnabled(false);
         this.syncFragment.buttonUpload.setEnabled(false);
         String currentText = this.syncFragment.textSyncOutput.getText().toString();
-        this.syncFragment.textSyncOutput.setText(currentText + "Téléversement de la base de données en cours...\n");
 
-        //Traitement
+        String nom ="nomTest";
+        String latitude="latitudeTest";
+        String longitude="longitudeTest";
+        String adresse_postale="adressePostaleTest";
+        String categorie="categorieTest";
+        String resume="resumeTest";
+        String image="imageTest";
 
-
-        this.syncFragment.buttonDownload.setEnabled(true);
-        this.syncFragment.buttonUpload.setEnabled(true);
+        new GetUrlContentTask(this).execute("https://www.mettreauclair.fr/appVisiteMetz/add.php"
+                + "?NOM=" + nom
+                + "&LATITUDE=" + latitude
+                + "&LONGITUDE=" + longitude
+                + "&ADRESSE_POSTALE=" + adresse_postale
+                + "&CATEGORIE=" + categorie
+                + "&RESUME=" + resume
+                + "&IMAGE=" + image);
+    }
+    @Override
+    public String getOutput(){
+        return ("Téléversement de la base de données en cours...\n");
     }
 }

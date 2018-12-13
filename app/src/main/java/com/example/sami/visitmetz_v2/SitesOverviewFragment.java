@@ -26,7 +26,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.sami.visitmetz_v2.models.SiteCard;
+import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import static android.support.v4.content.ContextCompat.getDrawable;
 
 public class SitesOverviewFragment extends Fragment {
 
-    ArrayList<SiteCard> listitems = new ArrayList<>();
+    ArrayList<SiteData> listitems = new ArrayList<>();
     RecyclerView MyRecyclerView;
     DatabaseHelper databaseHelper;
 
@@ -95,9 +95,9 @@ public class SitesOverviewFragment extends Fragment {
     }
 
     public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
-        public ArrayList<SiteCard> list;
+        public ArrayList<SiteData> list;
 
-        MyAdapter(ArrayList<SiteCard> Data) {
+        MyAdapter(ArrayList<SiteData> Data) {
             list = Data;
         }
 
@@ -116,7 +116,7 @@ public class SitesOverviewFragment extends Fragment {
             byte[] img = list.get(position).getImage();
             Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
 
-            holder.titleTextView.setText(list.get(position).getNomCard());
+            holder.titleTextView.setText(list.get(position).getNom());
             holder.coverImageView.setImageBitmap(bitmap);
             holder.coverImageView.setTag(bitmap);
             holder.likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
@@ -258,8 +258,8 @@ public class SitesOverviewFragment extends Fragment {
         Cursor data = databaseHelper.getData();
         while(data.moveToNext())
         {
-            SiteCard item = new SiteCard();
-            item.setNomCard(data.getString(2));
+            SiteData item = new SiteData();
+            item.setNom(data.getString(2));
             item.setLatitude(Double.valueOf(data.getString(3)));
             item.setLongitude(Double.valueOf(data.getString(4)));
             item.setAdresse(data.getString(5));

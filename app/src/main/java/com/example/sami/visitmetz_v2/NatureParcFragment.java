@@ -18,6 +18,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.sami.visitmetz_v2.models.SiteData;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 

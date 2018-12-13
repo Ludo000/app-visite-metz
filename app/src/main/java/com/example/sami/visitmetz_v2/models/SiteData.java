@@ -1,4 +1,4 @@
-package com.example.sami.visitmetz_v2;
+package com.example.sami.visitmetz_v2.models;
 
 import java.io.Serializable;
 
@@ -12,7 +12,11 @@ public class SiteData implements Serializable {
     private String resume;
     private byte[] image;
 
-    SiteData(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image)
+    public SiteData(){
+
+    }
+
+    public SiteData(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image)
     {
         this.nom = nom;
         this.image = image;

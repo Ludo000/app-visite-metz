@@ -1,8 +1,11 @@
 package com.example.sami.visitmetz_v2;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.content.Intent;
@@ -20,6 +23,8 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -93,22 +98,33 @@ public class AjouterSiteFragment extends Fragment {
                 String resumeSite = resume.getText().toString();
 
                 //Checks if it is not empty
-                if (nom.length() != 0) {
-                    AddData(nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
+                if (nomSite.trim().length() > 0) {
+                    // Add a new student record
+                    ContentValues sitesValues = contentValues(nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
+
+                    Uri uri = getActivity().getContentResolver().insert(
+                            SitesProvider.CONTENT_URI, sitesValues);
+
+                    Toast.makeText(getContext(), "Un nouveau site a été ajouté", Toast.LENGTH_LONG)
+                            .show();
+
                     // Create new fragment and transaction
                     Fragment newFragment = new SitesOverviewFragment();
                     // consider using Java coding conventions (upper first char class names!!!)
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    FragmentTransaction transaction ;
+                    if (getFragmentManager() != null) {
+                        transaction = getFragmentManager().beginTransaction();
 
-                    // Replace whatever is in the fragment_container view with this fragment,
-                    // and add the transaction to the back stack
-                    transaction.replace(R.id.fragment_container, newFragment);
-                    transaction.addToBackStack(null);
+                        // Replace whatever is in the fragment_container view with this fragment,
+                        // and add the transaction to the back stack
+                        transaction.replace(R.id.fragment_container, newFragment);
+                        transaction.addToBackStack(null);
 
-                    // Commit the transaction
-                    transaction.commit();
+                        // Commit the transaction
+                        transaction.commit();
+                    }
                 } else {
-                    Toast("Le formulaire est vide !");
+                    Toast.makeText(getActivity(), "Le formulaire est vide !",Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -116,23 +132,19 @@ public class AjouterSiteFragment extends Fragment {
         return v;
     }
 
-    public void AddData(String name, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image) {
-        //Checks if the data is correctly added
-        boolean insertData = mDatabaseHelper1.addData(name, latitude, longitude, adresse, categorie, resume, image);
-        if(insertData)
-        {
-            Toast("Le site " + nom.getText() + " a bien été ajouté à 'Mes Sites' !");
-        }
-        else
-        {
-            Toast("Une erreur est survenue lors de l'ajout du site " + nom.getText() + " !");
-        }
-    }
-
-
-    private void Toast(String s)
+    public ContentValues contentValues(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image)
     {
-        Toast.makeText(getActivity(),s,Toast.LENGTH_SHORT).show();
+        //Permits to add new info in the table
+        ContentValues values = new ContentValues();
+        values.put("id_ext",0);
+        values.put("nom",nom);
+        values.put("image",image);
+        values.put("latitude",latitude);
+        values.put("longitude",longitude);
+        values.put("adresse_postale",adresse);
+        values.put("categorie",categorie);
+        values.put("resume",resume);
+        return values;
     }
 
     @NonNull
@@ -147,6 +159,7 @@ public class AjouterSiteFragment extends Fragment {
     }
 
     Intent intent;
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if(requestCode == REQUEST_CODE_GALLERY){

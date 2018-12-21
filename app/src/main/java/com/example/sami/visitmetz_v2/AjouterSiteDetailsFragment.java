@@ -171,7 +171,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
                             String URL1 = "content://" + PROVIDER_NAME + "/sites_table/#" + id;
                             Uri uri1 = Uri.parse(URL1);
 
-g                            int c = getContext().getContentResolver().update(
+                            int c = getContext().getContentResolver().update(
                                     uri1, sitesValues, "_ID", selection);
 
                             Toast.makeText(getContext(), c +" site a été ajouté", Toast.LENGTH_LONG)

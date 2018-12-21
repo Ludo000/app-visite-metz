@@ -69,10 +69,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         new SitesOverviewFragment()).commit();
                 break;
 
-            case R.id.nav_favoris:
+            /*case R.id.nav_favoris:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new MesSitesFavorisFragment()).commit();
-                break;
+                break;*/
 
             case R.id.nav_map:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         new HistoireFragment()).commit();
                 break;
 
-            case R.id.nav_monuments:
+            /*case R.id.nav_monuments:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new SitesHistoriquesMonumentFragment()).commit();
                 break;
@@ -122,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_shopping:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new DestinationShoppingFragment()).commit();
-                break;
+                break;*/
 
             case R.id.nav_metz:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,

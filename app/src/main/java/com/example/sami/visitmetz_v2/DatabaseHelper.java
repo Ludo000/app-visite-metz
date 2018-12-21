@@ -12,10 +12,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // nom de la base de données
     private static final String Database_Name = "sites.db";
 
-    // nom de la table
-    private static final String Table_Name = "sites_table";
+    // nom de la table site
+    private static final String Table_Site = "sites_table";
 
-    DatabaseHelper(Context context) {
+    // nom de la table site
+    public static final String Table_Categorie = "categories_table";
+
+    public DatabaseHelper(Context context) {
         super(context, Database_Name, null, 1);
     }
 
@@ -24,17 +27,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         // Ajouter le nom de la table et les lignes de celle-ci
-        db.execSQL("CREATE TABLE " + Table_Name + "(_ID INTEGER PRIMARY KEY AUTOINCREMENT, ID_EXT INTEGER, NOM TEXT, LATITUDE DOUBLE, LONGITUDE DOUBLE, ADRESSE_POSTALE TEXT, CATEGORIE TEXT, RESUME TEXT, IMAGE BLOB)");
+        db.execSQL("CREATE TABLE " + Table_Site + "(_ID INTEGER PRIMARY KEY AUTOINCREMENT, ID_EXT INTEGER, NOM TEXT, LATITUDE DOUBLE, LONGITUDE DOUBLE, ADRESSE_POSTALE TEXT, CATEGORIE TEXT, RESUME TEXT, IMAGE BLOB)");
+        db.execSQL("CREATE TABLE " + Table_Categorie + "(_ID INTEGER PRIMARY KEY AUTOINCREMENT, NOM TEXT)");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Si une version de la base de données existe, elle sera supprimée et remplacée par la nouvelle
-        db.execSQL("DROP TABLE IF EXISTS " + Table_Name);
+        db.execSQL("DROP TABLE IF EXISTS " + Table_Site);
+        db.execSQL("DROP TABLE IF EXISTS " + Table_Categorie);
         onCreate(db);
     }
 
-    boolean addData(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image)
+    /*boolean addData(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image)
     {
         //Opens the database that will be used for writing and reading
         SQLiteDatabase db  = this.getWritableDatabase();
@@ -66,12 +71,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         contentValues.put("resume",resume);
         String query = "Update "+ Table_Name + " Where NOM"  + " = '" +  nom + "'";
         db.execSQL(query);
-    }
+    }*/
 
-    Cursor getAllData()
+    /*Cursor getAllData()
     {
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "Select * from " + Table_Name;
+        String query = "Select * from " + Table_Site;
         //Runs the provided SQL and returns a Cursor on the added result set
         return db.rawQuery(query,null);
     }
@@ -79,7 +84,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     Cursor getData(String name)
     {
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "Select * from "+ Table_Name + " Where NOM"  + " = '" +  name + "'";
+        String query = "Select * from "+ Table_Site + " Where NOM"  + " = '" +  name + "'";
         return db.rawQuery(query, null);
     }
 
@@ -96,5 +101,5 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         } catch (SQLiteException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 }

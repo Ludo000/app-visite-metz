@@ -1,7 +1,9 @@
 package com.example.sami.visitmetz_v2;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -27,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
@@ -42,23 +45,61 @@ public class SitesOverviewFragment extends Fragment {
     RecyclerView MyRecyclerView;
     DatabaseHelper databaseHelper;
 
+    String PROVIDER_NAME = "com.example.sami.visitmetz_v2.ContentProvider.SitesProvider";
+    String URL = "content://" + PROVIDER_NAME + "/sites_table";
+    Uri uri = Uri.parse(URL);
+
+    // Provides access to other applications Content Providers
+    ContentResolver resolver;
+
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         databaseHelper = new DatabaseHelper(getContext());
+        resolver = getContext().getContentResolver();
 
-        byte[] img1=getByteFromDrawable(Objects.requireNonNull(getDrawable(Objects.requireNonNull(getContext()), R.drawable.cathedrale_st_etienne)));
+        /*byte[] img1=getByteFromDrawable(Objects.requireNonNull(getDrawable(Objects.requireNonNull(getContext()), R.drawable.cathedrale_st_etienne)));
 
         byte[] img2=getByteFromDrawable(Objects.requireNonNull(getDrawable(getContext(), R.drawable.centre_pompidou)));
 
         byte[] img3=getByteFromDrawable(Objects.requireNonNull(getDrawable(getContext(), R.drawable.stade_st_symphorien)));
 
-        databaseHelper.addData("Cathédrale Saint-Étienne", 49.120484, 6.176334,"Place d'Armes, 57000 Metz, France", "Sites historiques, monuments, musées et statues", "La cathédrale Saint-Étienne de Metz est la cathédrale catholique du diocèse de Metz, dans le département français de la Moselle en région Grand Est.",  img1);
-        databaseHelper.addData("Centre Pompidou-Metz", 49.108465, 6.181730, "1 Parvis des Droits de l'Homme, 57020 Metz, France","Sites historiques, monuments, musées et statues", "Le centre Pompidou-Metz est un établissement public de coopération culturelle d’art situé à Metz, entre le parc de la Seille et la gare. Sa construction est réalisée dans le cadre de l’opération d’aménagement du quartier de l’Amphithéâtre.", img2);
-        databaseHelper.addData("Stade St Symphorien", 49.109968, 6.159747, "3 Boulevard Saint-Symphorien, 57050 Longeville-lès-Metz, France", "Jeux et divertissements", "Le stade Saint-Symphorien est l'enceinte sportive principale de l'agglomération messine. C'est un stade consacré au football qui est utilisé par le Football Club de Metz.", img3);
+        // Add a new site record
+        ContentValues sitesValues = contentValues("Cathédrale Saint-Étienne", 49.120484, 6.176334,"Place d'Armes, 57000 Metz, France", "Sites historiques, monuments, musées et statues", "La cathédrale Saint-Étienne de Metz est la cathédrale catholique du diocèse de Metz, dans le département français de la Moselle en région Grand Est.",  img1);
+
+        Uri uri = getContext().getContentResolver().insert(
+                SitesProvider.CONTENT_URI, sitesValues);
+
+        // Add a new student record
+        sitesValues = contentValues("Centre Pompidou-Metz", 49.108465, 6.181730, "1 Parvis des Droits de l'Homme, 57020 Metz, France","Sites historiques, monuments, musées et statues", "Le centre Pompidou-Metz est un établissement public de coopération culturelle d’art situé à Metz, entre le parc de la Seille et la gare. Sa construction est réalisée dans le cadre de l’opération d’aménagement du quartier de l’Amphithéâtre.", img2);
+
+        uri = getContext().getContentResolver().insert(
+                SitesProvider.CONTENT_URI, sitesValues);
+
+        // Add a new student record
+        sitesValues = contentValues("Stade St Symphorien", 49.109968, 6.159747, "3 Boulevard Saint-Symphorien, 57050 Longeville-lès-Metz, France", "Jeux et divertissements", "Le stade Saint-Symphorien est l'enceinte sportive principale de l'agglomération messine. C'est un stade consacré au football qui est utilisé par le Football Club de Metz.", img3);
+
+        uri = getContext().getContentResolver().insert(
+                SitesProvider.CONTENT_URI, sitesValues);*/
+
         initializeList();
+    }
+
+    public ContentValues contentValues(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image)
+    {
+        //Permits to add new info in the table
+        ContentValues values = new ContentValues();
+        values.put("id_ext",0);
+        values.put("nom",nom);
+        values.put("image",image);
+        values.put("latitude",latitude);
+        values.put("longitude",longitude);
+        values.put("adresse_postale",adresse);
+        values.put("categorie",categorie);
+        values.put("resume",resume);
+        return values;
     }
 
     @Override
@@ -155,34 +196,69 @@ public class SitesOverviewFragment extends Fragment {
 
                 @Override
                 public void onClick(View v) {
-                    Cursor currentData  = databaseHelper.getData(titleTextView.getText().toString());
-                    currentData.moveToFirst();
-                    if(currentData.moveToFirst()) {
-                        SiteData currentSite = new SiteData(currentData.getString(2),
-                                Double.valueOf(currentData.getString(3)), Double.valueOf(currentData.getString(4)),
-                                currentData.getString(5), currentData.getString(6), currentData.getString(7),
-                                currentData.getBlob(8));
 
-                        // Create new fragment, give it an object and start transaction
-                        Fragment newFragment = new AjouterSiteDetailsFragment();
-                        Bundle bundle = new Bundle();
-                        bundle.putSerializable("site", currentSite);
-                        newFragment.setArguments(bundle);
+                    // The id we want to search for
+                    String siteToFind = titleTextView.getText().toString();
 
-                        // consider using Java coding conventions (upper first char class names!!!)
-                        FragmentTransaction transaction;
-                        if (getFragmentManager() != null) {
-                            transaction = getFragmentManager().beginTransaction();
-                            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                    // Holds the column data we want to retrieve
+                    String[] projection = new String[]{"_ID","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
 
-                            // Replace whatever is in the fragment_container view with this fragment,
-                            // and add the transaction to the back stack
-                            transaction.replace(R.id.fragment_container, newFragment);
-                            transaction.addToBackStack(null);
+                    // Pass the URL for Content Provider, the projection,
+                    // the where clause followed by the matches in an array for the ?
+                    // null is for sort order
+                    @SuppressLint("Recycle")
+                    Cursor foundSite = resolver.query(uri, projection, "NOM = ? ", new String[]{siteToFind}, null);
 
-                            // Commit the transaction
-                            transaction.commit();
+                    String site = "";
+
+                    // Cycle through our one result or print error
+                    if(foundSite!=null){
+                        if(foundSite.moveToFirst()){
+
+                            String id = foundSite.getString(foundSite.getColumnIndex("_ID"));
+                            String name = foundSite.getString(foundSite.getColumnIndex("NOM"));
+                            Double latitude = (double) foundSite.getColumnIndex("LATITUDE");
+                            Double longitude = (double) foundSite.getColumnIndex("LONGITUDE");
+                            String adresse = foundSite.getString(foundSite.getColumnIndex("ADRESSE_POSTALE"));
+                            String categorie = foundSite.getString(foundSite.getColumnIndex("CATEGORIE"));
+                            String resume = foundSite.getString(foundSite.getColumnIndex("RESUME"));
+                            byte[] image = foundSite.getBlob(foundSite.getColumnIndex("IMAGE"));
+
+
+                            site = site + id + " : " + name + "\n";
+
+                            Toast.makeText(getContext(), site, Toast.LENGTH_SHORT).show();
+
+                            SiteData currentSite = new SiteData(name, latitude, longitude, adresse, categorie, resume, image);
+
+                            // Create new fragment, give it an object and start transaction
+                            Fragment newFragment = new AjouterSiteDetailsFragment();
+                            Bundle bundle = new Bundle();
+                            bundle.putSerializable("site", currentSite);
+                            newFragment.setArguments(bundle);
+
+                            // consider using Java coding conventions (upper first char class names!!!)
+                            FragmentTransaction transaction;
+                            if (getFragmentManager() != null) {
+                                transaction = getFragmentManager().beginTransaction();
+                                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+
+                                // Replace whatever is in the fragment_container view with this fragment,
+                                // and add the transaction to the back stack
+                                transaction.replace(R.id.fragment_container, newFragment);
+                                transaction.addToBackStack(null);
+
+                                // Commit the transaction
+                                transaction.commit();
+                            }
+
+                        } else {
+
+                            Toast.makeText(getContext(), "Site introuvable", Toast.LENGTH_SHORT).show();
+
                         }
+                    }else{
+                        Toast.makeText(getContext(), "ERROR !!!", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -195,12 +271,20 @@ public class SitesOverviewFragment extends Fragment {
                     builder.setTitle("Supprimer le site " + titleTextView.getText().toString());
                     builder.setMessage("Êtes-vous sûr?");
                     builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
+                        @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Toast.makeText(getActivity(), titleTextView.getText() + " a été supprimé!", Toast.LENGTH_SHORT).show();
-                            databaseHelper.deleteData(titleTextView.getText().toString());
-                            databaseHelper.getData(titleTextView.getText().toString());
-                            //list.notifyDataSetChanged();
+
+                            // The id we want to search for
+                            String siteToDelete = titleTextView.getText().toString();
+
+                            Toast.makeText(getActivity(), siteToDelete + " a été supprimé!", Toast.LENGTH_SHORT).show();
+
+                            // Use the resolver to delete ids by passing the content provider url
+                            // what you are targeting with the where and the string that replaces
+                            // the ? in the where clause
+                            long idDeleted = resolver.delete(uri,
+                                    "NOM = ? ", new String[]{siteToDelete});
                         }
                     });
                     builder.setNegativeButton("Non", new DialogInterface.OnClickListener() {
@@ -254,11 +338,29 @@ public class SitesOverviewFragment extends Fragment {
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public void initializeList() {
         listitems.clear();
 
         databaseHelper = new DatabaseHelper(getActivity());
-        Cursor data = databaseHelper.getAllData();
+        SitesProvider site = new SitesProvider();
+
+
+        // Projection contains the columns we want
+        String[] projection = new String[]{"_ID", "NOM", "LATITUDE", "LONGITUDE",
+                "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+
+
+        // Pass the URL, projection and I'll cover the other options below
+        Cursor cursor = resolver.query(uri, projection, null, null, null, null);
+
+
+
+
+
+        Cursor data = resolver.query(uri, null, "", null,
+                "");
+        //Cursor data = databaseHelper.getAllData();
         while(data.moveToNext())
         {
             SiteData item = new SiteData();

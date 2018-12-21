@@ -51,6 +51,12 @@
         <activity
             android:name=".MapsActivity"
             android:label="@string/title_activity_maps" />
+
+        <provider
+            android:name=".ContentProvider.SitesProvider"
+            android:authorities="com.example.sami.visitmetz_v2.ContentProvider.SitesProvider"
+            android:exported="true"
+            android:multiprocess="true"/>
     </application>
 
 </manifest>

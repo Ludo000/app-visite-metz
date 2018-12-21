@@ -2,8 +2,10 @@ package com.example.sami.visitmetz_v2;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -24,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
@@ -45,6 +48,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
     EditText resume;
     ImageView editImage;
     Bitmap bitmap;
+    String oldName;
 
 
     @SuppressLint("SetTextI18n")
@@ -76,6 +80,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
             bitmap = BitmapFactory.decodeByteArray(site.getImage(), 0, site.getImage().length);
             this.editImage.setImageBitmap(bitmap);
             this.nom.setText(site.getNom());
+            oldName = site.getNom();
             this. longitude.setText(Double.toString(site.getLongitude()));
             this.latitude.setText(Double.toString(site.getLatitude()));
             this.adresse_postale.setText(site.getAdresse());
@@ -136,21 +141,57 @@ public class AjouterSiteDetailsFragment extends Fragment {
                 String resumeSite = resume.getText().toString();
 
                 //Checks if it is not empty
-                if (nom.length() == 0) {
-                    mDatabaseHelper1.updateData(nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
-                    // Create new fragment and transaction
-                    Fragment newFragment = new SitesOverviewFragment();
-                    // consider using Java coding conventions (upper first char class names!!!)
-                    FragmentTransaction transaction;
-                    if (getFragmentManager() != null) {
-                        transaction = getFragmentManager().beginTransaction();
-                        // Replace whatever is in the fragment_container view with this fragment,
-                        // and add the transaction to the back stack
-                        transaction.replace(R.id.fragment_container, newFragment);
-                        transaction.addToBackStack(null);
+                if (nomSite.trim().length() > 0) {
 
-                        // Commit the transaction
-                        transaction.commit();
+                    String PROVIDER_NAME = "com.example.sami.visitmetz_v2.ContentProvider.SitesProvider";
+                    String URL = "content://" + PROVIDER_NAME + "/sites_table";
+                    Uri uri = Uri.parse(URL);
+
+                    // Holds the column data we want to retrieve
+                    String[] projection = new String[]{"_ID","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+
+                    // Pass the URL for Content Provider, the projection,
+                    // the where clause followed by the matches in an array for the ?
+                    // null is for sort order
+                    @SuppressLint("Recycle")
+                    Cursor foundSite = getContext().getContentResolver().query(uri, projection, "NOM = ? ", new String[]{oldName}, null);
+
+
+                    //update a site
+                    ContentValues sitesValues = contentValues(nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
+
+                    // Holds the column data we want to update
+                    String[] selection = new String[]{"_ID","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+
+                    // Cycle through our one result or print error
+                    if(foundSite!=null) {
+                        if (foundSite.moveToFirst()) {
+
+                            String id = foundSite.getString(foundSite.getColumnIndex("_ID"));
+                            String URL1 = "content://" + PROVIDER_NAME + "/sites_table/#" + id;
+                            Uri uri1 = Uri.parse(URL1);
+
+g                            int c = getContext().getContentResolver().update(
+                                    uri1, sitesValues, "_ID", selection);
+
+                            Toast.makeText(getContext(), c +" site a été ajouté", Toast.LENGTH_LONG)
+                                    .show();
+
+                            // Create new fragment and transaction
+                            Fragment newFragment = new SitesOverviewFragment();
+                            // consider using Java coding conventions (upper first char class names!!!)
+                            FragmentTransaction transaction;
+                            if (getFragmentManager() != null) {
+                                transaction = getFragmentManager().beginTransaction();
+                                // Replace whatever is in the fragment_container view with this fragment,
+                                // and add the transaction to the back stack
+                                transaction.replace(R.id.fragment_container, newFragment);
+                                transaction.addToBackStack(null);
+
+                                // Commit the transaction
+                                transaction.commit();
+                            }
+                        }
                     }
                 } else {
                     Toast("Le formulaire est vide !");
@@ -161,19 +202,22 @@ public class AjouterSiteDetailsFragment extends Fragment {
         return v;
     }
 
-    public void AddData(String name, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image) {
-        //Checks if the data is correctly added
-        boolean insertData = mDatabaseHelper1.addData(name, latitude, longitude, adresse, categorie, resume, image);
-        if(insertData)
-        {
-            Toast("Le site " + nom.getText() + " a bien été ajouté à 'Mes Sites' !");
-        }
-        else
-        {
-            Toast("Une erreur est survenue lors de l'ajout du site " + nom.getText() + " !");
-        }
+    public ContentValues contentValues(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image)
+    {
+        //Opens the database that will be used for writing and reading
+        mDatabaseHelper1.getWritableDatabase();
+        //Permits to add new info in the table
+        ContentValues values = new ContentValues();
+        values.put("id_ext",0);
+        values.put("nom",nom);
+        values.put("image",image);
+        values.put("latitude",latitude);
+        values.put("longitude",longitude);
+        values.put("adresse_postale",adresse);
+        values.put("categorie",categorie);
+        values.put("resume",resume);
+        return values;
     }
-
 
     private void Toast(String s)
     {

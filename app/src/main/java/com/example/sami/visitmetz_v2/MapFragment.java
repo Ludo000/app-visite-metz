@@ -194,7 +194,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                 Log.d(TAG, "onClick: clicked gps icon");
 
                 getDeviceLocation();
-
+                mMap.clear();
             }
         });
 
@@ -237,8 +237,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             @Override
             public void onClick(View view) {
                 // Drawing circle on the map
+                mMap.clear();
                 drawCircle(new LatLng(latitude, longitude));
-
                 AddMarker();
 
             }

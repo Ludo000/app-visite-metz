@@ -57,6 +57,12 @@
             android:authorities="com.example.sami.visitmetz_v2.ContentProvider.SitesProvider"
             android:exported="true"
             android:multiprocess="true"/>
+
+        <provider
+            android:name=".ContentProvider.CategoriesProvider"
+            android:authorities="com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider"
+            android:exported="true"
+            android:multiprocess="true"/>
     </application>
 
 </manifest>

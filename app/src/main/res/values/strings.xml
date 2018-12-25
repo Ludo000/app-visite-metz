@@ -20,4 +20,6 @@
     <string name="annuler_ajouter_site">Annuler</string>
     <string name="labelButtonUpload">Téléverser</string>
     <string name="labelButtonDownload">Télécharger</string>
+    <string name="ajouter_categorie">Nouvelle categorie</string>
+    <string name="nouvelle_cat_gorie">Nouvelle catégorie</string>
 </resources>

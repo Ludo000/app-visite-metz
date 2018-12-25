@@ -12,10 +12,14 @@
         android:id="@+id/site_form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fadeScrollbars="true"
+        android:hapticFeedbackEnabled="true"
         android:orientation="vertical"
         android:paddingLeft="24dp"
         android:paddingTop="10dp"
         android:paddingRight="24dp"
+        android:scrollbarAlwaysDrawVerticalTrack="false"
+        android:scrollbars="vertical"
         tools:ignore="UselessParent">
 
         <LinearLayout
@@ -40,7 +44,7 @@
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:layout_width="171dp"
                 android:layout_height="match_parent"
                 android:layout_marginStart="10dp"
                 android:layout_marginLeft="10dp"

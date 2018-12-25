@@ -53,11 +53,6 @@ public class CategoriesProvider extends ContentProvider {
     // Creates a UriMatcher object.
     static final UriMatcher uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
-    static{
-        uriMatcher.addURI(PROVIDER_NAME, "categories_table", CATEGORIES);
-        uriMatcher.addURI(PROVIDER_NAME, "categories_table/#", CATEGORIE_ID);
-    }
-
     static {
         /*
          * The calls to addURI() go here, for all of the content URI patterns that the provider

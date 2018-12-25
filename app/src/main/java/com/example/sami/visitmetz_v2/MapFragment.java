@@ -258,7 +258,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         circleOptions.center(point);
 
         // Radius of the circle
-        circleOptions.radius(Double.parseDouble(mRoyen.getText().toString()) );
+        circleOptions.radius(20);
 
         // Border color of the circle
         circleOptions.strokeColor(Color.BLACK);
@@ -275,11 +275,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     }
 
 
-   /* public void AddMarker (){
+    public void AddMarker (){
         MarkerOptions options = new MarkerOptions();
         ArrayList<SiteData> listItems = new ArrayList<>();
         listItems.clear();
-        Cursor dataCursor =  dbh.getAllData();
+        Cursor dataCursor =  dbh.getData();
         while(dataCursor.moveToNext())
         {
             LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
@@ -288,7 +288,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             options.snippet(dataCursor.getString(7));
             mMap.addMarker(options);
         }
-    } */
+    }
     public void  onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
@@ -334,7 +334,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             }
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
-         //   AddMarker();
+            AddMarker();
             init();
         }
 

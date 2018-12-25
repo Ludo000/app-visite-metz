@@ -2,6 +2,7 @@ package com.example.sami.visitmetz_v2;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -9,14 +10,18 @@ import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -32,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.models.PlaceInfo;
 import com.example.sami.visitmetz_v2.models.SiteData;
 import com.google.android.gms.common.ConnectionResult;
@@ -65,6 +71,16 @@ import java.util.List;
 
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
+
+    RecyclerView MyRecyclerView;
+    DatabaseHelper databaseHelper;
+
+    String PROVIDER_NAME = "com.example.sami.visitmetz_v2.ContentProvider.SitesProvider";
+    String URL = "content://" + PROVIDER_NAME + "/sites_table";
+    Uri uri = Uri.parse(URL);
+
+    // Provides access to other applications Content Providers
+    ContentResolver resolver;
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -112,6 +128,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        databaseHelper = new DatabaseHelper(getContext());
+        resolver = getContext().getContentResolver();
 
         View v = inflater.inflate(R.layout.fragment_map, container, false);
         mSearchText = (AutoCompleteTextView) v.findViewById(R.id.input_search);
@@ -275,11 +294,24 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     }
 
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public void AddMarker (){
         MarkerOptions options = new MarkerOptions();
         ArrayList<SiteData> listItems = new ArrayList<>();
         listItems.clear();
-        Cursor dataCursor =  dbh.getData();
+
+        databaseHelper = new DatabaseHelper(getActivity());
+        SitesProvider site = new SitesProvider();
+
+
+        // Projection contains the columns we want
+        String[] projection = new String[]{"_ID","ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
+                "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+
+
+        // Pass the URL, projection and I'll cover the other options below
+        Cursor dataCursor = resolver.query(uri, projection, null, null, null, null);
+
         while(dataCursor.moveToNext())
         {
             LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
@@ -321,6 +353,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;

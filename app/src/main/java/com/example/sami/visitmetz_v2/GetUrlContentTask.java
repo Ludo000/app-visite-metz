@@ -86,9 +86,12 @@ public class GetUrlContentTask extends AsyncTask<String, Integer, String> {
                     String key = keys.next();
                     if (res.get(key) instanceof JSONObject) {
                         String nom, adresse, categorie, resume;
-                        Double latitude, longitude;
+                        int id, id_ext;
+                        double latitude, longitude;
                         byte[] image;
 
+                        id = Integer.parseInt(((JSONObject) res.get(key)).getString("ID"));
+                        id_ext = Integer.parseInt(((JSONObject) res.get(key)).getString("ID_EXT"));
                         nom = ((JSONObject) res.get(key)).getString("NOM");
                         latitude = Double.parseDouble (((JSONObject) res.get(key)).getString("LATITUDE"));
                         longitude = Double.parseDouble (((JSONObject) res.get(key)).getString("LONGITUDE"));
@@ -97,7 +100,7 @@ public class GetUrlContentTask extends AsyncTask<String, Integer, String> {
                         resume = ((JSONObject) res.get(key)).getString("RESUME");
                         image = ((JSONObject) res.get(key)).getString("IMAGE").getBytes();
 
-                        SiteData sd = new SiteData(nom, latitude, longitude, adresse, categorie, resume, image);
+                        SiteData sd = new SiteData(id, id_ext, nom, latitude, longitude, adresse, categorie, resume, image);
 
                         this.listSiteData.add(sd);
                         printOut += sd.toString() + "\n";

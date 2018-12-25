@@ -1,7 +1,10 @@
 package com.example.sami.visitmetz_v2;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -24,6 +27,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 
 import java.io.ByteArrayOutputStream;
@@ -35,7 +39,7 @@ public class AjouterSiteFragment extends Fragment {
 
     final int REQUEST_CODE_GALLERY = 42;
     DatabaseHelper mDatabaseHelper1;
-    Button bouton_ajouter_site, btnAnnuler;
+    Button bouton_ajouter_site, btnAnnuler, bouton_ajouter_categorie;
     ImageButton bouton_choisir_image;
     EditText nom;
     EditText longitude;
@@ -52,6 +56,7 @@ public class AjouterSiteFragment extends Fragment {
         View v = inflater.inflate(R.layout.ajouter_site_activity, container, false);
         bouton_ajouter_site = v.findViewById(R.id.bouton_ajouter_site);
         bouton_choisir_image = v.findViewById(R.id.bouton_choisir_image);
+        bouton_ajouter_categorie = v.findViewById(R.id.bouton_ajouter_categorie);
         editImage = v.findViewById(R.id.imageView4);
         nom = v.findViewById(R.id.nom);
         longitude = v.findViewById(R.id.longitude);
@@ -85,27 +90,70 @@ public class AjouterSiteFragment extends Fragment {
             }
         });
         bouton_choisir_image.setVisibility(View.VISIBLE);
+
+        bouton_ajouter_categorie.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                    builder.setTitle("Ajouter une nouvelle catégorie");
+                    // Get the layout inflater
+                    LayoutInflater inflater = getActivity().getLayoutInflater();
+
+                    // Inflate and set the layout for the dialog
+                    // Pass null as the parent view because its going in the dialog layout
+                    builder.setView(inflater.inflate(R.layout.dialog_categorie, null))
+
+                        // Add action buttons
+                        .setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int id) {
+                                EditText nCategorie = v.findViewById(R.id.newcategorie);
+                                String newCategorie = nCategorie.getText().toString();
+
+                                if(newCategorie.trim().length() > 0) {
+                                    ContentValues content = new ContentValues();
+                                    content.put("categorie",newCategorie);
+
+                                    Uri uri1 = getActivity().getContentResolver().insert(
+                                            CategoriesProvider.CONTENT_URI, content);
+                                } else {
+                                    dialog.cancel();
+                                }
+                            }
+                        })
+                        .setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                dialog.cancel();
+                            }
+                        }
+                    );
+                    builder.create().show();
+                }
+            }
+        );
+
         //When the button is clicked, the button in the text field is added to the database
         bouton_ajouter_site.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String nomSite = nom.getText().toString();
                 byte[] ImageSite = getByteFromDrawable(editImage.getDrawable());
-                Double longSite = Double.valueOf(longitude.getText().toString());
-                Double latSite = Double.valueOf(latitude.getText().toString());
+                double longSite = Double.valueOf(longitude.getText().toString());
+                double latSite = Double.valueOf(latitude.getText().toString());
                 String adressSite = adresse_postale.getText().toString();
                 String categorieSite = categorie.getText().toString();
                 String resumeSite = resume.getText().toString();
 
                 //Checks if it is not empty
                 if (nomSite.trim().length() > 0) {
-                    // Add a new student record
-                    ContentValues sitesValues = contentValues(nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
+
+                    // Add a new site record
+                    ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
 
                     Uri uri = getActivity().getContentResolver().insert(
                             SitesProvider.CONTENT_URI, sitesValues);
 
-                    Toast.makeText(getContext(), "Un nouveau site a été ajouté", Toast.LENGTH_LONG)
+                    Toast.makeText(getContext(), "Le site "+ nomSite +" a été ajouté: " + latSite + ", " + longSite, Toast.LENGTH_LONG)
                             .show();
 
                     // Create new fragment and transaction
@@ -132,11 +180,11 @@ public class AjouterSiteFragment extends Fragment {
         return v;
     }
 
-    public ContentValues contentValues(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image)
+    public ContentValues contentValues(int id_ext, String nom, double latitude, double longitude, String adresse, String categorie, String resume, byte[] image)
     {
         //Permits to add new info in the table
         ContentValues values = new ContentValues();
-        values.put("id_ext",0);
+        values.put("id_ext",id_ext);
         values.put("nom",nom);
         values.put("image",image);
         values.put("latitude",latitude);

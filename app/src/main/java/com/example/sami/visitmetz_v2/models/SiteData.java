@@ -1,7 +1,6 @@
 package com.example.sami.visitmetz_v2.models;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 public class SiteData implements Serializable {
 
@@ -12,13 +11,12 @@ public class SiteData implements Serializable {
     private String categorie;
     private String resume;
     private byte[] image;
+    private int id_ext, id;
 
-    public SiteData(){
-
-    }
-
-    public SiteData(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image)
+    public SiteData(int id, int id_ext, String nom, double latitude, double longitude, String adresse, String categorie, String resume, byte[] image)
     {
+        this.id = id;
+        this.id_ext= id_ext;
         this.nom = nom;
         this.image = image;
         this.latitude = latitude;
@@ -36,19 +34,19 @@ public class SiteData implements Serializable {
         this.adresse = adresse;
     }
 
-    public Double getLongitude() {
+    public double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(Double longitude) {
+    public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
 
-    public Double getLatitude() {
+    public double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(Double latitude) {
+    public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
@@ -84,16 +82,19 @@ public class SiteData implements Serializable {
         this.nom = nom;
     }
 
-    @Override
-    public String toString() {
-        return "SiteData{" +
-                "nom='" + nom + '\'' +
-                ", latitude=" + latitude +
-                ", longitude=" + longitude +
-                ", adresse='" + adresse + '\'' +
-                ", categorie='" + categorie + '\'' +
-                ", resume='" + resume + '\'' +
-                ", image=" + Arrays.toString(image) +
-                '}';
+    public void setIDEXT(int id_ext) {
+        this.id_ext = id_ext;
+    }
+
+    public int getIDEXT() {
+        return id_ext;
+    }
+
+    public void setID(int id) {
+        this.id = id;
+    }
+
+    public int getID() {
+        return id;
     }
 }

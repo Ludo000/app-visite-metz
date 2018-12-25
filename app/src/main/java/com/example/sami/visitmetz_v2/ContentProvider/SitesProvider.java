@@ -3,7 +3,6 @@ package com.example.sami.visitmetz_v2.ContentProvider;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -19,7 +18,6 @@ import java.util.HashMap;
 public class SitesProvider extends ContentProvider {
 
     private SQLiteDatabase db;
-    private DatabaseHelper databaseHelper;
 
     static final String PROVIDER_NAME = "com.example.sami.visitmetz_v2.ContentProvider.SitesProvider";
     static final String URL = "content://" + PROVIDER_NAME + "/sites_table";
@@ -35,12 +33,10 @@ public class SitesProvider extends ContentProvider {
 
     private static HashMap<String, String> SITES_PROJECTION_MAP;
 
-
     @Override
     public boolean onCreate() {
-        Context context = getContext();
         // Defines a handle to the Room database
-        databaseHelper = new DatabaseHelper(context);
+        DatabaseHelper databaseHelper = new DatabaseHelper(getContext());
 
         /*
           Create a write able database which will trigger its
@@ -90,7 +86,7 @@ public class SitesProvider extends ContentProvider {
             // If the incoming URI was for all of sites_table
             case SITES:
                 qb.setProjectionMap(SITES_PROJECTION_MAP);
-                sortOrder = "_ID ASC";
+                sortOrder = "_ID DESC";
                 break;
 
             /*

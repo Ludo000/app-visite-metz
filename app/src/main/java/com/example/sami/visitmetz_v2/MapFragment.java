@@ -2,6 +2,7 @@ package com.example.sami.visitmetz_v2;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -9,9 +10,12 @@ import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -33,7 +37,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.models.PlaceInfo;
-import com.example.sami.visitmetz_v2.models.SiteData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -105,6 +108,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
     double latitude, longitude;
 
+    String PROVIDER_NAME = "com.example.sami.visitmetz_v2.ContentProvider.SitesProvider";
+    String URL = "content://" + PROVIDER_NAME + "/sites_table";
+    Uri uri = Uri.parse(URL);
+
+    // Provides access to other applications Content Providers
+    ContentResolver resolver;
+
 
     private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
             new LatLng(-54.5247541978, 2.05338918702), new LatLng(9.56001631027, 51.1485061713));
@@ -122,11 +132,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         mRoyen = (EditText)v.findViewById(R.id.input_cercle);
         mValide = (Button)v.findViewById(R.id.btn_valide);
 
-      /*  mRestaurant = (ImageView) v.findViewById(R.id.ic_restaurant); */
+        /*  mRestaurant = (ImageView) v.findViewById(R.id.ic_restaurant); */
 
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.nav_map);
 
-        dbh = new DatabaseHelper(getContext());
+        resolver = getContext().getContentResolver();
 
 
         mSearchText.setOnItemClickListener(mAutocompleteClickListener);
@@ -182,7 +192,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "onClick: clicked gps icon");
+
                 getDeviceLocation();
+
             }
         });
 
@@ -226,7 +238,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             public void onClick(View view) {
                 // Drawing circle on the map
                 drawCircle(new LatLng(latitude, longitude));
-        }});
+
+                AddMarker();
+
+            }
+
+        }
+
+        );
 
      /*   mRestaurant.setOnClickListener(new View.OnClickListener() {
             Object dataTransfer[] = new Object[2];
@@ -258,7 +277,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         circleOptions.center(point);
 
         // Radius of the circle
-        circleOptions.radius(20);
+        circleOptions.radius(Integer.parseInt(mRoyen.getText().toString()));
 
         // Border color of the circle
         circleOptions.strokeColor(Color.BLACK);
@@ -275,25 +294,40 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     }
 
 
-  /*  public void AddMarker (){
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    public void AddMarker (){
         MarkerOptions options = new MarkerOptions();
-        ArrayList<SiteData> listItems = new ArrayList<>();
-        listItems.clear();
-        Cursor dataCursor =  dbh.getData();
+
+        // Projection contains the columns we want
+        String[] projection = new String[]{"_ID", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
+                "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+
+        // Pass the URL, projection and I'll cover the other options below
+        Cursor dataCursor = resolver.query(uri, projection, null, null, null, null);
+        //Toast.makeText(getActivity(),""+dataCursor.getCount(),Toast.LENGTH_LONG).show();
         while(dataCursor.moveToNext())
         {
-            LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
-            options.position(point);
-            options.title(dataCursor.getString(2));
-            options.snippet(dataCursor.getString(7));
-            mMap.addMarker(options);
-        }
-    }*/
+           // Toast.makeText(getActivity(),dataCursor.getString(2) + ", " + dataCursor.getString(3),Toast.LENGTH_LONG).show();
+            float results[] = new float[10];
+
+            Location.distanceBetween(latitude, longitude, Double.valueOf(dataCursor.getString(3)) , Double.valueOf(dataCursor.getString(4)), results);
+
+
+            if (Integer.parseInt(mRoyen.getText().toString()) > results[0]) {
+               LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
+               options.position(point);
+               options.title(dataCursor.getString(2));
+               options.snippet(dataCursor.getString(7));
+               mMap.addMarker(options);
+           }}
+        dataCursor.close();
+    }
+
     public void  onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
 
-                Place place = PlacePicker.getPlace(this.getActivity(), data);
+                Place place = PlacePicker.getPlace(getActivity(), data);
                 PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
                         .getPlaceById(mGoogleApiClient, place.getId());
                 placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
@@ -316,25 +350,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             Address address = list.get(0);
 
             Log.d(TAG, "geoLocate: found a location: " + address.toString());
-             moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM,
+            moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM,
                     address.getAddressLine(0));
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
         if (mLocationPermissionsGranted) {
             getDeviceLocation();
-            if (ActivityCompat.checkSelfPermission(this.getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this.getActivity(),
+            if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(),
                     Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
-          //  AddMarker();
+//
             init();
         }
 
@@ -402,8 +437,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
 
 
-                 Toast.makeText(this.getActivity(), formatNumber(results[0]), Toast.LENGTH_LONG).show();
-         //       Toast.makeText(this.getActivity(),item.getNomCard() , Toast.LENGTH_LONG).show();
+                Toast.makeText(this.getActivity(), formatNumber(results[0]), Toast.LENGTH_LONG).show();
+                //       Toast.makeText(this.getActivity(),item.getNomCard() , Toast.LENGTH_LONG).show();
             }catch (NullPointerException e){
                 Log.e(TAG, "moveCamera: NullPointerException: " + e.getMessage() );
             }
@@ -499,11 +534,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom));
 
-     if (!title.equals("Moi !")) {
+        if (!title.equals("Moi !")) {
             MarkerOptions options = new MarkerOptions()
                     .position(latLng)
                     .title(title);
-        mMarkerB =   mMap.addMarker(options);
+            mMarkerB =   mMap.addMarker(options);
 
         }
         hideSoftKeyboard();
@@ -534,7 +569,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             if (ContextCompat.checkSelfPermission(this.getActivity().getApplicationContext(),
                     COURSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 mLocationPermissionsGranted = true;
-            //    initMap();
+                //    initMap();
             } else {
                 ActivityCompat.requestPermissions(this.getActivity(),
                         permissions,
@@ -585,7 +620,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     @Override
     public void onConnectionSuspended(int i) {
     }
-   /* --------------------------- google places API autocomplete suggestions -----------------*/
+    /* --------------------------- google places API autocomplete suggestions -----------------*/
 
     private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {
         @Override

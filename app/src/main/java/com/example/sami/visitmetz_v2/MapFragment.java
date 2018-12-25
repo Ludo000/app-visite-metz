@@ -275,7 +275,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     }
 
 
-    public void AddMarker (){
+  /*  public void AddMarker (){
         MarkerOptions options = new MarkerOptions();
         ArrayList<SiteData> listItems = new ArrayList<>();
         listItems.clear();
@@ -288,7 +288,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             options.snippet(dataCursor.getString(7));
             mMap.addMarker(options);
         }
-    }
+    }*/
     public void  onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
@@ -334,7 +334,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             }
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
-            AddMarker();
+          //  AddMarker();
             init();
         }
 

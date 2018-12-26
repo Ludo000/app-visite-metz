@@ -1,10 +1,7 @@
 package com.example.sami.visitmetz_v2;
 
-import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -28,7 +25,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         // Ajouter le nom de la table et les lignes de celle-ci
         db.execSQL("CREATE TABLE " + Table_Site + "(_ID INTEGER PRIMARY KEY AUTOINCREMENT, ID_EXT INTEGER, NOM TEXT, LATITUDE REAL, LONGITUDE REAL, ADRESSE_POSTALE TEXT, CATEGORIE TEXT, RESUME TEXT, IMAGE BLOB)");
-        db.execSQL("CREATE TABLE " + Table_Categorie + "(_ID INTEGER PRIMARY KEY AUTOINCREMENT, NOM TEXT)");
+        db.execSQL("CREATE TABLE " + Table_Categorie + "(_id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT)");
     }
 
     @Override

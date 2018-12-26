@@ -27,6 +27,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
@@ -80,6 +81,8 @@ public class SitesOverviewFragment extends Fragment {
                 SitesProvider.CONTENT_URI, sitesValues);*/
 
         initializeList();
+
+        initializeList1();
     }
 
     @Override
@@ -343,15 +346,12 @@ public class SitesOverviewFragment extends Fragment {
     public void initializeList() {
         listitems.clear();
 
-        databaseHelper = new DatabaseHelper(getActivity());
-
         // Projection contains the columns we want
         String[] projection = new String[]{"_ID", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
                 "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
 
 
         // Pass the URL, projection and I'll cover the other options below
-        @SuppressLint("Recycle")
         Cursor data = resolver.query(uri, projection, null, null, null, null);
 
        // Cursor data = resolver.query(uri, null, "", null,
@@ -375,5 +375,27 @@ public class SitesOverviewFragment extends Fragment {
 
             listitems.add(item);
         }
+        data.close();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    public void initializeList1() {
+
+        // Projection contains the columns we want
+        String[] projection1 = new String[]{"_id", "nom"};
+
+        // Pass the URL, projection and I'll cover the other options below
+        Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);
+        Toast.makeText(getContext(), "", Toast.LENGTH_LONG).show();
+
+        String test = "==>";
+        while(data.moveToNext())
+        {
+            Toast.makeText(getContext(), "...", Toast.LENGTH_SHORT).show();
+            test += " - "+ data.getString(data.getColumnIndex("nom"));
+            Toast.makeText(getContext(), test, Toast.LENGTH_SHORT).show();
+        }
+
+        data.close();
     }
 }

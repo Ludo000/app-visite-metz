@@ -2,13 +2,16 @@ package com.example.sami.visitmetz_v2;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -20,12 +23,17 @@ import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
@@ -37,7 +45,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
 
     final int REQUEST_CODE_GALLERY = 42;
     DatabaseHelper mDatabaseHelper1;
-    Button bouton_ajouter_site, btnAnnuler;
+    Button bouton_ajouter_site, btnAnnuler, bouton_ajouter_categorie;
     ImageButton bouton_choisir_image;
     EditText nom;
     EditText longitude;
@@ -49,6 +57,11 @@ public class AjouterSiteDetailsFragment extends Fragment {
     Bitmap bitmap;
     String oldName;
 
+    Spinner spinner;
+
+    private String newCategorie = "";
+    private EditText nCategorie;
+
 
     @SuppressLint("SetTextI18n")
     @Override
@@ -58,6 +71,8 @@ public class AjouterSiteDetailsFragment extends Fragment {
         View v = inflater.inflate(R.layout.ajouter_site_activity, container, false);
         bouton_ajouter_site = v.findViewById(R.id.bouton_ajouter_site);
         bouton_choisir_image = v.findViewById(R.id.bouton_choisir_image);
+        bouton_ajouter_categorie = v.findViewById(R.id.bouton_ajouter_categorie);
+        spinner = v.findViewById(R.id.categorie_spinner);
 
         Bundle bundle = getArguments();
 
@@ -86,6 +101,8 @@ public class AjouterSiteDetailsFragment extends Fragment {
             categorie.setText(site.getCategorie());
             resume.setText(site.getResume());
         }
+
+        loadspinner();
 
         btnAnnuler = v.findViewById(R.id.bouton_annuler);
         btnAnnuler.setOnClickListener(new View.OnClickListener() {
@@ -125,6 +142,54 @@ public class AjouterSiteDetailsFragment extends Fragment {
                 bouton_choisir_image.setVisibility(View.GONE);
             }
         });
+
+        bouton_ajouter_categorie.setOnClickListener(new View.OnClickListener() {
+                                                        @Override
+                                                        public void onClick(final View v) {
+                                                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                                                            builder.setTitle("Ajouter une nouvelle catégorie");
+
+                                                            // I'm using fragment here so I'm using getView() to provide ViewGroup
+                                                            // but you can provide here any other instance of ViewGroup from your Fragment / Activity
+                                                            View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.dialog_categorie, (ViewGroup) getView(), false);
+
+                                                            // Inflate and set the layout for the dialog
+                                                            // Pass null as the parent view because its going in the dialog layout
+                                                            builder.setView(viewInflated);
+
+                                                            // Set up the input
+                                                            nCategorie = viewInflated.findViewById(R.id.newcategorie);
+
+                                                            // Add action buttons
+                                                            builder.setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
+                                                                public void onClick(DialogInterface dialog, int id) {
+                                                                    newCategorie = nCategorie.getText().toString();
+
+                                                                    if (newCategorie.trim().length() > 0) {
+                                                                        ContentValues content = new ContentValues();
+                                                                        content.put("nom", newCategorie);
+
+                                                                        Uri uri2 = getActivity().getContentResolver().insert(
+                                                                                CategoriesProvider.CONTENT_URI, content);
+                                                                        loadspinner();
+                                                                        //this.notify();
+                                                                    } else {
+                                                                        Toast.makeText(getContext(), "Le champ est vide!", Toast.LENGTH_LONG)
+                                                                                .show();
+                                                                        dialog.cancel();
+                                                                    }
+                                                                }
+                                                            });
+
+                                                            builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                                                                public void onClick(DialogInterface dialog, int id) {
+                                                                    dialog.cancel();
+                                                                }
+                                                            });
+                                                            builder.create().show();
+                                                        }
+                                                    }
+        );
 
         //When the button is clicked, the button in the text field is added to the database
         bouton_ajouter_site.setOnClickListener(new View.OnClickListener() {
@@ -287,5 +352,63 @@ public class AjouterSiteDetailsFragment extends Fragment {
             }
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    private void loadspinner() {
+        String[] from = {
+                "_id",
+                "nom"
+        };
+
+        // View IDs to map the columns (fetched above) into
+        int[] to = {
+                android.R.id.text1
+        };
+
+        final int[] currentPos = {0};
+
+        Cursor cursor = getContext().getContentResolver().query(
+                CategoriesProvider.CONTENT_URI, null,null, null,
+                null
+        );
+
+        final int[] finalCurrentPos = {currentPos[0]};
+        final SimpleCursorAdapter adapter = new SimpleCursorAdapter(getContext(), android.R.layout.simple_spinner_dropdown_item, cursor, from, to, 0){
+            @Override
+            public boolean isEnabled(int position) {
+                return position != 0;
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                TextView tv = (TextView) view;
+                if (position == finalCurrentPos[0]) {
+                    tv.setTextColor(Color.GRAY);
+                } else {
+                    tv.setTextColor(Color.BLACK);
+                }
+                return view;
+            }
+        };
+
+        // Create the list view and bind the adapter
+        spinner.setAdapter(adapter);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                //get value by name
+                Cursor qc = adapter.getCursor();
+                String nom = qc.getString(qc.getColumnIndex("nom"));
+                categorie.setText(nom);
+                finalCurrentPos[0] =position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 }

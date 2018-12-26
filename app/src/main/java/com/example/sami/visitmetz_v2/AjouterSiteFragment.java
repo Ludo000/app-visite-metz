@@ -2,29 +2,34 @@ package com.example.sami.visitmetz_v2;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
@@ -49,6 +54,13 @@ public class AjouterSiteFragment extends Fragment {
     EditText resume;
     ImageView editImage;
 
+    Spinner spinner;
+
+    private String newCategorie = "";
+    private EditText nCategorie;
+
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -64,6 +76,9 @@ public class AjouterSiteFragment extends Fragment {
         adresse_postale = v.findViewById(R.id.adresse_postale);
         categorie = v.findViewById(R.id.categorie);
         resume = v.findViewById(R.id.resume);
+        spinner = v.findViewById(R.id.categorie_spinner);
+
+        loadspinner();
 
         btnAnnuler = v.findViewById(R.id.bouton_annuler);
         btnAnnuler.setOnClickListener(new View.OnClickListener() {
@@ -96,37 +111,44 @@ public class AjouterSiteFragment extends Fragment {
                 public void onClick(final View v) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                     builder.setTitle("Ajouter une nouvelle catégorie");
-                    // Get the layout inflater
-                    LayoutInflater inflater = getActivity().getLayoutInflater();
+
+                    // I'm using fragment here so I'm using getView() to provide ViewGroup
+                    // but you can provide here any other instance of ViewGroup from your Fragment / Activity
+                    View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.dialog_categorie, (ViewGroup) getView(), false);
 
                     // Inflate and set the layout for the dialog
                     // Pass null as the parent view because its going in the dialog layout
-                    builder.setView(inflater.inflate(R.layout.dialog_categorie, null))
+                    builder.setView(viewInflated);
 
-                        // Add action buttons
-                        .setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int id) {
-                                EditText nCategorie = v.findViewById(R.id.newcategorie);
-                                String newCategorie = nCategorie.getText().toString();
+                    // Set up the input
+                    nCategorie = viewInflated.findViewById(R.id.newcategorie);
 
-                                if(newCategorie.trim().length() > 0) {
-                                    ContentValues content = new ContentValues();
-                                    content.put("categorie",newCategorie);
+                    // Add action buttons
+                    builder.setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            newCategorie = nCategorie.getText().toString();
 
-                                    Uri uri1 = getActivity().getContentResolver().insert(
-                                            CategoriesProvider.CONTENT_URI, content);
-                                } else {
-                                    dialog.cancel();
-                                }
-                            }
-                        })
-                        .setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                dialog.cancel();
-                            }
+                           if (newCategorie.trim().length() > 0) {
+                                ContentValues content = new ContentValues();
+                                content.put("nom", newCategorie);
+
+                                Uri uri2 = getActivity().getContentResolver().insert(
+                                        CategoriesProvider.CONTENT_URI, content);
+                                loadspinner();
+                                //this.notify();
+                           } else {
+                               Toast.makeText(getContext(), "Le champ est vide!", Toast.LENGTH_LONG)
+                                       .show();
+                               dialog.cancel();
+                           }
                         }
-                    );
+                    });
+
+                    builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            dialog.cancel();
+                        }
+                    });
                     builder.create().show();
                 }
             }
@@ -260,5 +282,63 @@ public class AjouterSiteFragment extends Fragment {
             }
             super.onActivityResult(requestCode, resultCode, data);
         }
+    }
+
+    private void loadspinner() {
+        String[] from = {
+                "_id",
+                "nom"
+        };
+
+        // View IDs to map the columns (fetched above) into
+        int[] to = {
+                android.R.id.text1
+        };
+
+        final int[] currentPos = {0};
+
+        Cursor cursor = getContext().getContentResolver().query(
+                CategoriesProvider.CONTENT_URI, null,null, null,
+                null
+        );
+
+        final int[] finalCurrentPos = {currentPos[0]};
+        final SimpleCursorAdapter adapter = new SimpleCursorAdapter(getContext(), android.R.layout.simple_spinner_dropdown_item, cursor, from, to, 0){
+            @Override
+            public boolean isEnabled(int position) {
+                return position != 0;
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                TextView tv = (TextView) view;
+                if (position == finalCurrentPos[0]) {
+                    tv.setTextColor(Color.GRAY);
+                } else {
+                    tv.setTextColor(Color.BLACK);
+                }
+                return view;
+            }
+        };
+
+        // Create the list view and bind the adapter
+        spinner.setAdapter(adapter);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                //get value by name
+                Cursor qc = adapter.getCursor();
+                String nom = qc.getString(qc.getColumnIndex("nom"));
+                categorie.setText(nom);
+                finalCurrentPos[0] =position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
     }
 }

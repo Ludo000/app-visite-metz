@@ -34,6 +34,10 @@ public class CategoriesProvider extends ContentProvider {
 
     private static HashMap<String, String> CATEGORIES_PROJECTION_MAP;
 
+    public static void setCategoriesProjectionMap(HashMap<String, String> categoriesProjectionMap) {
+        CATEGORIES_PROJECTION_MAP = categoriesProjectionMap;
+    }
+
 
     @Override
     public boolean onCreate() {
@@ -91,7 +95,7 @@ public class CategoriesProvider extends ContentProvider {
                 if (TextUtils.isEmpty(sortOrder)) {
                     // A projection map maps from passed column names to database column names
                     qb.setProjectionMap(CATEGORIES_PROJECTION_MAP);
-                    sortOrder = "_ID ASC";
+                    sortOrder = "_id ASC";
                 }
                 break;
 
@@ -102,7 +106,7 @@ public class CategoriesProvider extends ContentProvider {
              */
             case CATEGORIE_ID:
                 String id = uri.getPathSegments().get(1);
-                qb.appendWhere( "_ID = " + id);
+                qb.appendWhere( "_id = " + id);
                 break;
 
             default:
@@ -138,7 +142,7 @@ public class CategoriesProvider extends ContentProvider {
 
             case CATEGORIE_ID:
                 String id = uri.getPathSegments().get(1);
-                count = db.delete(DatabaseHelper.Table_Categorie, "_ID = " + id +
+                count = db.delete(DatabaseHelper.Table_Categorie, "_id = " + id +
                                 (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
                 break;
             default:
@@ -173,7 +177,7 @@ public class CategoriesProvider extends ContentProvider {
                  * Then, append the value to the WHERE clause for the query
                  */
                 String id = uri.getPathSegments().get(1);
-                count = db.update(DatabaseHelper.Table_Categorie, values,"_ID = " + id +
+                count = db.update(DatabaseHelper.Table_Categorie, values,"_id = " + id +
                         (!TextUtils.isEmpty(selection) ? " AND (" +selection + ')' : ""), selectionArgs);
                 break;
             default:

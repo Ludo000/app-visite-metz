@@ -3,6 +3,7 @@ package com.example.sami.visitmetz_v2;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -27,25 +28,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
+import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 
 
 public class SitesOverviewFragment extends Fragment {
 
-    ArrayList<SiteData> listitems = new ArrayList<>();
     RecyclerView MyRecyclerView;
-    DatabaseHelper databaseHelper;
     MyAdapter adapter;
 
-    String PROVIDER_NAME = "com.example.sami.visitmetz_v2.ContentProvider.SitesProvider";
-    String URL = "content://" + PROVIDER_NAME + "/sites_table";
-    Uri uri = Uri.parse(URL);
-
-    // Provides access to other applications Content Providers
     ContentResolver resolver;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -53,9 +46,8 @@ public class SitesOverviewFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        databaseHelper = new DatabaseHelper(getContext());
-        resolver = getContext().getContentResolver();
 
+        resolver = getContext().getContentResolver();
         /*byte[] img1=getByteFromDrawable(Objects.requireNonNull(getDrawable(Objects.requireNonNull(getContext()), R.drawable.cathedrale_st_etienne)));
 
         byte[] img2=getByteFromDrawable(Objects.requireNonNull(getDrawable(getContext(), R.drawable.centre_pompidou)));
@@ -80,11 +72,12 @@ public class SitesOverviewFragment extends Fragment {
         uri = getContext().getContentResolver().insert(
                 SitesProvider.CONTENT_URI, sitesValues);*/
 
-        initializeList();
+        //initializeList();
 
-        initializeList1();
+        //initializeList1();
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -92,10 +85,10 @@ public class SitesOverviewFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_card, container, false);
         MyRecyclerView = view.findViewById(R.id.cardView);
         MyRecyclerView.setHasFixedSize(true);
-        adapter= new MyAdapter(listitems);
+        adapter= new MyAdapter(getContext(),null);
         LinearLayoutManager MyLayoutManager = new LinearLayoutManager(getActivity());
         MyLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        if (listitems.size() > 0 && MyRecyclerView != null) {
+        if (MyRecyclerView != null) {
             MyRecyclerView.setAdapter(adapter);
         }
         MyRecyclerView.setLayoutManager(MyLayoutManager);
@@ -107,6 +100,7 @@ public class SitesOverviewFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        getLoaderManager().initLoader(0, null, new EcouteurLoadEvenement(getContext(), adapter));
     }
 
     @NonNull
@@ -120,11 +114,10 @@ public class SitesOverviewFragment extends Fragment {
         return stream.toByteArray();
     }
 
-    public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
-        public ArrayList<SiteData> list;
+    public class MyAdapter extends MyCursorAdapter {
 
-        MyAdapter(ArrayList<SiteData> Data) {
-            list = Data;
+        MyAdapter(Context context, Cursor cursor) {
+            super(context, cursor);
         }
 
         @NonNull
@@ -137,32 +130,32 @@ public class SitesOverviewFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
+        public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, Cursor cursor) {
+            MyViewHolder holder = (MyViewHolder) viewHolder;
+            cursor.moveToPosition(cursor.getPosition());
+            holder.setData(cursor);
+        }
 
-            byte[] img = list.get(position).getImage();
-            Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
-
-            holder.titleTextView.setText(list.get(position).getNom());
-            holder.coverImageView.setImageBitmap(bitmap);
-            holder.coverImageView.setTag(bitmap);
-            holder.likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
-            holder.editImageView.setTag(R.drawable.edit_black_24dp);
-            holder.deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
-
+        @Override
+        public long getItemId(int position) {
+            return super.getItemId(position);
         }
 
         @Override
         public int getItemCount() {
-            return list.size();
+            return super.getItemCount();
         }
 
+        @Override
+        public int getItemViewType(int position) {
+            return 0;
+        }
     }
 
     class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView titleTextView;
         ImageView coverImageView;
-        ImageView likeImageView;
         ImageView shareImageView;
         ImageView editImageView;
         ImageView deleteImageView;
@@ -171,7 +164,6 @@ public class SitesOverviewFragment extends Fragment {
             super(v);
             titleTextView = v.findViewById(R.id.titleTextView);
             coverImageView = v.findViewById(R.id.coverImageView);
-            likeImageView = v.findViewById(R.id.likeImageView);
             shareImageView = v.findViewById(R.id.shareImageView);
             editImageView = v.findViewById(R.id.editImageView);
             deleteImageView = v.findViewById(R.id.deleteImageView);
@@ -185,19 +177,19 @@ public class SitesOverviewFragment extends Fragment {
                     String siteToFind = titleTextView.getText().toString();
 
                     // Holds the column data we want to retrieve
-                    String[] projection = new String[]{"_ID","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                    String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
 
                     // Pass the URL for Content Provider, the projection,
                     // the where clause followed by the matches in an array for the ?
                     // null is for sort order
                     @SuppressLint("Recycle")
-                    Cursor foundSite = resolver.query(uri, projection, "NOM = ? ", new String[]{siteToFind}, null);
+                    Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projection, "NOM = ? ", new String[]{siteToFind}, null);
 
                     // Cycle through our one result or print error
                     if(foundSite!=null){
                         if(foundSite.moveToFirst()){
 
-                            int id = foundSite.getColumnIndex("_ID");
+                            int id = foundSite.getColumnIndex("_id ");
                             int id_ext = foundSite.getColumnIndex("ID_EXT");
                             String name = foundSite.getString(foundSite.getColumnIndex("NOM"));
                             double latitude = (double) foundSite.getColumnIndex("LATITUDE");
@@ -259,19 +251,19 @@ public class SitesOverviewFragment extends Fragment {
                             String siteToDelete = titleTextView.getText().toString();
 
                             // Holds the column data we want to retrieve
-                            String[] projection = new String[]{"_ID","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                            String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
 
                             // Pass the URL for Content Provider, the projection,
                             // the where clause followed by the matches in an array for the ?
                             // null is for sort order
                             @SuppressLint("Recycle")
-                            Cursor foundSite = resolver.query(uri, projection, "NOM = ? ", new String[]{siteToDelete}, null);
+                            Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projection, "NOM = ? ", new String[]{siteToDelete}, null);
 
                             // Cycle through our one result or print error
                             if(foundSite!=null) {
                                 if (foundSite.moveToFirst()) {
-                                    String id = foundSite.getString(foundSite.getColumnIndex("_ID"));
-                                    String URL1 = "content://" + PROVIDER_NAME + "/sites_table/#" + id;
+                                    String id = foundSite.getString(foundSite.getColumnIndex("_id"));
+                                    String URL1 = "content://com.example.sami.visitmetz_v2.ContentProvider.SitesProvider/sites_table/#" + id;
                                     Uri uri1 = Uri.parse(URL1);
 
                                     // Holds the column data we want to update
@@ -285,7 +277,7 @@ public class SitesOverviewFragment extends Fragment {
                                     long idDeleted = resolver.delete(uri1,
                                             "_ID = ? ", selectionargs);
 
-                                    listitems.remove(getAdapterPosition());
+                                    //listitems.remove(getAdapterPosition());
                                     adapter.notifyDataSetChanged();
                                 }
                             }
@@ -302,26 +294,6 @@ public class SitesOverviewFragment extends Fragment {
                 }
             });
 
-            /*likeImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                int id = (int)likeImageView.getTag();
-                if( id == R.drawable.ic_thumb_up_black_24dp){
-
-                    likeImageView.setTag(R.drawable.ic_like_colored); //ic_liked
-                    likeImageView.setImageResource(R.drawable.ic_like_colored); //ic_liked
-
-                    Toast.makeText(getActivity(),titleTextView.getText()+" wurde erfolgreich zu 'Favoriten' hinzugefügt",Toast.LENGTH_SHORT).show();
-
-                } else{
-
-                    likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
-                    likeImageView.setImageResource(R.drawable.ic_thumb_up_black_24dp);
-                    Toast.makeText(getActivity(),titleTextView.getText()+" wurde von 'Favoriten' entfernt",Toast.LENGTH_SHORT).show();
-                }
-               }
-            });*/
 
             shareImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -340,62 +312,15 @@ public class SitesOverviewFragment extends Fragment {
                 }
             });
         }
-    }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    public void initializeList() {
-        listitems.clear();
-
-        // Projection contains the columns we want
-        String[] projection = new String[]{"_ID", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
-                "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
-
-
-        // Pass the URL, projection and I'll cover the other options below
-        Cursor data = resolver.query(uri, projection, null, null, null, null);
-
-       // Cursor data = resolver.query(uri, null, "", null,
-           //     "");
-        //Cursor data = databaseHelper.getAllData();
-        while(data.moveToNext())
-        {
-            SiteData item = new SiteData(data.getColumnIndex("_ID"), 0, data.getString(data.getColumnIndex("NOM")),
-                    (double) data.getColumnIndex("LATITUDE"), (double) data.getColumnIndex("LONGITUDE"),
-                    data.getString(data.getColumnIndex("ADRESSE_POSTALE")), data.getString(data.getColumnIndex("CATEGORIE")),
-                    data.getString(data.getColumnIndex("RESUME")), data.getBlob(8));
-            /*item.setID(data.getColumnIndex("_ID"));
-            item.setIDEXT(data.getColumnIndex("ID_EXT"));
-            item.setNom(getString(data.getColumnIndex("NOM")));
-            item.setLatitude((double) data.getColumnIndex("LATITUDE"));
-            item.setLongitude((double) data.getColumnIndex("LONGITUDE"));
-            item.setAdresse(getString(data.getColumnIndex("ADRESSE_POSTALE")));
-            item.setCategorie(getString(data.getColumnIndex("CATEGORIE")));
-            item.setResume(getString(data.getColumnIndex("RESUME")));
-            item.setImage(data.getBlob(8));*/
-
-            listitems.add(item);
+        public void setData(Cursor c) {
+            byte[] img = c.getBlob(8);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
+            titleTextView.setText(c.getString(c.getColumnIndex("NOM")));
+            coverImageView.setImageBitmap(bitmap);
+            coverImageView.setTag(bitmap);
+            editImageView.setTag(R.drawable.edit_black_24dp);
+            deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
         }
-        data.close();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    public void initializeList1() {
-
-        // Projection contains the columns we want
-        String[] projection1 = new String[]{"_id", "nom"};
-
-        // Pass the URL, projection and I'll cover the other options below
-        Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);
-        Toast.makeText(getContext(), "", Toast.LENGTH_LONG).show();
-
-        String test = "==>";
-        while(data.moveToNext())
-        {
-            Toast.makeText(getContext(), "...", Toast.LENGTH_SHORT).show();
-            test += " - "+ data.getString(data.getColumnIndex("nom"));
-            Toast.makeText(getContext(), test, Toast.LENGTH_SHORT).show();
-        }
-
-        data.close();
     }
 }

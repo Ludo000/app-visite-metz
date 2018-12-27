@@ -24,11 +24,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,6 +39,8 @@ import com.example.sami.visitmetz_v2.models.SiteData;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class AjouterSiteDetailsFragment extends Fragment {
@@ -51,7 +53,6 @@ public class AjouterSiteDetailsFragment extends Fragment {
     EditText longitude;
     EditText latitude;
     EditText adresse_postale;
-    EditText categorie;
     EditText resume;
     ImageView editImage;
     Bitmap bitmap;
@@ -61,9 +62,10 @@ public class AjouterSiteDetailsFragment extends Fragment {
 
     private String newCategorie = "";
     private EditText nCategorie;
+    List<String> categories;
 
 
-    @SuppressLint("SetTextI18n")
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -73,6 +75,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
         bouton_choisir_image = v.findViewById(R.id.bouton_choisir_image);
         bouton_ajouter_categorie = v.findViewById(R.id.bouton_ajouter_categorie);
         spinner = v.findViewById(R.id.categorie_spinner);
+        loadspinner();
 
         Bundle bundle = getArguments();
 
@@ -85,7 +88,6 @@ public class AjouterSiteDetailsFragment extends Fragment {
         longitude = v.findViewById(R.id.longitude);
         latitude = v.findViewById(R.id.latitude);
         adresse_postale = v.findViewById(R.id.adresse_postale);
-        categorie = v.findViewById(R.id.categorie);
         resume = v.findViewById(R.id.resume);
         editImage.setVisibility(View.VISIBLE);
         nom = v.findViewById(R.id.nom);
@@ -95,14 +97,17 @@ public class AjouterSiteDetailsFragment extends Fragment {
             editImage.setImageBitmap(bitmap);
             nom.setText(site.getNom());
             oldName = site.getNom();
+            for(int i=0; i < categories.size(); i++ ) {
+                Toast(""+ categories.size()+ ", " +site.getCategorie()+ ", "+ categories.get(i));
+                if (site.getCategorie().equals(categories.get(i))) {
+                    spinner.setSelection(i);
+                }
+            }
             longitude.setText(bundle.getString("longitude"));
             latitude.setText(bundle.getString("latitude"));
             adresse_postale.setText(site.getAdresse());
-            categorie.setText(site.getCategorie());
             resume.setText(site.getResume());
         }
-
-        loadspinner();
 
         btnAnnuler = v.findViewById(R.id.bouton_annuler);
         btnAnnuler.setOnClickListener(new View.OnClickListener() {
@@ -144,52 +149,51 @@ public class AjouterSiteDetailsFragment extends Fragment {
         });
 
         bouton_ajouter_categorie.setOnClickListener(new View.OnClickListener() {
-                                                        @Override
-                                                        public void onClick(final View v) {
-                                                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                                                            builder.setTitle("Ajouter une nouvelle catégorie");
+            @Override
+            public void onClick(final View v) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Ajouter une nouvelle catégorie");
 
-                                                            // I'm using fragment here so I'm using getView() to provide ViewGroup
-                                                            // but you can provide here any other instance of ViewGroup from your Fragment / Activity
-                                                            View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.dialog_categorie, (ViewGroup) getView(), false);
+                // I'm using fragment here so I'm using getView() to provide ViewGroup
+                // but you can provide here any other instance of ViewGroup from your Fragment / Activity
+                View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.dialog_categorie, (ViewGroup) getView(), false);
 
-                                                            // Inflate and set the layout for the dialog
-                                                            // Pass null as the parent view because its going in the dialog layout
-                                                            builder.setView(viewInflated);
+                // Inflate and set the layout for the dialog
+                // Pass null as the parent view because its going in the dialog layout
+                builder.setView(viewInflated);
 
-                                                            // Set up the input
-                                                            nCategorie = viewInflated.findViewById(R.id.newcategorie);
+                // Set up the input
+                nCategorie = viewInflated.findViewById(R.id.newcategorie);
 
-                                                            // Add action buttons
-                                                            builder.setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
-                                                                public void onClick(DialogInterface dialog, int id) {
-                                                                    newCategorie = nCategorie.getText().toString();
+                // Add action buttons
+                builder.setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+                    public void onClick(DialogInterface dialog, int id) {
+                        newCategorie = nCategorie.getText().toString();
 
-                                                                    if (newCategorie.trim().length() > 0) {
-                                                                        ContentValues content = new ContentValues();
-                                                                        content.put("nom", newCategorie);
+                        if (newCategorie.trim().length() > 0) {
+                            ContentValues content = new ContentValues();
+                            content.put("nom", newCategorie);
 
-                                                                        Uri uri2 = getActivity().getContentResolver().insert(
-                                                                                CategoriesProvider.CONTENT_URI, content);
-                                                                        loadspinner();
-                                                                        //this.notify();
-                                                                    } else {
-                                                                        Toast.makeText(getContext(), "Le champ est vide!", Toast.LENGTH_LONG)
-                                                                                .show();
-                                                                        dialog.cancel();
-                                                                    }
-                                                                }
-                                                            });
+                            Uri uri2 = getActivity().getContentResolver().insert(
+                                    CategoriesProvider.CONTENT_URI, content);
+                            loadspinner();
+                        } else {
+                            Toast.makeText(getContext(), "Le champ est vide!", Toast.LENGTH_LONG)
+                                    .show();
+                            dialog.cancel();
+                        }
+                    }
+                });
 
-                                                            builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
-                                                                public void onClick(DialogInterface dialog, int id) {
-                                                                    dialog.cancel();
-                                                                }
-                                                            });
-                                                            builder.create().show();
-                                                        }
-                                                    }
-        );
+                builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+                builder.create().show();
+            }
+        });
 
         //When the button is clicked, the button in the text field is added to the database
         bouton_ajouter_site.setOnClickListener(new View.OnClickListener() {
@@ -200,7 +204,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
                 double longSite = Double.valueOf(longitude.getText().toString());
                 double latSite = Double.valueOf(latitude.getText().toString());
                 String adressSite = adresse_postale.getText().toString();
-                String categorieSite = categorie.getText().toString();
+                String categorieSite = spinner.getSelectedItem().toString();
                 String resumeSite = resume.getText().toString();
 
                 //Checks if it is not empty
@@ -354,26 +358,43 @@ public class AjouterSiteDetailsFragment extends Fragment {
         }
     }
 
-    private void loadspinner() {
-        String[] from = {
-                "_id",
-                "nom"
-        };
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    private void loadspinner(){
 
-        // View IDs to map the columns (fetched above) into
-        int[] to = {
-                android.R.id.text1
-        };
+        // Projection contains the columns we want
+        String[] projection1 = new String[]{"_id", "nom"};
 
-        final int[] currentPos = {0};
+        // Pass the URL, projection and I'll cover the other options below
+        Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);
 
-        Cursor cursor = getContext().getContentResolver().query(
-                CategoriesProvider.CONTENT_URI, null,null, null,
-                null
-        );
+        // Spinner Drop down elements
+        categories = new ArrayList<>();
+        categories.add("-- Sélectionner une catégorie --");
+        while(data.moveToNext())
+        {
+            categories.add(data.getString(data.getColumnIndex("nom")));
+        }
 
-        final int[] finalCurrentPos = {currentPos[0]};
-        final SimpleCursorAdapter adapter = new SimpleCursorAdapter(getContext(), android.R.layout.simple_spinner_dropdown_item, cursor, from, to, 0){
+        data.close();
+
+        // Spinner click listener
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                // On selecting a spinner item
+                String item = parent.getItemAtPosition(position).toString();
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        // Creating adapter for spinner
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, categories){
             @Override
             public boolean isEnabled(int position) {
                 return position != 0;
@@ -383,7 +404,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
             public View getDropDownView(int position, View convertView, ViewGroup parent) {
                 View view = super.getDropDownView(position, convertView, parent);
                 TextView tv = (TextView) view;
-                if (position == finalCurrentPos[0]) {
+                if (position == 0) {
                     tv.setTextColor(Color.GRAY);
                 } else {
                     tv.setTextColor(Color.BLACK);
@@ -392,23 +413,10 @@ public class AjouterSiteDetailsFragment extends Fragment {
             }
         };
 
-        // Create the list view and bind the adapter
-        spinner.setAdapter(adapter);
+        // Drop down layout style - list view with radio button
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                //get value by name
-                Cursor qc = adapter.getCursor();
-                String nom = qc.getString(qc.getColumnIndex("nom"));
-                categorie.setText(nom);
-                finalCurrentPos[0] =position;
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
+        // attaching data adapter to spinner
+        spinner.setAdapter(dataAdapter);
     }
 }

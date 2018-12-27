@@ -86,7 +86,7 @@ public class SitesProvider extends ContentProvider {
             // If the incoming URI was for all of sites_table
             case SITES:
                 qb.setProjectionMap(SITES_PROJECTION_MAP);
-                sortOrder = "_ID DESC";
+                sortOrder = "_id DESC";
                 break;
 
             /*
@@ -96,7 +96,7 @@ public class SitesProvider extends ContentProvider {
              */
             case SITE_ID:
                 String id = uri.getPathSegments().get(1);
-                qb.appendWhere( "_ID = " + id);
+                qb.appendWhere( "_id = " + id);
                 break;
 
             default:
@@ -132,7 +132,7 @@ public class SitesProvider extends ContentProvider {
 
             case SITE_ID:
                 String id = uri.getPathSegments().get(1);
-                count = db.delete(Table_Site, "_ID = " + id +
+                count = db.delete(Table_Site, "_id = " + id +
                                 (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
                 break;
             default:
@@ -168,7 +168,7 @@ public class SitesProvider extends ContentProvider {
                  * Then, append the value to the WHERE clause for the query
                  */
                 String id = uri.getPathSegments().get(1);
-                count = db.update(Table_Site, values,"_ID = " + id +
+                count = db.update(Table_Site, values,"_id = " + id +
                         (!TextUtils.isEmpty(selection) ? " AND (" +selection + ')' : ""), selectionArgs);
                 break;
             default:

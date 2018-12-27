@@ -1,15 +1,13 @@
 package com.example.sami.visitmetz_v2;
 
-import android.content.Intent;
 import android.os.Build;
-import android.os.Handler;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.Window;
@@ -17,7 +15,6 @@ import android.view.WindowManager;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private static int SPLASH_TIME_OUT = 3000;
     private DrawerLayout drawer;
 
     @Override
@@ -69,60 +66,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         new SitesOverviewFragment()).commit();
                 break;
 
-            /*case R.id.nav_favoris:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new MesSitesFavorisFragment()).commit();
-                break;*/
-
             case R.id.nav_map:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new MapFragment()).commit();
                 break;
-
-            case R.id.nav_histoire:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new HistoireFragment()).commit();
-                break;
-
-            /*case R.id.nav_monuments:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new SitesHistoriquesMonumentFragment()).commit();
-                break;
-
-            case R.id.nav_gastronomie:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new GastronomieFragment()).commit();
-                break;
-
-            case R.id.nav_autour:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new AutourMetzFragment()).commit();
-                break;
-
-            case R.id.nav_hebergements:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new HebergementFragment()).commit();
-                break;
-
-            case R.id.nav_jeux_divertissements:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new JeuxDivertissementFragment()).commit();
-                break;
-
-            case R.id.nav_nature:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new NatureParcFragment()).commit();
-                break;
-
-            case R.id.nav_nocturne:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new VieNocturneFragment()).commit();
-                break;
-
-            case R.id.nav_shopping:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new DestinationShoppingFragment()).commit();
-                break;*/
 
             case R.id.nav_metz:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,

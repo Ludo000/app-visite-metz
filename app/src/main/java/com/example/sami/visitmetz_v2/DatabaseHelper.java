@@ -24,7 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         // Ajouter le nom de la table et les lignes de celle-ci
-        db.execSQL("CREATE TABLE " + Table_Site + "(_ID INTEGER PRIMARY KEY AUTOINCREMENT, ID_EXT INTEGER, NOM TEXT, LATITUDE REAL, LONGITUDE REAL, ADRESSE_POSTALE TEXT, CATEGORIE TEXT, RESUME TEXT, IMAGE BLOB)");
+        db.execSQL("CREATE TABLE " + Table_Site + "(_id INTEGER PRIMARY KEY AUTOINCREMENT, ID_EXT INTEGER, NOM TEXT, LATITUDE REAL, LONGITUDE REAL, ADRESSE_POSTALE TEXT, CATEGORIE TEXT, RESUME TEXT, IMAGE BLOB)");
         db.execSQL("CREATE TABLE " + Table_Categorie + "(_id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT)");
     }
 

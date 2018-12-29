@@ -10,7 +10,11 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,7 +25,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -33,21 +42,21 @@ import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
 
-
-public class SitesOverviewFragment extends Fragment {
+public class SitesOverviewFragment extends Fragment implements SearchView.OnQueryTextListener {
 
     RecyclerView MyRecyclerView;
     MyAdapter adapter;
+    TextView textViewNoData;
 
     ContentResolver resolver;
+
+    EcouteurLoadEvenement ecouteurLoadEvenement;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
-        resolver = getContext().getContentResolver();
         /*byte[] img1=getByteFromDrawable(Objects.requireNonNull(getDrawable(Objects.requireNonNull(getContext()), R.drawable.cathedrale_st_etienne)));
 
         byte[] img2=getByteFromDrawable(Objects.requireNonNull(getDrawable(getContext(), R.drawable.centre_pompidou)));
@@ -71,10 +80,6 @@ public class SitesOverviewFragment extends Fragment {
 
         uri = getContext().getContentResolver().insert(
                 SitesProvider.CONTENT_URI, sitesValues);*/
-
-        //initializeList();
-
-        //initializeList1();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -83,6 +88,7 @@ public class SitesOverviewFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_card, container, false);
+        textViewNoData = view.findViewById(R.id.textViewNoData);
         MyRecyclerView = view.findViewById(R.id.cardView);
         MyRecyclerView.setHasFixedSize(true);
         adapter= new MyAdapter(getContext(),null);
@@ -100,10 +106,49 @@ public class SitesOverviewFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        getLoaderManager().initLoader(0, null, new EcouteurLoadEvenement(getContext(), adapter));
+        resolver = getContext().getContentResolver();
+
+        // We have a menu item to show in action bar.
+        setHasOptionsMenu(true);
+
+        ecouteurLoadEvenement = new EcouteurLoadEvenement(getContext(), adapter, null);
+
+        getLoaderManager().initLoader(0, null, ecouteurLoadEvenement);
     }
 
-    @NonNull
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        // Place an action bar item for searching.
+        MenuItem item = menu.add("Search");
+        item.setIcon(android.R.drawable.ic_menu_search);
+        Drawable newIcon = item.getIcon();
+        newIcon.mutate().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
+        item.setIcon(newIcon);
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        SearchView sv = new SearchView(getActivity());
+        sv.setOnQueryTextListener(this);
+        item.setActionView(sv);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String s) {
+        // Called when the action bar search text has changed.  Update
+        // the search filter, and restart the loader to do a new query
+        // with this filter.
+        ecouteurLoadEvenement = new EcouteurLoadEvenement(getContext(), adapter, s.trim().length() > 0 ? s : null);
+
+        getLoaderManager().restartLoader(0, null, ecouteurLoadEvenement);
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String s) {
+        onQueryTextSubmit(s);
+        return true;
+    }
+
+    /*@NonNull
     public byte[] getByteFromDrawable(@NonNull Drawable drawable) {
         final Bitmap bmp = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
         final Canvas canvas = new Canvas(bmp);
@@ -112,7 +157,7 @@ public class SitesOverviewFragment extends Fragment {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bmp.compress(Bitmap.CompressFormat.JPEG,100,stream);
         return stream.toByteArray();
-    }
+    }*/
 
     public class MyAdapter extends MyCursorAdapter {
 
@@ -132,8 +177,14 @@ public class SitesOverviewFragment extends Fragment {
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, Cursor cursor) {
             MyViewHolder holder = (MyViewHolder) viewHolder;
-            cursor.moveToPosition(cursor.getPosition());
-            holder.setData(cursor);
+
+           // if (viewHolder != null && cursor != null) {
+                //textViewNoData.setVisibility(View.INVISIBLE);
+                cursor.moveToPosition(cursor.getPosition());
+                holder.setData(cursor);
+           /* } else {
+                textViewNoData.setVisibility(View.VISIBLE);
+            }*/
         }
 
         @Override
@@ -237,7 +288,7 @@ public class SitesOverviewFragment extends Fragment {
 
             deleteImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onClick(View view) {
+                public void onClick(final View view) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                     builder.setCancelable(false);
                     builder.setTitle("Supprimer le site " + titleTextView.getText().toString());
@@ -274,11 +325,24 @@ public class SitesOverviewFragment extends Fragment {
                                     // Use the resolver to delete ids by passing the content provider url
                                     // what you are targeting with the where and the string that replaces
                                     // the ? in the where clause
-                                    long idDeleted = resolver.delete(uri1,
-                                            "_ID = ? ", selectionargs);
+                                    resolver.delete(uri1,
+                                            "_id = ? ", selectionargs);
 
-                                    //listitems.remove(getAdapterPosition());
                                     adapter.notifyDataSetChanged();
+
+
+                                    // consider using Java coding conventions (upper first char class names!!!)
+                                    FragmentTransaction transaction;
+                                    if (getFragmentManager() != null) {
+                                        transaction = getFragmentManager().beginTransaction();
+                                        // Replace whatever is in the fragment_container view with this fragment,
+                                        // and add the transaction to the back stack
+                                        transaction.replace(R.id.fragment_container, new SitesOverviewFragment());
+                                        transaction.addToBackStack(null);
+
+                                        // Commit the transaction
+                                        transaction.commit();
+                                    }
                                 }
                             }
                         }
@@ -314,13 +378,19 @@ public class SitesOverviewFragment extends Fragment {
         }
 
         public void setData(Cursor c) {
-            byte[] img = c.getBlob(8);
-            Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
-            titleTextView.setText(c.getString(c.getColumnIndex("NOM")));
-            coverImageView.setImageBitmap(bitmap);
-            coverImageView.setTag(bitmap);
-            editImageView.setTag(R.drawable.edit_black_24dp);
-            deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
+            if (c != null) {
+                textViewNoData.setVisibility(View.INVISIBLE);
+                byte[] img = c.getBlob(8);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
+                titleTextView.setText(c.getString(c.getColumnIndex("NOM")));
+                coverImageView.setImageBitmap(bitmap);
+                coverImageView.setTag(bitmap);
+                editImageView.setTag(R.drawable.edit_black_24dp);
+                deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
+            } else {
+                textViewNoData.setVisibility(View.VISIBLE);
+            }
+
         }
     }
 }

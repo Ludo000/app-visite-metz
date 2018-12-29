@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 
@@ -19,15 +20,16 @@ public class EcouteurLoadEvenement implements LoaderManager.LoaderCallbacks<Curs
     private SitesOverviewFragment.MyAdapter  mAdapter;
 
     // If non-null, this is the current filter the user has provided.
-    private String mCurFilter = null;
+    private String mCurFilter;
 
     // Projection contains the columns we want
     private String[] projection = new String[]{"_id", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
             "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
 
-    EcouteurLoadEvenement(Context context, SitesOverviewFragment.MyAdapter adapter) {
+    EcouteurLoadEvenement(Context context, SitesOverviewFragment.MyAdapter adapter, String curFilter) {
         this.context = context;
         this.mAdapter = adapter;
+        this.mCurFilter = curFilter;
     }
 
     @NonNull
@@ -37,16 +39,18 @@ public class EcouteurLoadEvenement implements LoaderManager.LoaderCallbacks<Curs
         // sample only has one Loader, so we don't care about the ID.
         // First, pick the base URI to use depending on whether we are
         // currently filtering.
-        Uri baseUri;
-        if (mCurFilter != null) {
-            baseUri = Uri.withAppendedPath(SitesProvider.CONTENT_URI,
-                    Uri.encode(mCurFilter));
-        } else {
-            baseUri = SitesProvider.CONTENT_URI;
+        Uri baseUri = SitesProvider.CONTENT_URI;
+        CursorLoader cursorLoader;
+        if (this.mCurFilter == null || this.mCurFilter.trim().length() == 0) {
+            cursorLoader = new CursorLoader(this.context, baseUri, projection, null, null, "_id desc");
+            Toast.makeText(this.context, "Aucun site retrouvé!", Toast.LENGTH_LONG).show();
         }
-
+        else {
+            cursorLoader = new CursorLoader(this.context, baseUri, projection, "NOM = ?", new String[]{this.mCurFilter.trim()}, null);
+            Toast.makeText(this.context, "Site retrouvé: " + this.mCurFilter, Toast.LENGTH_SHORT).show();
+        }
         //and get a CursorLoader from my contentprovider
-        return new CursorLoader(this.context, baseUri, projection, null, null, "_id desc");
+        return cursorLoader;
     }
 
     @Override

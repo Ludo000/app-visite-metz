@@ -29,13 +29,17 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
 import com.example.sami.visitmetz_v2.models.PlaceInfo;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
@@ -85,6 +89,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     public Marker mMarker,mMarkerB;
     private EditText mRoyen;
     private Button  mValide;
+    private Spinner mSpinner;
 
     public DatabaseHelper dbh;
 
@@ -131,6 +136,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
         mRoyen = (EditText)v.findViewById(R.id.input_cercle);
         mValide = (Button)v.findViewById(R.id.btn_valide);
+        mSpinner = (Spinner) v.findViewById(R.id.spinner);
+
 
         /*  mRestaurant = (ImageView) v.findViewById(R.id.ic_restaurant); */
 
@@ -234,6 +241,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
 
         mValide.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View view) {
                 // Drawing circle on the map
@@ -305,23 +313,102 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         // Pass the URL, projection and I'll cover the other options below
         Cursor dataCursor = resolver.query(uri, projection, null, null, null, null);
         //Toast.makeText(getActivity(),""+dataCursor.getCount(),Toast.LENGTH_LONG).show();
+
+        ArrayList<String> collection = new ArrayList<String>();
+        ArrayList<MarkerOptions> collection2 = new ArrayList<MarkerOptions>();
+
+
         while(dataCursor.moveToNext())
         {
-           // Toast.makeText(getActivity(),dataCursor.getString(2) + ", " + dataCursor.getString(3),Toast.LENGTH_LONG).show();
             float results[] = new float[10];
 
-            Location.distanceBetween(latitude, longitude, Double.valueOf(dataCursor.getString(3)) , Double.valueOf(dataCursor.getString(4)), results);
+             Location.distanceBetween(latitude, longitude, Double.valueOf(dataCursor.getString(3)) , Double.valueOf(dataCursor.getString(4)), results);
 
 
-            if (Integer.parseInt(mRoyen.getText().toString()) > results[0]) {
-               LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
-               options.position(point);
-               options.title(dataCursor.getString(2));
-               options.snippet(dataCursor.getString(7));
-               mMap.addMarker(options);
-           }}
+            // Projection contains the columns we want
+            String[] projection1 = new String[]{"_id", "nom"};
+
+            // Pass the URL, projection and I'll cover the other options below
+            Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);
+
+           // Toast.makeText(getActivity(), data.getString(data.getColumnIndex("nom")),Toast.LENGTH_LONG).show();
+
+
+// && mSpinner.getSelectedItem().toString().equals("Tout")
+            if (Integer.parseInt(mRoyen.getText().toString()) > results[0] ) {
+                LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
+                options.position(point);
+                options.title(dataCursor.getString(2));
+                options.snippet(  "Categorie: " +dataCursor.getString(6) + "  " + "Resumer: " + dataCursor.getString(7));
+                if ( mSpinner.getSelectedItem().toString().equals(dataCursor.getString(6))){
+                    Toast.makeText(getActivity(),"Booba",Toast.LENGTH_LONG).show();
+
+
+                    //  List<String> collection = new ArrayList<String>();
+                    collection.add(dataCursor.getString(6));
+                    collection2.add(options);
+
+                }
+
+                if (mSpinner.getSelectedItem().toString().equals("Tout")){
+                    /*LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
+                    options.position(point);
+                    options.title(dataCursor.getString(2));
+                    options.snippet(  "Categorie: " +dataCursor.getString(6) + "  " + "Resumer: " + dataCursor.getString(7)
+                    );*/
+
+
+                    //  List<String> collection = new ArrayList<String>();
+                    collection.add(dataCursor.getString(6));
+                    collection2.add(options);
+                    /*for(int c=0;c<collection2.size();c++)
+                    {
+                        String current = collection.get(c);
+                        Log.d(TAG, "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp " + dataCursor.getString(6)   );
+                        Log.d(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + mSpinner.getSelectedItem().toString()   );
+                        if (mSpinner.getSelectedItem().toString().equals(current))
+                        {
+                            mMap.addMarker(options);
+                        }
+
+                    }*/
+                }
+              //  Toast.makeText(getActivity(),dataCursor.getString(6).toString(),Toast.LENGTH_LONG).show();
+
+
+
+              //  mMap.addMarker(options);
+           }
+
+           /*else if( Integer.parseInt(mRoyen.getText().toString()) > results[0] && mSpinner.getSelectedItem().toString() == dataCursor.getString(6).toString()){
+                Toast.makeText(getActivity(),"hellooo",Toast.LENGTH_LONG).show();
+
+        }
+        else {
+                Toast.makeText(getActivity(),"Nada",Toast.LENGTH_LONG).show();
+
+            } */
+
+        }
+
+        for(int c=0;c<collection2.size();c++)
+        {
+            String current = collection.get(c);
+            Log.d(TAG, "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp " + collection2.get(c)   );
+            Log.d(TAG, "Current " + current   );
+            Log.d(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + mSpinner.getSelectedItem().toString().equals(current)   );
+            if (mSpinner.getSelectedItem().toString().equals(current))
+            {
+                mMap.addMarker(collection2.get(c));
+            } else {
+                continue;
+            }
+
+        }
         dataCursor.close();
     }
+
+
 
     public void  onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST) {
@@ -369,7 +456,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             }
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
-//
+SpinnerItems();
             init();
         }
 
@@ -582,6 +669,71 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         }
     }
 
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    private void SpinnerItems() {
+        // Projection contains the columns we want
+        String[] projection1 = new String[]{"_id", "nom"};
+
+        // Pass the URL, projection and I'll cover the other options below
+        Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);
+
+        // Spinner Drop down elements
+        List<String> categories = new ArrayList<String>();
+        categories.add("-- Sélectionner une catégorie --");
+        while(data.moveToNext())
+        {
+            categories.add(data.getString(data.getColumnIndex("nom")));
+        }
+
+        data.close();
+
+        // Spinner click listener
+        mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                // On selecting a spinner item
+                String item = parent.getItemAtPosition(position).toString();
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+
+        // Creating adapter for spinner
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_spinner_item, categories){
+            @Override
+            public boolean isEnabled(int position) {
+                return position != 0;
+            }
+
+            @Override
+            public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                View view = super.getDropDownView(position, convertView, parent);
+                TextView tv = (TextView) view;
+                if (position == 0) {
+                    tv.setTextColor(Color.GRAY);
+                } else {
+                    tv.setTextColor(Color.BLACK);
+                }
+                return view;
+            }
+        };
+
+        // Drop down layout style - list view with radio button
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // attaching data adapter to spinner
+        mSpinner.setAdapter(dataAdapter);
+        dataAdapter.add("Tout");
+
+    }
+
+
     /// ici pour évité le crache de l'app j'ai fais cette foction Quand on change fragment
     @Override
     public void onStop() {
@@ -614,12 +766,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             }
         }
     }
+
+
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
     }
     @Override
     public void onConnectionSuspended(int i) {
     }
+
+
+
+
+
     /* --------------------------- google places API autocomplete suggestions -----------------*/
 
     private AdapterView.OnItemClickListener mAutocompleteClickListener = new AdapterView.OnItemClickListener() {

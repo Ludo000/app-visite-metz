@@ -92,7 +92,8 @@
         >
 
         <Spinner
-            android:id="@+id/ListView"
+
+            android:id="@+id/spinner"
             android:layout_width="168dp"
             android:layout_height="match_parent"
             android:layout_alignParentEnd="true"

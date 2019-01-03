@@ -215,7 +215,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
                     Uri uri = Uri.parse(URL);
 
                     // Holds the column data we want to retrieve
-                    String[] projection = new String[]{"_ID","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                    String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
 
                     // Pass the URL for Content Provider, the projection,
                     // the where clause followed by the matches in an array for the ?
@@ -228,36 +228,34 @@ public class AjouterSiteDetailsFragment extends Fragment {
                     ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
 
                     // Cycle through our one result or print error
-                    if(foundSite!=null) {
-                        if (foundSite.moveToFirst()) {
+                    if (foundSite.moveToFirst()) {
 
-                            String id = foundSite.getString(foundSite.getColumnIndex("_ID"));
-                            String URL1 = "content://" + PROVIDER_NAME + "/sites_table/#" + id;
-                            Uri uri1 = Uri.parse(URL1);
+                        String id = foundSite.getString(foundSite.getColumnIndex("_id"));
+                        String URL1 = "content://" + PROVIDER_NAME + "/sites_table/#" + id;
+                        Uri uri1 = Uri.parse(URL1);
 
-                            // Holds the column data we want to update
-                            String[] selectionargs = new String[]{""+id};
+                        // Holds the column data we want to update
+                        String[] selectionargs = new String[]{""+id};
 
-                            int c = getContext().getContentResolver().update(
-                                    uri1, sitesValues, "_ID = ?", selectionargs);
+                        int c = getContext().getContentResolver().update(
+                                uri1, sitesValues, "_id = ?", selectionargs);
 
-                            Toast.makeText(getContext(), c +" site a été modifié", Toast.LENGTH_LONG)
-                                    .show();
+                        Toast.makeText(getContext(), c +" site a été modifié", Toast.LENGTH_LONG)
+                                .show();
 
-                            // Create new fragment and transaction
-                            Fragment newFragment = new SitesOverviewFragment();
-                            // consider using Java coding conventions (upper first char class names!!!)
-                            FragmentTransaction transaction;
-                            if (getFragmentManager() != null) {
-                                transaction = getFragmentManager().beginTransaction();
-                                // Replace whatever is in the fragment_container view with this fragment,
-                                // and add the transaction to the back stack
-                                transaction.replace(R.id.fragment_container, newFragment);
-                                transaction.addToBackStack(null);
+                        // Create new fragment and transaction
+                        Fragment newFragment = new SitesOverviewFragment();
+                        // consider using Java coding conventions (upper first char class names!!!)
+                        FragmentTransaction transaction;
+                        if (getFragmentManager() != null) {
+                            transaction = getFragmentManager().beginTransaction();
+                            // Replace whatever is in the fragment_container view with this fragment,
+                            // and add the transaction to the back stack
+                            transaction.replace(R.id.fragment_container, newFragment);
+                            transaction.addToBackStack(null);
 
-                                // Commit the transaction
-                                transaction.commit();
-                            }
+                            // Commit the transaction
+                            transaction.commit();
                         }
                     }
                 } else {

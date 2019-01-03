@@ -11,5 +11,12 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/cardView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
+
+    <TextView
+        android:id="@+id/textViewNoData"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/aucun_site_ajout"
+        android:textSize="30sp" />
 </RelativeLayout>

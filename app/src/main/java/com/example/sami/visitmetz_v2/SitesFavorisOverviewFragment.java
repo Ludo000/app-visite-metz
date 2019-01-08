@@ -3,14 +3,11 @@ package com.example.sami.visitmetz_v2;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -39,9 +36,7 @@ import com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
-import java.io.ByteArrayOutputStream;
-
-public class SitesOverviewFragment extends Fragment implements SearchView.OnQueryTextListener {
+public class SitesFavorisOverviewFragment extends Fragment implements SearchView.OnQueryTextListener {
 
     RecyclerView MyRecyclerView;
     MyAdapter adapter;
@@ -49,7 +44,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
 
     ContentResolver resolver;
 
-    EcouteurLoadEvenement ecouteurLoadEvenement;
+    EcouteurLoadEvenement_2 ecouteurLoadEvenement_2;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -110,9 +105,9 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
         // We have a menu item to show in action bar.
         setHasOptionsMenu(true);
 
-        ecouteurLoadEvenement = new EcouteurLoadEvenement(getContext(), adapter, null);
+        ecouteurLoadEvenement_2 = new EcouteurLoadEvenement_2(getContext(), adapter, null);
 
-        getLoaderManager().initLoader(0, null, ecouteurLoadEvenement);
+        getLoaderManager().initLoader(0, null, ecouteurLoadEvenement_2);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -135,9 +130,9 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
         // Called when the action bar search text has changed.  Update
         // the search filter, and restart the loader to do a new query
         // with this filter.
-        ecouteurLoadEvenement = new EcouteurLoadEvenement(getContext(), adapter, s.trim().length() > 0 ? s : null);
+        ecouteurLoadEvenement_2 = new EcouteurLoadEvenement_2(getContext(), adapter, s.trim().length() > 0 ? s : null);
 
-        getLoaderManager().restartLoader(0, null, ecouteurLoadEvenement);
+        getLoaderManager().restartLoader(0, null, ecouteurLoadEvenement_2);
         return true;
     }
 
@@ -166,16 +161,16 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
 
         @NonNull
         @Override
-        public SitesOverviewFragment.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public SitesFavorisOverviewFragment.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             // create a new view
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.recycle_items, parent, false);
-            return new SitesOverviewFragment.MyViewHolder(view);
+            return new SitesFavorisOverviewFragment.MyViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, Cursor cursor) {
-            SitesOverviewFragment.MyViewHolder holder = (SitesOverviewFragment.MyViewHolder) viewHolder;
+            SitesFavorisOverviewFragment.MyViewHolder holder = (SitesFavorisOverviewFragment.MyViewHolder) viewHolder;
 
             // if (viewHolder != null && cursor != null) {
             //textViewNoData.setVisibility(View.INVISIBLE);
@@ -221,37 +216,6 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
             likeImageView = v.findViewById(R.id.likeImageView);
 
 
-            likeImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String nomSite = titleTextView.getText().toString();
-
-                    int id_like = (int) likeImageView.getTag();
-                    if (id_like == R.drawable.ic_thumb_up_black_24dp) {
-
-                        likeImageView.setTag(R.drawable.ic_thumb_up_blue_24dp);
-                        likeImageView.setImageResource(R.drawable.ic_thumb_up_blue_24dp);
-
-
-                        byte[] image = getByteFromDrawable(coverImageView.getDrawable());
-                        // Add a new favorite site record
-                        ContentValues sitesFavorisValues = contentValues(nomSite, image);
-
-                        Uri uri = getActivity().getContentResolver().insert(
-                                SitesFavorisProvider.CONTENT_URI, sitesFavorisValues);
-
-                        Toast.makeText(getContext(), "Le site " + nomSite + " a été ajouté à vos favoris", Toast.LENGTH_LONG)
-                                .show();
-
-                    } else {
-
-                        likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
-                        likeImageView.setImageResource(R.drawable.ic_thumb_up_black_24dp);
-                    }
-                    adapter.notifyDataSetChanged();
-                }
-            });
-
             editImageView.setOnClickListener(new View.OnClickListener() {
 
                 @Override
@@ -273,7 +237,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                     if(foundSite!=null){
                         if(foundSite.moveToFirst()){
 
-                            int id = foundSite.getColumnIndex("_id ");
+                            int id = foundSite.getColumnIndex("_id");
                             int id_ext = foundSite.getColumnIndex("ID_EXT");
                             String name = foundSite.getString(foundSite.getColumnIndex("NOM"));
                             double latitude = (double) foundSite.getColumnIndex("LATITUDE");
@@ -335,25 +299,25 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                             String siteToDelete = titleTextView.getText().toString();
 
                             // Holds the column data we want to retrieve
-                            String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                            String[] projection = new String[]{"_id","nom"};
 
                             // Pass the URL for Content Provider, the projection,
                             // the where clause followed by the matches in an array for the ?
                             // null is for sort order
                             @SuppressLint("Recycle")
-                            Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projection, "NOM = ? ", new String[]{siteToDelete}, null);
+                            Cursor foundSite = resolver.query(SitesFavorisProvider.CONTENT_URI, projection, "nom = ? ", new String[]{siteToDelete}, null);
 
                             // Cycle through our one result or print error
                             if(foundSite!=null) {
                                 if (foundSite.moveToFirst()) {
                                     String id = foundSite.getString(foundSite.getColumnIndex("_id"));
-                                    String URL1 = "content://com.example.sami.visitmetz_v2.ContentProvider.SitesProvider/sites_table/#" + id;
+                                    String URL1 = "content://com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider/SitesFavoris_table/#" + id;
                                     Uri uri1 = Uri.parse(URL1);
 
                                     // Holds the column data we want to update
                                     String[] selectionargs = new String[]{"" + id};
 
-                                    Toast.makeText(getActivity(), siteToDelete + " a été supprimé!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getActivity(), siteToDelete + " a été retiré de vos favoris!", Toast.LENGTH_SHORT).show();
 
                                     // Use the resolver to delete ids by passing the content provider url
                                     // what you are targeting with the where and the string that replaces
@@ -370,7 +334,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                                         transaction = getFragmentManager().beginTransaction();
                                         // Replace whatever is in the fragment_container view with this fragment,
                                         // and add the transaction to the back stack
-                                        transaction.replace(R.id.fragment_container, new SitesOverviewFragment());
+                                        transaction.replace(R.id.fragment_container, new SitesFavorisOverviewFragment());
                                         transaction.addToBackStack(null);
 
                                         // Commit the transaction
@@ -392,7 +356,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
             });
 
 
-            shareImageView.setOnClickListener(new View.OnClickListener() {
+            /*shareImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
@@ -407,44 +371,27 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                 startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
 
                 }
-            });
-        }
-
-        public ContentValues contentValues(String nom, byte[] image)
-        {
-            //Permits to add new info in the table
-            ContentValues values = new ContentValues();
-            values.put("nom",nom);
-            values.put("image", image);
-            return values;
-        }
-
-        @NonNull
-        public byte[] getByteFromDrawable(@NonNull Drawable drawable) {
-            final Bitmap bmp = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-            final Canvas canvas = new Canvas(bmp);
-            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-            drawable.draw(canvas);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bmp.compress(Bitmap.CompressFormat.JPEG,100,stream);
-            return stream.toByteArray();
+            });*/
         }
 
         public void setData(Cursor c) {
             if (c != null) {
                 textViewNoData.setVisibility(View.INVISIBLE);
-                byte[] img = c.getBlob(8);
+
+                //byte[] img = c.getBlob(2);
+                byte[] img = c.getBlob(c.getColumnIndex("image"));
                 Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
-                titleTextView.setText(c.getString(c.getColumnIndex("NOM")));
+                titleTextView.setText(c.getString(c.getColumnIndex("nom")));
                 coverImageView.setImageBitmap(bitmap);
                 coverImageView.setTag(bitmap);
                 editImageView.setTag(R.drawable.edit_black_24dp);
                 deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
-                likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
+                likeImageView.setVisibility(View.GONE);
+                shareImageView.setVisibility(View.GONE);
+
             } else {
                 textViewNoData.setVisibility(View.VISIBLE);
             }
-
         }
     }
 }

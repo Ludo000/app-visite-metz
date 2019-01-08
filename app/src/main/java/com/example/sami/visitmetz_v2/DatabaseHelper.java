@@ -15,6 +15,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // nom de la table site
     public static final String Table_Categorie = "categories_table";
 
+    // nom de la table site
+    private static final String Table_SitesFavoris = "SitesFavoris_table";
+
     public DatabaseHelper(Context context) {
         super(context, Database_Name, null, 1);
     }
@@ -26,6 +29,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Ajouter le nom de la table et les lignes de celle-ci
         db.execSQL("CREATE TABLE " + Table_Site + "(_id INTEGER PRIMARY KEY AUTOINCREMENT, ID_EXT INTEGER, NOM TEXT, LATITUDE REAL, LONGITUDE REAL, ADRESSE_POSTALE TEXT, CATEGORIE TEXT, RESUME TEXT, IMAGE BLOB)");
         db.execSQL("CREATE TABLE " + Table_Categorie + "(_id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT)");
+        db.execSQL("CREATE TABLE " + Table_SitesFavoris + "(_id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT, image BLOB)");
     }
 
     @Override
@@ -33,6 +37,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // Si une version de la base de données existe, elle sera supprimée et remplacée par la nouvelle
         db.execSQL("DROP TABLE IF EXISTS " + Table_Site);
         db.execSQL("DROP TABLE IF EXISTS " + Table_Categorie);
+        db.execSQL("DROP TABLE IF EXISTS " + Table_SitesFavoris);
         onCreate(db);
     }
 

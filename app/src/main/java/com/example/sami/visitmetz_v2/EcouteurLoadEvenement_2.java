@@ -11,23 +11,23 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.widget.Toast;
 
+import com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 
-public class EcouteurLoadEvenement implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EcouteurLoadEvenement_2 implements LoaderManager.LoaderCallbacks<Cursor> {
 
     Context context;
 
-    SitesOverviewFragment.MyAdapter mAdapter;
+    private SitesFavorisOverviewFragment.MyAdapter mAdapter;
 
 
     // If non-null, this is the current filter the user has provided.
     private String mCurFilter;
 
     // Projection contains the columns we want
-    private String[] projection = new String[]{"_id", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
-            "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+    private String[] projection = new String[]{"_id", "nom", "image"};
 
-    EcouteurLoadEvenement(Context context, SitesOverviewFragment.MyAdapter adapter, String curFilter) {
+    EcouteurLoadEvenement_2(Context context, SitesFavorisOverviewFragment.MyAdapter adapter, String curFilter) {
         this.context = context;
         this.mAdapter = adapter;
         this.mCurFilter = curFilter;
@@ -40,7 +40,7 @@ public class EcouteurLoadEvenement implements LoaderManager.LoaderCallbacks<Curs
         // sample only has one Loader, so we don't care about the ID.
         // First, pick the base URI to use depending on whether we are
         // currently filtering.
-        Uri baseUri = SitesProvider.CONTENT_URI;
+        Uri baseUri = SitesFavorisProvider.CONTENT_URI;
         CursorLoader cursorLoader;
         if (this.mCurFilter == null || this.mCurFilter.trim().length() == 0) {
             cursorLoader = new CursorLoader(this.context, baseUri, projection, null, null, "_id desc");

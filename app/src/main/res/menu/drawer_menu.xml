@@ -16,6 +16,11 @@
             android:title="Tous les sites" />
 
         <item
+            android:id="@+id/nav_sitesFavoris"
+            android:icon="@drawable/ic_thumb_up_black_24dp"
+            android:title="Mes sites favoris" />
+
+        <item
             android:id="@+id/nav_map"
             android:icon="@drawable/ic_map"
             android:title="Map Metz" />

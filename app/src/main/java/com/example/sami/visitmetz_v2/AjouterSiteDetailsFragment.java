@@ -103,8 +103,8 @@ public class AjouterSiteDetailsFragment extends Fragment {
                     spinner.setSelection(i);
                 }
             }
-            longitude.setText(bundle.getString("longitude"));
-            latitude.setText(bundle.getString("latitude"));
+            longitude.setText(String.valueOf(site.getLongitude()));
+            latitude.setText(String.valueOf(site.getLatitude()));
             adresse_postale.setText(site.getAdresse());
             resume.setText(site.getResume());
         }

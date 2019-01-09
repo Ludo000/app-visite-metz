@@ -276,8 +276,8 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                             int id = foundSite.getColumnIndex("_id ");
                             int id_ext = foundSite.getColumnIndex("ID_EXT");
                             String name = foundSite.getString(foundSite.getColumnIndex("NOM"));
-                            double latitude = (double) foundSite.getColumnIndex("LATITUDE");
-                            double longitude = (double) foundSite.getColumnIndex("LONGITUDE");
+                            double latitude = Double.parseDouble(foundSite.getString(3));
+                            double longitude = Double.parseDouble(foundSite.getString(4));
                             String adresse = foundSite.getString(foundSite.getColumnIndex("ADRESSE_POSTALE"));
                             String categorie = foundSite.getString(foundSite.getColumnIndex("CATEGORIE"));
                             String resume = foundSite.getString(foundSite.getColumnIndex("RESUME"));
@@ -289,8 +289,6 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                             Fragment newFragment = new AjouterSiteDetailsFragment();
                             Bundle bundle = new Bundle();
                             bundle.putSerializable("site", currentSite);
-                            bundle.putString("latitude", foundSite.getString(foundSite.getColumnIndex("LATITUDE")));
-                            bundle.putString("longitude", foundSite.getString(foundSite.getColumnIndex("LONGITUDE")));
                             newFragment.setArguments(bundle);
 
                             // consider using Java coding conventions (upper first char class names!!!)

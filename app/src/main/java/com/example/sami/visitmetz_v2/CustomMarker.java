@@ -5,14 +5,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class CustomMarker {
 
     private String Categorie;
-    private MarkerOptions mOptions;
+
     private double lat, longi;
     private String  name;
     private String resumer;
 
     public CustomMarker(String Categorie, MarkerOptions mOptions, double lat, double longi, String name, String resumer) {
         this.Categorie = Categorie;
-        this.mOptions = mOptions;
+
         this.lat =lat;
         this.longi=longi;
         this.name =name;
@@ -43,13 +43,7 @@ public class CustomMarker {
         Categorie = categorie;
     }
 
-    public MarkerOptions getmOptions() {
-        return mOptions;
-    }
 
-    public void setmOptions(MarkerOptions mOptions) {
-        this.mOptions = mOptions;
-    }
 
     public double getLat() {
         return lat;

@@ -55,19 +55,6 @@ public class SiteData implements Serializable {
         return categorie;
     }
 
-    @Override
-    public String toString() {
-        return "SiteData{" +
-                "nom='" + nom + '\'' +
-                ", latitude=" + latitude +
-                ", longitude=" + longitude +
-                ", adresse='" + adresse + '\'' +
-                ", categorie='" + categorie + '\'' +
-                ", resume='" + resume + '\'' +
-                ", id_ext=" + id_ext +
-                ", id=" + id +
-                '}';
-    }
 
     public void setCategorie(String categorie) {
         this.categorie = categorie;

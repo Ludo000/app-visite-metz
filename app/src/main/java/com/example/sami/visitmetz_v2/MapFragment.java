@@ -41,6 +41,7 @@ import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
 import com.example.sami.visitmetz_v2.models.PlaceInfo;
+import com.example.sami.visitmetz_v2.models.SiteData;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
@@ -107,6 +108,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
     private static final float DEFAULT_ZOOM = 15f;
 
+   // ArrayList<MarkerOptions> collection2 = new ArrayList<MarkerOptions>();
+
+
     private static final int PLACE_PICKER_REQUEST = 1;
 
     int PROXIMITY_RADIUS = 200;
@@ -137,6 +141,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         mRoyen = (EditText)v.findViewById(R.id.input_cercle);
         mValide = (Button)v.findViewById(R.id.btn_valide);
         mSpinner = (Spinner) v.findViewById(R.id.spinner);
+
 
 
         /*  mRestaurant = (ImageView) v.findViewById(R.id.ic_restaurant); */
@@ -241,13 +246,104 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
 
         mValide.setOnClickListener(new View.OnClickListener() {
+
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View view) {
                 // Drawing circle on the map
+                MarkerOptions options = new MarkerOptions();
                 mMap.clear();
+                //collection.clear();
+                //collection2.clear();
                 drawCircle(new LatLng(latitude, longitude));
-                AddMarker();
+                ArrayList<CustomMarker> liste = allMarkers();
+                for(int i=0; i < liste.size(); i++)
+                {
+                    float results[] = new float[10];
+                    Location.distanceBetween(latitude, longitude, liste.get(i).getLat(), liste.get(i).getLongi(),  results);
+                    if (Integer.parseInt(mRoyen.getText().toString()) > results[0] ) {
+
+                        LatLng point = new LatLng(Double.valueOf(liste.get(i).getLat()), Double.valueOf(liste.get(i).getLongi()));
+                        options.position(point);
+                        options.title(liste.get(i).getName());
+                        options.snippet(  "Categorie: " +liste.get(i).getCategorie() + "  " + "Resumer: " + liste.get(i).getResumer());
+                        Log.d(TAG, "DIIIIIISTANCE :  " +   results[0]);
+                        Log.d(TAG, "TTMMMMMmmm:  " +   liste.get(i).getCategorie());
+
+                        if ( mSpinner.getSelectedItem().toString().equals(liste.get(i).getCategorie())){
+                            Log.d(TAG, "RTTTTT" +   mSpinner.getSelectedItem().toString());
+                            Log.d(TAG, "RRRRRRRTTTTT" +   liste.get(i).getCategorie());
+                            mMap.addMarker(options);
+                        } else if (mSpinner.getSelectedItem().toString().equals("Tout")){
+                            mMap.addMarker(options);
+                        }
+
+                       //-------------  if (mSpinner.getSelectedItem().toString().equals("Tout")){
+                    /*LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
+                    options.position(point);
+                    options.title(dataCursor.getString(2));
+                    options.snippet(  "Categorie: " +dataCursor.getString(6) + "  " + "Resumer: " + dataCursor.getString(7)
+                    );*/
+                            //  List<String> collection = new ArrayList<String>();
+                           // collection.add(dataCursor.getString(6));
+                           // collection2.add(options);
+                    /*for(int c=0;c<collection2.size();c++)
+                    {
+                        String current = collection.get(c);
+                        Log.d(TAG, "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp " + dataCursor.getString(6)   );
+                        Log.d(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + mSpinner.getSelectedItem().toString()   );
+                        if (mSpinner.getSelectedItem().toString().equals(current))
+                        {
+                            mMap.addMarker(options);
+                        }
+
+                    }*/
+                      //-------------  } */
+                        //  Toast.makeText(getActivity(),dataCursor.getString(6).toString(),Toast.LENGTH_LONG).show();
+
+
+
+                        //  mMap.addMarker(options);
+                    }
+
+           /*else if( Integer.parseInt(mRoyen.getText().toString()) > results[0] && mSpinner.getSelectedItem().toString() == dataCursor.getString(6).toString()){
+                Toast.makeText(getActivity(),"hellooo",Toast.LENGTH_LONG).show();
+
+        }
+        else {
+                Toast.makeText(getActivity(),"Nada",Toast.LENGTH_LONG).show();
+
+            } */
+
+                }
+
+       /*for(int a=0;a<collection.size();a++)
+
+        {
+
+           // Log.d(TAG, "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp " + collection2.size()   );
+
+           // Log.d(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + mSpinner.getSelectedItem().toString().equals(current)   );
+
+                mMap.addMarker(collection.get(a).getmOptions());
+
+         }*/
+               // dataCursor.close();
+
+               /* for(int c=0;c<collection2.size();c++)
+                {
+                    String current = collection.get(c);
+                    Log.d(TAG, "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp " + collection2.size()   );
+                    Log.d(TAG, "Current " + current   );
+                    Log.d(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + mSpinner.getSelectedItem().toString().equals(current)   );
+                    if (mSpinner.getSelectedItem().toString().equals(current))
+                    {
+                        mMap.addMarker(collection2.get(c));
+                    } else {
+                        continue;
+                    }
+
+                }*/
 
             }
 
@@ -274,6 +370,41 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         }); */
 
         hideSoftKeyboard();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    private ArrayList<CustomMarker> allMarkers(){
+        MarkerOptions options = new MarkerOptions();
+        ArrayList<CustomMarker> collection = new ArrayList<CustomMarker>();
+
+        // Projection contains the columns we want
+        String[] projection = new String[]{"_ID", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
+                "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+
+        // Pass the URL, projection and I'll cover the other options below
+        Cursor dataCursor = resolver.query(uri, projection, null, null, null, null);
+        //Toast.makeText(getActivity(),""+dataCursor.getCount(),Toast.LENGTH_LONG).show();
+
+        while (dataCursor.moveToNext()) {
+            int id = dataCursor.getColumnIndex("_id ");
+            int id_ext = dataCursor.getColumnIndex("ID_EXT");
+            String name = dataCursor.getString(dataCursor.getColumnIndex("NOM"));
+            double lat = Double.parseDouble(dataCursor.getString(3));
+            double longi = Double.parseDouble(dataCursor.getString(4));
+            String adresse = dataCursor.getString(dataCursor.getColumnIndex("ADRESSE_POSTALE"));
+            String categorie = dataCursor.getString(dataCursor.getColumnIndex("CATEGORIE"));
+            String resume = dataCursor.getString(dataCursor.getColumnIndex("RESUME"));
+            byte[] image = dataCursor.getBlob(dataCursor.getColumnIndex("IMAGE"));
+
+            SiteData currentSite = new SiteData(id, id_ext, name, lat, longi, adresse, categorie, resume, image);
+            LatLng point = new LatLng(currentSite.getLatitude(), currentSite.getLongitude());
+            options.position(point);
+            options.title(currentSite.getNom());
+            options.snippet("Categorie: " + currentSite.getCategorie() + "  " + "Resume: " + currentSite.getResume());
+            CustomMarker cMarker = new CustomMarker(currentSite.getCategorie(), options, currentSite.getLatitude(), currentSite.getLongitude(), currentSite.getNom(), currentSite.getResume());
+            collection.add(cMarker);
+        }
+        return collection;
     }
 
     private void drawCircle(LatLng point){
@@ -304,96 +435,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     public void AddMarker (){
-        MarkerOptions options = new MarkerOptions();
 
-        // Projection contains the columns we want
-        String[] projection = new String[]{"_ID", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
-                "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
-
-        // Pass the URL, projection and I'll cover the other options below
-        Cursor dataCursor = resolver.query(uri, projection, null, null, null, null);
-        //Toast.makeText(getActivity(),""+dataCursor.getCount(),Toast.LENGTH_LONG).show();
-        ArrayList<String> collection = new ArrayList<String>();
-        ArrayList<MarkerOptions> collection2 = new ArrayList<MarkerOptions>();
-        while(dataCursor.moveToNext())
-        {
-            float results[] = new float[10];
-             Location.distanceBetween(latitude, longitude, Double.valueOf(dataCursor.getString(3)) , Double.valueOf(dataCursor.getString(4)), results);
-            // Projection contains the columns we want
-            String[] projection1 = new String[]{"_id", "nom"};
-            // Pass the URL, projection and I'll cover the other options below
-            Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);
-           // Toast.makeText(getActivity(), data.getString(data.getColumnIndex("nom")),Toast.LENGTH_LONG).show();
-           // && mSpinner.getSelectedItem().toString().equals("Tout")
-            if (Integer.parseInt(mRoyen.getText().toString()) > results[0] ) {
-                LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
-                options.position(point);
-                options.title(dataCursor.getString(2));
-                options.snippet(  "Categorie: " +dataCursor.getString(6) + "  " + "Resumer: " + dataCursor.getString(7));
-                if ( mSpinner.getSelectedItem().toString().equals(dataCursor.getString(6))){
-                    Toast.makeText(getActivity(),"Booba",Toast.LENGTH_LONG).show();
-                    //  List<String> collection = new ArrayList<String>();
-                    collection.add(dataCursor.getString(6));
-                    collection2.add(options);
-
-                }
-
-                if (mSpinner.getSelectedItem().toString().equals("Tout")){
-                    /*LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
-                    options.position(point);
-                    options.title(dataCursor.getString(2));
-                    options.snippet(  "Categorie: " +dataCursor.getString(6) + "  " + "Resumer: " + dataCursor.getString(7)
-                    );*/
-
-
-                    //  List<String> collection = new ArrayList<String>();
-                    collection.add(dataCursor.getString(6));
-                    collection2.add(options);
-                    /*for(int c=0;c<collection2.size();c++)
-                    {
-                        String current = collection.get(c);
-                        Log.d(TAG, "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp " + dataCursor.getString(6)   );
-                        Log.d(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + mSpinner.getSelectedItem().toString()   );
-                        if (mSpinner.getSelectedItem().toString().equals(current))
-                        {
-                            mMap.addMarker(options);
-                        }
-
-                    }*/
-                }
-              //  Toast.makeText(getActivity(),dataCursor.getString(6).toString(),Toast.LENGTH_LONG).show();
-
-
-
-              //  mMap.addMarker(options);
-           }
-
-           /*else if( Integer.parseInt(mRoyen.getText().toString()) > results[0] && mSpinner.getSelectedItem().toString() == dataCursor.getString(6).toString()){
-                Toast.makeText(getActivity(),"hellooo",Toast.LENGTH_LONG).show();
-
-        }
-        else {
-                Toast.makeText(getActivity(),"Nada",Toast.LENGTH_LONG).show();
-
-            } */
-
-        }
-
-        for(int c=0;c<collection2.size();c++)
-        {
-            String current = collection.get(c);
-            Log.d(TAG, "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp " + collection2.get(c)   );
-            Log.d(TAG, "Current " + current   );
-            Log.d(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + mSpinner.getSelectedItem().toString().equals(current)   );
-            if (mSpinner.getSelectedItem().toString().equals(current))
-            {
-                mMap.addMarker(collection2.get(c));
-            } else {
-                continue;
-            }
-
-        }
-        dataCursor.close();
     }
 
 
@@ -446,7 +488,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
 SpinnerItems();
             init();
+          //  Toast.makeText(getActivity(),"Bla bla",Toast.LENGTH_LONG).show();
+
+           //
         }
+
 
 
     }

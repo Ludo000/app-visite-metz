@@ -1,6 +1,7 @@
 package com.example.sami.visitmetz_v2.models;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class SiteData implements Serializable {
 
@@ -52,6 +53,20 @@ public class SiteData implements Serializable {
 
     public String getCategorie() {
         return categorie;
+    }
+
+    @Override
+    public String toString() {
+        return "SiteData{" +
+                "nom='" + nom + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", adresse='" + adresse + '\'' +
+                ", categorie='" + categorie + '\'' +
+                ", resume='" + resume + '\'' +
+                ", id_ext=" + id_ext +
+                ", id=" + id +
+                '}';
     }
 
     public void setCategorie(String categorie) {

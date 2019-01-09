@@ -313,28 +313,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         // Pass the URL, projection and I'll cover the other options below
         Cursor dataCursor = resolver.query(uri, projection, null, null, null, null);
         //Toast.makeText(getActivity(),""+dataCursor.getCount(),Toast.LENGTH_LONG).show();
-
         ArrayList<String> collection = new ArrayList<String>();
         ArrayList<MarkerOptions> collection2 = new ArrayList<MarkerOptions>();
-
-
         while(dataCursor.moveToNext())
         {
             float results[] = new float[10];
-
              Location.distanceBetween(latitude, longitude, Double.valueOf(dataCursor.getString(3)) , Double.valueOf(dataCursor.getString(4)), results);
-
-
             // Projection contains the columns we want
             String[] projection1 = new String[]{"_id", "nom"};
-
             // Pass the URL, projection and I'll cover the other options below
             Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);
-
            // Toast.makeText(getActivity(), data.getString(data.getColumnIndex("nom")),Toast.LENGTH_LONG).show();
-
-
-// && mSpinner.getSelectedItem().toString().equals("Tout")
+           // && mSpinner.getSelectedItem().toString().equals("Tout")
             if (Integer.parseInt(mRoyen.getText().toString()) > results[0] ) {
                 LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
                 options.position(point);
@@ -342,8 +332,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                 options.snippet(  "Categorie: " +dataCursor.getString(6) + "  " + "Resumer: " + dataCursor.getString(7));
                 if ( mSpinner.getSelectedItem().toString().equals(dataCursor.getString(6))){
                     Toast.makeText(getActivity(),"Booba",Toast.LENGTH_LONG).show();
-
-
                     //  List<String> collection = new ArrayList<String>();
                     collection.add(dataCursor.getString(6));
                     collection2.add(options);

@@ -101,6 +101,21 @@ public class SiteData implements Serializable {
         this.id_ext = id_ext;
     }
 
+    @Override
+    public String toString() {
+        return "SiteData{" +
+                "nom='" + nom + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", adresse='" + adresse + '\'' +
+                ", categorie='" + categorie + '\'' +
+                ", resume='" + resume + '\'' +
+                ", image=" + Arrays.toString(image) +
+                ", id_ext=" + id_ext +
+                ", id=" + id +
+                '}';
+    }
+
     public int getIDEXT() {
         return id_ext;
     }

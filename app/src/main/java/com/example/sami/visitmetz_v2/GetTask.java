@@ -108,7 +108,7 @@ public class GetTask extends AsyncTask<String, Integer, String> {
                         resume = ((JSONObject) res.get(key)).getString("RESUME");
                         image = Base64.decode(((JSONObject) res.get(key)).getString("IMAGE"), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
 
-                        siteToShow = "id :" + Integer.toString(id) + " id_ext :" + Integer.toString(id_ext) + " / nom :" + nom + "  / latitude :" + Double.toString(latitude) + " / longitude :" + Double.toString(longitude) + " / adresse :" + adresse + " / catégorie " + categorie + " / resumé" + resume + "\n";
+                        siteToShow = "id :" + Integer.toString(id) + " id_ext :" + Integer.toString(id_ext) + " / nom : " + nom + "  / latitude : " + Double.toString(latitude) + " / longitude : " + Double.toString(longitude) + " / adresse : " + adresse + " / catégorie : " + categorie + " / resumé : " + resume + "\n";
                         this.syncFragment.listSite.add(siteToShow);
                     }
                 }

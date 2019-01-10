@@ -3,14 +3,11 @@ package com.example.sami.visitmetz_v2;
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
-import com.example.sami.visitmetz_v2.models.SiteData;
 
 public class SyncButtonUploadListener extends SyncButtonListener {
-
     public SyncButtonUploadListener(SyncFragment syncFragment){
         super(syncFragment);
     }
@@ -18,6 +15,9 @@ public class SyncButtonUploadListener extends SyncButtonListener {
     public void onClick(View v) {
         this.syncFragment.buttonDownload.setEnabled(false);
         this.syncFragment.buttonUpload.setEnabled(false);
+        this.syncFragment.buttonShow.setEnabled(false);
+        this.syncFragment.textSyncOutput.setText("");
+        this.syncFragment.spinner.setVisibility(View.VISIBLE);
         String currentText = this.syncFragment.textSyncOutput.getText().toString();
 
         this.resolver = this.syncFragment.getActivity().getContentResolver();
@@ -30,14 +30,14 @@ public class SyncButtonUploadListener extends SyncButtonListener {
             while (foundSite.moveToNext()) {
 
                 String name = foundSite.getString(foundSite.getColumnIndex("NOM"));
-                double latitude = (double) foundSite.getColumnIndex("LATITUDE");
-                double longitude = (double) foundSite.getColumnIndex("LONGITUDE");
+                double latitude = Double.parseDouble(foundSite.getString(3));
+                double longitude = Double.parseDouble(foundSite.getString(4));
                 String adresse = foundSite.getString(foundSite.getColumnIndex("ADRESSE_POSTALE"));
                 String categorie = foundSite.getString(foundSite.getColumnIndex("CATEGORIE"));
                 String resume = foundSite.getString(foundSite.getColumnIndex("RESUME"));
                 byte[] image = foundSite.getBlob(foundSite.getColumnIndex("IMAGE"));
 
-                new GetUrlContentTask(this).execute("https://www.mettreauclair.fr/appVisiteMetz/add.php"
+                new UploadTask(this).execute("https://www.mettreauclair.fr/appVisiteMetz/add.php"
                         + "?NOM=" + name
                         + "&LATITUDE=" + latitude
                         + "&LONGITUDE=" + longitude

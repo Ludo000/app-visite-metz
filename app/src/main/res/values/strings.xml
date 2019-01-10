@@ -25,4 +25,5 @@
     <string name="nouvelle_cat_gorie">Nouvelle catégorie</string>
     <string name="prompt_selectCat">-- Sélectionner une catégorie --</string>
     <string name="aucun_site_ajout">Aucun site ajouté</string>
+    <string name="labelButtonView" >Afficher</string>
 </resources>

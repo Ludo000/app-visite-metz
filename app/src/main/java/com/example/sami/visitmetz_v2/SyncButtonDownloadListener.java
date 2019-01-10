@@ -10,9 +10,12 @@ public class SyncButtonDownloadListener extends SyncButtonListener {
     public void onClick(View v) {
         this.syncFragment.buttonDownload.setEnabled(false);
         this.syncFragment.buttonUpload.setEnabled(false);
+        this.syncFragment.buttonShow.setEnabled(false);
+        this.syncFragment.textSyncOutput.setText("");
+        this.syncFragment.spinner.setVisibility(View.VISIBLE);
         String currentText = this.syncFragment.textSyncOutput.getText().toString();
 
-        new GetUrlContentTask(this).execute("https://www.mettreauclair.fr/appVisiteMetz/get.php");
+        new DownloadTask(this).execute("https://www.mettreauclair.fr/appVisiteMetz/get.php");
 
 
     }

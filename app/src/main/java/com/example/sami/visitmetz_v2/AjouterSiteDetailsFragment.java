@@ -71,7 +71,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.ajouter_site_activity, container, false);
+        View v = inflater.inflate(R.layout.ajouter_site_details_activity, container, false);
         bouton_ajouter_site = v.findViewById(R.id.bouton_ajouter_site);
         bouton_choisir_image = v.findViewById(R.id.bouton_choisir_image);
         bouton_ajouter_categorie = v.findViewById(R.id.bouton_ajouter_categorie);
@@ -90,12 +90,12 @@ public class AjouterSiteDetailsFragment extends Fragment {
         latitude = v.findViewById(R.id.latitude);
         adresse_postale = v.findViewById(R.id.adresse_postale);
         resume = v.findViewById(R.id.resume);
-        editImage.setVisibility(View.VISIBLE);
         nom = v.findViewById(R.id.nom);
 
         if (site != null) {
             bitmap = BitmapFactory.decodeByteArray(site.getImage(), 0, site.getImage().length);
             editImage.setImageBitmap(bitmap);
+            editImage.setTag(bitmap);
             nom.setText(site.getNom());
             oldName = site.getNom();
             for(int i=0; i < categories.size(); i++ ) {
@@ -145,7 +145,7 @@ public class AjouterSiteDetailsFragment extends Fragment {
                         Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(i, REQUEST_CODE_GALLERY);
-                bouton_choisir_image.setVisibility(View.GONE);
+                //bouton_choisir_image.setVisibility(View.GONE);
             }
         });
 

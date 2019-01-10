@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
+import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
@@ -172,14 +173,25 @@ public class AjouterSiteDetailsFragment extends Fragment {
                         newCategorie = nCategorie.getText().toString().trim();
 
                         if (newCategorie.length() > 0) {
-                            ContentValues content = new ContentValues();
-                            content.put("nom", newCategorie);
+                            //On cherche si duplica
+                            String[] projection = new String[]{"_id","nom"};
+                            @SuppressLint("Recycle")
+                            Cursor foundSite = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection, "nom = ?", new String[]{newCategorie}, null);
 
-                            Uri uri2 = getActivity().getContentResolver().insert(
-                                    CategoriesProvider.CONTENT_URI, content);
-                            loadspinner();
+                            if(foundSite!=null) {
+                                if (foundSite.moveToFirst()) {
+                                    Toast.makeText(getContext(), "Une categorie avec le nom '"+ newCategorie+"' existe déjà!", Toast.LENGTH_LONG).show();
+                                } else {
+                                    ContentValues content = new ContentValues();
+                                    content.put("nom", newCategorie);
+
+                                    Uri uri2 = getActivity().getContentResolver().insert(
+                                            CategoriesProvider.CONTENT_URI, content);
+                                    loadspinner();
+                                }
+                            }
                         } else {
-                            Toast.makeText(getContext(), "Le champ est vide!", Toast.LENGTH_LONG)
+                            Toast.makeText(getContext(), "Le champ est invalide!", Toast.LENGTH_LONG)
                                     .show();
                             dialog.cancel();
                         }
@@ -208,58 +220,46 @@ public class AjouterSiteDetailsFragment extends Fragment {
                 String resumeSite = resume.getText().toString().trim();
 
                 //Checks if it is not empty
-                if (nomSite.length() > 0) {
+                if (nomSite.length() > 0 && latSite > 0 && longSite >0) {
 
-                    String PROVIDER_NAME = "com.example.sami.visitmetz_v2.ContentProvider.SitesProvider";
-                    String URL = "content://" + PROVIDER_NAME + "/sites_table";
-                    Uri uri = Uri.parse(URL);
-
-                    // Holds the column data we want to retrieve
+                    //On cherche si duplica
                     String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
-
-                    // Pass the URL for Content Provider, the projection,
-                    // the where clause followed by the matches in an array for the ?
-                    // null is for sort order
                     @SuppressLint("Recycle")
-                    Cursor foundSite = getContext().getContentResolver().query(uri, projection, "NOM = ? ", new String[]{oldName}, null);
+                    Cursor foundSite = getContext().getContentResolver().query(SitesProvider.CONTENT_URI, projection, "NOM = ? AND LATITUDE=? AND LONGITUDE=? ", new String[]{nomSite, Double.toString(latSite), Double.toString(longSite)}, null);
 
+                    if(foundSite!=null) {
+                        if (foundSite.moveToFirst()) {
+                            Toast.makeText(getContext(), "Un site avec le nom '"+ nomSite + "' existe déjà!", Toast.LENGTH_LONG).show();
+                        } else {
 
-                    //update a site
-                    ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
+                            // Add a new site record
+                            ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
 
-                    // Cycle through our one result or print error
-                    if (foundSite.moveToFirst()) {
+                            Uri uri = getActivity().getContentResolver().insert(
+                                    SitesProvider.CONTENT_URI, sitesValues);
 
-                        String id = foundSite.getString(foundSite.getColumnIndex("_id"));
-                        String URL1 = "content://" + PROVIDER_NAME + "/sites_table/#" + id;
-                        Uri uri1 = Uri.parse(URL1);
+                            Toast.makeText(getContext(), uri + ": Le site " + nomSite + " a été ajouté: " + latSite + ", " + longSite, Toast.LENGTH_LONG)
+                                    .show();
 
-                        // Holds the column data we want to update
-                        String[] selectionargs = new String[]{""+id};
+                            // Create new fragment and transaction
+                            Fragment newFragment = new SitesOverviewFragment();
+                            // consider using Java coding conventions (upper first char class names!!!)
+                            FragmentTransaction transaction;
+                            if (getFragmentManager() != null) {
+                                transaction = getFragmentManager().beginTransaction();
 
-                        int c = getContext().getContentResolver().update(
-                                uri1, sitesValues, "_id = ?", selectionargs);
+                                // Replace whatever is in the fragment_container view with this fragment,
+                                // and add the transaction to the back stack
+                                transaction.replace(R.id.fragment_container, newFragment);
+                                transaction.addToBackStack(null);
 
-                        Toast.makeText(getContext(), c +" site a été modifié", Toast.LENGTH_LONG)
-                                .show();
-
-                        // Create new fragment and transaction
-                        Fragment newFragment = new SitesOverviewFragment();
-                        // consider using Java coding conventions (upper first char class names!!!)
-                        FragmentTransaction transaction;
-                        if (getFragmentManager() != null) {
-                            transaction = getFragmentManager().beginTransaction();
-                            // Replace whatever is in the fragment_container view with this fragment,
-                            // and add the transaction to the back stack
-                            transaction.replace(R.id.fragment_container, newFragment);
-                            transaction.addToBackStack(null);
-
-                            // Commit the transaction
-                            transaction.commit();
+                                // Commit the transaction
+                                transaction.commit();
+                            }
                         }
                     }
                 } else {
-                    Toast("Le formulaire est vide !");
+                    Toast("Le formulaire est invalide!");
                 }
             }
         });

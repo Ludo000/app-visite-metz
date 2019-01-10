@@ -57,6 +57,9 @@
         <activity
             android:name=".AjouterSiteActivity"
             android:label="Ajouter site" />
+        <activity
+            android:name=".CategoriesOverviewActivity"
+            android:label="Overview categories" />
 
         <activity
             android:name=".AjouterSiteDetailsActivity"

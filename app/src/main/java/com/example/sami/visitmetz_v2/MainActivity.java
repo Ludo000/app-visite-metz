@@ -76,9 +76,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         new MapFragment()).commit();
                 break;
 
-            case R.id.nav_metz:
+            case R.id.nav_categories:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new MetzFragment()).commit();
+                        new CategoriesOverviewFragment()).commit();
                 break;
             case R.id.nav_sync:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,

@@ -174,7 +174,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@color/colorAccent"
-                    android:text="@string/action_ajouter_site"
+                    android:text="@string/action_modifier_site"
                     android:textColor="@color/colorPrimary"
                     android:textStyle="bold" />
             </LinearLayout>

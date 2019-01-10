@@ -126,9 +126,9 @@ public class AjouterSiteFragment extends Fragment {
                 // Add action buttons
                 builder.setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        newCategorie = nCategorie.getText().toString();
+                        newCategorie = nCategorie.getText().toString().trim();
 
-                       if (newCategorie.trim().length() > 0) {
+                       if (newCategorie.length() > 0) {
                             ContentValues content = new ContentValues();
                             content.put("nom", newCategorie);
 
@@ -157,16 +157,16 @@ public class AjouterSiteFragment extends Fragment {
         bouton_ajouter_site.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String nomSite = nom.getText().toString();
+                String nomSite = nom.getText().toString().trim();
                 byte[] ImageSite = getByteFromDrawable(editImage.getDrawable());
                 double longSite = Double.valueOf(longitude.getText().toString());
                 double latSite = Double.valueOf(latitude.getText().toString());
-                String adressSite = adresse_postale.getText().toString();
-                String categorieSite = spinner.getSelectedItem().toString();
-                String resumeSite = resume.getText().toString();
+                String adressSite = adresse_postale.getText().toString().trim();
+                String categorieSite = spinner.getSelectedItem().toString().trim();
+                String resumeSite = resume.getText().toString().trim();
 
                 //Checks if it is not empty
-                if (nomSite.trim().length() > 0) {
+                if (nomSite.length() > 0) {
 
                     // Add a new site record
                     ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);

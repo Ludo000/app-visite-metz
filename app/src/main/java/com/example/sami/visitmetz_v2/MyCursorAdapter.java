@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 
 public abstract class MyCursorAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 
-    protected Context mContext;
+    private Context mContext;
 
     private Cursor mCursor;
 
@@ -19,32 +19,32 @@ public abstract class MyCursorAdapter<VH extends RecyclerView.ViewHolder> extend
     private DataSetObserver mDataSetObserver;
 
     public MyCursorAdapter(Context context, Cursor cursor) {
-        mContext = context;
-        mCursor = cursor;
-        mDataValid = cursor != null;
-        mRowIdColumn = mDataValid ? mCursor.getColumnIndex("_id") : -1;
-        mDataSetObserver = new NotifyingDataSetObserver(this);
-        if (mCursor != null) {
-            mCursor.registerDataSetObserver(mDataSetObserver);
+        this.mContext = context;
+        this.mCursor = cursor;
+        this.mDataValid = cursor != null;
+        this.mRowIdColumn = this.mDataValid ? this.mCursor.getColumnIndex("_id") : -1;
+        this.mDataSetObserver = new NotifyingDataSetObserver(this);
+        if (this.mCursor != null) {
+            this.mCursor.registerDataSetObserver(this.mDataSetObserver);
         }
     }
 
     public Cursor getCursor() {
-        return mCursor;
+        return this.mCursor;
     }
 
     @Override
     public int getItemCount() {
-        if (mDataValid && mCursor != null) {
-            return mCursor.getCount();
+        if (this.mDataValid && this.mCursor != null) {
+            return this.mCursor.getCount();
         }
         return 0;
     }
 
     @Override
     public long getItemId(int position) {
-        if (mDataValid && mCursor != null && mCursor.moveToPosition(position)) {
-            return mCursor.getLong(mRowIdColumn);
+        if (this.mDataValid && this.mCursor != null && this.mCursor.moveToPosition(position)) {
+            return this.mCursor.getLong(this.mRowIdColumn);
         }
         return 0;
     }
@@ -65,10 +65,10 @@ public abstract class MyCursorAdapter<VH extends RecyclerView.ViewHolder> extend
 
     @Override
     public void onBindViewHolder(VH viewHolder, int position) {
-        if (!mDataValid) {
+        if (!this.mDataValid) {
             throw new IllegalStateException("this should only be called when the cursor is valid");
         }
-        if (!mCursor.moveToPosition(position)) {
+        if (!this.mCursor.moveToPosition(position)) {
             throw new IllegalStateException("couldn't move cursor to position " + position);
         }
         onBindViewHolder(viewHolder, mCursor);
@@ -91,24 +91,24 @@ public abstract class MyCursorAdapter<VH extends RecyclerView.ViewHolder> extend
      * closed.
      */
     public Cursor swapCursor(Cursor newCursor) {
-        if (newCursor == mCursor) {
+        if (newCursor == this.mCursor) {
             return null;
         }
-        final Cursor oldCursor = mCursor;
-        if (oldCursor != null && mDataSetObserver != null) {
-            oldCursor.unregisterDataSetObserver(mDataSetObserver);
+        final Cursor oldCursor = this.mCursor;
+        if (oldCursor != null && this.mDataSetObserver != null) {
+            oldCursor.unregisterDataSetObserver(this.mDataSetObserver);
         }
-        mCursor = newCursor;
-        if (mCursor != null) {
-            if (mDataSetObserver != null) {
-                mCursor.registerDataSetObserver(mDataSetObserver);
+        this.mCursor = newCursor;
+        if (this.mCursor != null) {
+            if (this.mDataSetObserver != null) {
+                this.mCursor.registerDataSetObserver(this.mDataSetObserver);
             }
-            mRowIdColumn = newCursor.getColumnIndexOrThrow("_id");
-            mDataValid = true;
+            this.mRowIdColumn = newCursor.getColumnIndexOrThrow("_id");
+            this.mDataValid = true;
             notifyDataSetChanged();
         } else {
-            mRowIdColumn = -1;
-            mDataValid = false;
+            this.mRowIdColumn = -1;
+            this.mDataValid = false;
             notifyDataSetChanged();
             //There is no notifyDataSetInvalidated() method in RecyclerView.Adapter
         }
@@ -129,14 +129,14 @@ public abstract class MyCursorAdapter<VH extends RecyclerView.ViewHolder> extend
         @Override
         public void onChanged() {
             super.onChanged();
-            ((MyCursorAdapter) adapter).setDataValid(true);
-            adapter.notifyDataSetChanged();
+            ((MyCursorAdapter) this.adapter).setDataValid(true);
+            this.adapter.notifyDataSetChanged();
         }
 
         @Override
         public void onInvalidated() {
             super.onInvalidated();
-            ((MyCursorAdapter) adapter).setDataValid(false);
+            ((MyCursorAdapter) this.adapter).setDataValid(false);
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.example.sami.visitmetz_v2;
+package com.example.sami.visitmetz_v2.Ecouteurs;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -11,22 +11,23 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.widget.Toast;
 
-import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
+import com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider;
+import com.example.sami.visitmetz_v2.Sites.SitesFavorisOverviewFragment;
 
-public class EcouteurLoadEvenement_3 implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EcouteurLoadEvenement_2 implements LoaderManager.LoaderCallbacks<Cursor> {
 
     Context context;
 
-    private CategoriesOverviewFragment.MyAdapter mAdapter;
+    private SitesFavorisOverviewFragment.MyAdapter mAdapter;
 
 
     // If non-null, this is the current filter the user has provided.
     private String mCurFilter;
 
     // Projection contains the columns we want
-    private String[] projection = new String[]{"_id", "nom"};
+    private String[] projection = new String[]{"_id", "nom", "image"};
 
-    EcouteurLoadEvenement_3(Context context, CategoriesOverviewFragment.MyAdapter adapter, String curFilter) {
+    public EcouteurLoadEvenement_2(Context context, SitesFavorisOverviewFragment.MyAdapter adapter, String curFilter) {
         this.context = context;
         this.mAdapter = adapter;
         this.mCurFilter = curFilter;
@@ -39,15 +40,15 @@ public class EcouteurLoadEvenement_3 implements LoaderManager.LoaderCallbacks<Cu
         // sample only has one Loader, so we don't care about the ID.
         // First, pick the base URI to use depending on whether we are
         // currently filtering.
-        Uri baseUri = CategoriesProvider.CONTENT_URI;
+        Uri baseUri = SitesFavorisProvider.CONTENT_URI;
         CursorLoader cursorLoader;
         if (this.mCurFilter == null || this.mCurFilter.trim().length() == 0) {
             cursorLoader = new CursorLoader(this.context, baseUri, projection, null, null, "_id desc");
-            Toast.makeText(this.context, "Aucun site retrouvé!", Toast.LENGTH_LONG).show();
+            //Toast.makeText(this.context, "Aucun site retrouvé!", Toast.LENGTH_LONG).show();
         }
         else {
-            cursorLoader = new CursorLoader(this.context, baseUri, projection, "nom = ?", new String[]{this.mCurFilter.trim()}, null);
-            Toast.makeText(this.context, "Categorie retrouvé: " + this.mCurFilter, Toast.LENGTH_SHORT).show();
+            cursorLoader = new CursorLoader(this.context, baseUri, projection, "NOM LIKE ?", new String[]{"%"+this.mCurFilter.trim()+"%"}, null);
+            //Toast.makeText(this.context, "Site retrouvé: " + this.mCurFilter, Toast.LENGTH_SHORT).show();
         }
         //and get a CursorLoader from my contentprovider
         return cursorLoader;

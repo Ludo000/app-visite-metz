@@ -13,6 +13,10 @@ import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.example.sami.visitmetz_v2.Categories.CategoriesOverviewFragment;
+import com.example.sami.visitmetz_v2.Sites.AjouterSiteFragment;
+import com.example.sami.visitmetz_v2.Sites.SitesFavorisOverviewFragment;
+import com.example.sami.visitmetz_v2.Sites.SitesOverviewFragment;
 import com.example.sami.visitmetz_v2.Sync.SyncFragment;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {

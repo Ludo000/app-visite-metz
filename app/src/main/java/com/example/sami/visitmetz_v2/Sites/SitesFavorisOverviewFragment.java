@@ -1,4 +1,4 @@
-package com.example.sami.visitmetz_v2;
+package com.example.sami.visitmetz_v2.Sites;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -34,6 +34,9 @@ import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
+import com.example.sami.visitmetz_v2.Ecouteurs.EcouteurLoadEvenement_2;
+import com.example.sami.visitmetz_v2.MyCursorAdapter;
+import com.example.sami.visitmetz_v2.R;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 public class SitesFavorisOverviewFragment extends Fragment implements SearchView.OnQueryTextListener {
@@ -210,7 +213,6 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
             super(v);
             titleTextView = v.findViewById(R.id.titleTextView);
             coverImageView = v.findViewById(R.id.coverImageView);
-            shareImageView = v.findViewById(R.id.shareImageView);
             editImageView = v.findViewById(R.id.editImageView);
             deleteImageView = v.findViewById(R.id.deleteImageView);
             likeImageView = v.findViewById(R.id.likeImageView);
@@ -240,8 +242,8 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
                             int id = foundSite.getColumnIndex("_id");
                             int id_ext = foundSite.getColumnIndex("ID_EXT");
                             String name = foundSite.getString(foundSite.getColumnIndex("NOM"));
-                            double latitude = (double) foundSite.getColumnIndex("LATITUDE");
-                            double longitude = (double) foundSite.getColumnIndex("LONGITUDE");
+                            double latitude = Double.parseDouble(foundSite.getString(3));
+                            double longitude = Double.parseDouble(foundSite.getString(4));
                             String adresse = foundSite.getString(foundSite.getColumnIndex("ADRESSE_POSTALE"));
                             String categorie = foundSite.getString(foundSite.getColumnIndex("CATEGORIE"));
                             String resume = foundSite.getString(foundSite.getColumnIndex("RESUME"));
@@ -354,24 +356,6 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
                     builder.create().show();
                 }
             });
-
-
-            /*shareImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                Uri imageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
-                        "://" + getResources().getResourcePackageName(coverImageView.getId())
-                        + '/' + "drawable" + '/' + getResources().getResourceEntryName((int) coverImageView.getTag()));
-
-                Intent shareIntent = new Intent();
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM,imageUri);
-                shareIntent.setType("image/jpeg");
-                startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
-
-                }
-            });*/
         }
 
         public void setData(Cursor c) {
@@ -387,7 +371,6 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
                 editImageView.setTag(R.drawable.edit_black_24dp);
                 deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
                 likeImageView.setVisibility(View.GONE);
-                shareImageView.setVisibility(View.GONE);
 
             } else {
                 textViewNoData.setVisibility(View.VISIBLE);

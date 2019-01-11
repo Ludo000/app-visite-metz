@@ -1,4 +1,4 @@
-package com.example.sami.visitmetz_v2;
+package com.example.sami.visitmetz_v2.Sites;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -20,7 +20,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,66 +35,113 @@ import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
+import com.example.sami.visitmetz_v2.DatabaseHelper;
+import com.example.sami.visitmetz_v2.R;
+import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-
-public class AjouterSiteFragment extends Fragment {
+public class AjouterSiteDetailsFragment extends Fragment {
 
     final int REQUEST_CODE_GALLERY = 42;
     DatabaseHelper mDatabaseHelper1;
-    Button bouton_ajouter_site, btnAnnuler, bouton_ajouter_categorie;
+    Button bouton_modifier_site, btnAnnuler, bouton_ajouter_categorie;
     ImageButton bouton_choisir_image;
     EditText nom;
     EditText longitude;
     EditText latitude;
     EditText adresse_postale;
-    EditText categorie;
     EditText resume;
     ImageView editImage;
+    Bitmap bitmap;
+
+    String oldName;
 
     Spinner spinner;
 
     private String newCategorie = "";
     private EditText nCategorie;
+    List<String> categories;
 
 
+    @SuppressLint("SetTextI18n")
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.ajouter_site_activity, container, false);
-        bouton_ajouter_site = v.findViewById(R.id.bouton_ajouter_site);
+        View v = inflater.inflate(R.layout.ajouter_site_details_activity, container, false);
+        bouton_modifier_site = v.findViewById(R.id.bouton_ajouter_site);
         bouton_choisir_image = v.findViewById(R.id.bouton_choisir_image);
         bouton_ajouter_categorie = v.findViewById(R.id.bouton_ajouter_categorie);
+        spinner = v.findViewById(R.id.categorie_spinner);
+        loadspinner();
+
+        Bundle bundle = getArguments();
+
+        SiteData site = null;
+        if (bundle != null) {
+            site = (SiteData) bundle.getSerializable("site");
+        }
+
         editImage = v.findViewById(R.id.imageView4);
-        nom = v.findViewById(R.id.nom);
         longitude = v.findViewById(R.id.longitude);
         latitude = v.findViewById(R.id.latitude);
         adresse_postale = v.findViewById(R.id.adresse_postale);
         resume = v.findViewById(R.id.resume);
-        spinner = v.findViewById(R.id.categorie_spinner);
+        nom = v.findViewById(R.id.nom);
 
-        loadspinner();
+        if (site != null) {
+            bitmap = BitmapFactory.decodeByteArray(site.getImage(), 0, site.getImage().length);
+            editImage.setImageBitmap(bitmap);
+            editImage.setTag(bitmap);
+            nom.setText(site.getNom());
+            oldName = site.getNom();
+            for(int i=0; i < categories.size(); i++) {
+                Toast(""+ categories.size()+ ", " +site.getCategorie()+ ", "+ categories.get(i));
+                if (site.getCategorie().equals(categories.get(i))) {
+                    spinner.setSelection(i);
+                }
+            }
+            longitude.setText(Double.toString(site.getLongitude()));
+            latitude.setText(Double.toString(site.getLatitude()));
+            adresse_postale.setText(site.getAdresse());
+            resume.setText(site.getResume());
+        }
 
         btnAnnuler = v.findViewById(R.id.bouton_annuler);
         btnAnnuler.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(getContext(), MainActivity.class);
-                startActivity(intent);
+                // Create new fragment, give it an object and start transaction
+                Fragment newFragment = new SitesOverviewFragment();
+
+                // consider using Java coding conventions (upper first char class names!!!)
+                FragmentTransaction transaction = null;
+                if (getFragmentManager() != null) {
+                    transaction = getFragmentManager().beginTransaction();
+                }
+                if (transaction != null) {
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                    // Replace whatever is in the fragment_container view with this fragment,
+                    // and add the transaction to the back stack
+                    transaction.replace(R.id.fragment_container, newFragment);
+                    transaction.addToBackStack(null);
+
+                    // Commit the transaction
+                    transaction.commit();
+                }
             }
         });
 
         mDatabaseHelper1 = new DatabaseHelper(this.getActivity());
 
-        editImage.setVisibility(View.GONE);
-
+        bouton_choisir_image.setVisibility(View.VISIBLE);
         bouton_choisir_image.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -103,14 +149,13 @@ public class AjouterSiteFragment extends Fragment {
                         Intent.ACTION_PICK,
                         android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(i, REQUEST_CODE_GALLERY);
-                bouton_choisir_image.setVisibility(View.GONE);
+                //bouton_choisir_image.setVisibility(View.GONE);
             }
         });
-        bouton_choisir_image.setVisibility(View.VISIBLE);
 
         bouton_ajouter_categorie.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(final View v) {
+            @Override
+            public void onClick(final View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setTitle("Ajouter une nouvelle catégorie");
 
@@ -127,33 +172,33 @@ public class AjouterSiteFragment extends Fragment {
 
                 // Add action buttons
                 builder.setPositiveButton("Ajouter", new DialogInterface.OnClickListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
                     public void onClick(DialogInterface dialog, int id) {
                         newCategorie = nCategorie.getText().toString().trim();
 
-                       if (newCategorie.length() > 0) {
+                        if (newCategorie.length() > 0) {
+                            //On cherche si duplica
+                            String[] projection = new String[]{"_id","nom"};
+                            @SuppressLint("Recycle")
+                            Cursor foundSite = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection, "nom = ?", new String[]{newCategorie}, null);
 
-                           //On cherche si duplica
-                           String[] projection = new String[]{"_id","nom"};
-                           @SuppressLint("Recycle")
-                           Cursor foundSite = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection, "nom = ?", new String[]{newCategorie}, null);
+                            if(foundSite!=null) {
+                                if (foundSite.moveToFirst()) {
+                                    Toast.makeText(getContext(), "Une categorie avec le nom '"+ newCategorie+"' existe déjà!", Toast.LENGTH_LONG).show();
+                                } else {
+                                    ContentValues content = new ContentValues();
+                                    content.put("nom", newCategorie);
 
-                           if(foundSite!=null) {
-                               if (foundSite.moveToFirst()) {
-                                   Toast.makeText(getContext(), "Une categorie avec le nom '"+ newCategorie+"' existe déjà!", Toast.LENGTH_LONG).show();
-                               } else {
-                                   ContentValues content = new ContentValues();
-                                   content.put("nom", newCategorie);
-
-                                   Uri uri2 = getActivity().getContentResolver().insert(
-                                           CategoriesProvider.CONTENT_URI, content);
-                                   loadspinner();
-                               }
-                           }
-                       } else {
-                           Toast.makeText(getContext(), "Le champ est invalide!", Toast.LENGTH_LONG)
-                                   .show();
-                           dialog.cancel();
-                       }
+                                    Uri uri2 = getActivity().getContentResolver().insert(
+                                            CategoriesProvider.CONTENT_URI, content);
+                                    loadspinner();
+                                }
+                            }
+                        } else {
+                            Toast.makeText(getContext(), "Le champ est invalide!", Toast.LENGTH_LONG)
+                                    .show();
+                            dialog.cancel();
+                        }
                     }
                 });
 
@@ -163,42 +208,44 @@ public class AjouterSiteFragment extends Fragment {
                     }
                 });
                 builder.create().show();
-                }
             }
-        );
+        });
 
         //When the button is clicked, the button in the text field is added to the database
-        bouton_ajouter_site.setOnClickListener(new View.OnClickListener() {
+        bouton_modifier_site.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String nomSite = nom.getText().toString().trim();
                 byte[] ImageSite = getByteFromDrawable(editImage.getDrawable());
-                double longSite = Double.valueOf(longitude.getText().toString());
-                double latSite = Double.valueOf(latitude.getText().toString());
+                double longSite = Double.parseDouble(longitude.getText().toString());
+                double latSite = Double.parseDouble(latitude.getText().toString());
                 String adressSite = adresse_postale.getText().toString().trim();
                 String categorieSite = spinner.getSelectedItem().toString().trim();
                 String resumeSite = resume.getText().toString().trim();
 
                 //Checks if it is not empty
-                if (nomSite.length() > 0 && latSite > 0 && longSite >0) {
+                if (nomSite.length() > 0 && latSite > 0 && longSite > 0) {
 
                     //On cherche si duplica
-                    String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                    String[] projection = new String[]{"_id", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+
+                    // Holds the column data we want to update
+                    String[] selectionargs = new String[]{oldName};
+
                     @SuppressLint("Recycle")
                     Cursor foundSite = getContext().getContentResolver().query(SitesProvider.CONTENT_URI, projection, "NOM = ? AND LATITUDE=? AND LONGITUDE=? ", new String[]{nomSite, Double.toString(latSite), Double.toString(longSite)}, null);
 
-                    if(foundSite!=null) {
+                    if (foundSite != null) {
                         if (foundSite.moveToFirst()) {
-                            Toast.makeText(getContext(), "Un site avec le nom '"+ nomSite + "' existe déjà!", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(), "Un site avec le nom '" + nomSite + "' existe déjà!", Toast.LENGTH_LONG).show();
                         } else {
-
                             // Add a new site record
                             ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
 
-                            Uri uri = getActivity().getContentResolver().insert(
-                                    SitesProvider.CONTENT_URI, sitesValues);
+                            int i = getContext().getContentResolver().update(
+                                    SitesProvider.CONTENT_URI, sitesValues, "NOM = ?", selectionargs);
 
-                            Toast.makeText(getContext(), uri + ": Le site " + nomSite + " a été ajouté: " + latSite + ", " + longSite, Toast.LENGTH_LONG)
+                            Toast.makeText(getContext(), "Le site a été modifié!", Toast.LENGTH_LONG)
                                     .show();
 
                             // Create new fragment and transaction
@@ -217,18 +264,21 @@ public class AjouterSiteFragment extends Fragment {
                                 transaction.commit();
                             }
                         }
-                    }
+                    } else {Toast.makeText(getContext(), "ERROR!!!", Toast.LENGTH_LONG)
+                            .show();}
                 } else {
-                    Toast.makeText(getActivity(), "Le formulaire est invalide !",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Le formulaire est invalide!", Toast.LENGTH_LONG)
+                        .show();
                 }
             }
-
         });
         return v;
     }
 
     public ContentValues contentValues(int id_ext, String nom, double latitude, double longitude, String adresse, String categorie, String resume, byte[] image)
     {
+        //Opens the database that will be used for writing and reading
+        mDatabaseHelper1.getWritableDatabase();
         //Permits to add new info in the table
         ContentValues values = new ContentValues();
         values.put("id_ext",id_ext);
@@ -240,6 +290,11 @@ public class AjouterSiteFragment extends Fragment {
         values.put("categorie",categorie);
         values.put("resume",resume);
         return values;
+    }
+
+    private void Toast(String s)
+    {
+        Toast.makeText(getActivity(),s,Toast.LENGTH_SHORT).show();
     }
 
     @NonNull
@@ -274,7 +329,7 @@ public class AjouterSiteFragment extends Fragment {
                 startActivityForResult(intent, REQUEST_CODE_GALLERY);
             }
             else {
-                Toast.makeText(getActivity().getApplicationContext(), "Vous ne disposez pas d'autorisation pour mener cette action !", Toast.LENGTH_SHORT).show();
+                Toast("Vous ne disposez pas d'autorisation pour mener cette action !");
             }
             return;
         }
@@ -282,6 +337,7 @@ public class AjouterSiteFragment extends Fragment {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent data) {
@@ -298,7 +354,7 @@ public class AjouterSiteFragment extends Fragment {
             Uri uri = data.getData();
             try {
                 assert uri != null;
-                InputStream inputStream = this.getActivity().getContentResolver().openInputStream(uri);
+                InputStream inputStream = Objects.requireNonNull(this.getActivity()).getContentResolver().openInputStream(uri);
                 Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
                 editImage.setVisibility(View.VISIBLE);
                 editImage.setImageBitmap(bitmap);
@@ -308,7 +364,6 @@ public class AjouterSiteFragment extends Fragment {
             super.onActivityResult(requestCode, resultCode, data);
         }
     }
-
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void loadspinner(){
@@ -320,7 +375,7 @@ public class AjouterSiteFragment extends Fragment {
         Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);
 
         // Spinner Drop down elements
-        List<String> categories = new ArrayList<>();
+        categories = new ArrayList<>();
         categories.add("-- Sélectionner une catégorie --");
         while(data.moveToNext())
         {

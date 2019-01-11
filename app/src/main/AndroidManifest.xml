@@ -55,22 +55,22 @@
             android:label="@string/title_activity_maps" />
 
         <activity
-            android:name=".AjouterSiteActivity"
+            android:name=".Sites.AjouterSiteActivity"
             android:label="Ajouter site" />
         <activity
-            android:name=".CategoriesOverviewActivity"
+            android:name=".Categories.CategoriesOverviewActivity"
             android:label="Overview categories" />
 
         <activity
-            android:name=".AjouterSiteDetailsActivity"
+            android:name=".Sites.AjouterSiteDetailsActivity"
             android:label="Détails site" />
 
         <activity
-            android:name=".SitesOverviewActivity"
+            android:name=".Sites.SitesOverviewActivity"
             android:label="Overview sites" />
 
         <activity
-            android:name=".SitesFavorisOverviewActivity"
+            android:name=".Sites.SitesFavorisOverviewActivity"
             android:label="Mes sites favoris" />
 
         <provider

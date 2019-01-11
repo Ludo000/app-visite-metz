@@ -23,7 +23,6 @@ public class SiteDataArrayAdapter extends ArrayAdapter<SiteData> {
     static class SiteDataViewHolder {
         TextView titleTextView;
         ImageView coverImageView;
-        ImageView shareImageView;
         ImageView editImageView;
         ImageView deleteImageView;
         ImageView likeImageView;
@@ -59,7 +58,6 @@ public class SiteDataArrayAdapter extends ArrayAdapter<SiteData> {
             viewHolder = new SiteDataViewHolder();
             viewHolder.titleTextView = row.findViewById(R.id.titleTextView);
             viewHolder.coverImageView= row.findViewById(R.id.coverImageView);
-            viewHolder.shareImageView= row.findViewById(R.id.shareImageView);
             viewHolder.editImageView= row.findViewById(R.id.editImageView);
             viewHolder.deleteImageView= row.findViewById(R.id.deleteImageView);
             viewHolder.likeImageView= row.findViewById(R.id.likeImageView);
@@ -73,7 +71,6 @@ public class SiteDataArrayAdapter extends ArrayAdapter<SiteData> {
         viewHolder.coverImageView.setImageBitmap(bitmap);
         viewHolder.coverImageView.setTag(bitmap);
         viewHolder.likeImageView.setVisibility(View.INVISIBLE);
-        viewHolder.shareImageView.setVisibility(View.INVISIBLE);
 
         return row;
     }

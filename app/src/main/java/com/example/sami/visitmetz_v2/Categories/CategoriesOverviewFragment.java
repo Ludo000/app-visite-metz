@@ -1,4 +1,4 @@
-package com.example.sami.visitmetz_v2;
+package com.example.sami.visitmetz_v2.Categories;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -6,11 +6,7 @@ import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -31,25 +27,32 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider;
+import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
-import com.example.sami.visitmetz_v2.models.SiteData;
+import com.example.sami.visitmetz_v2.Ecouteurs.EcouteurLoadEvenement_3;
+import com.example.sami.visitmetz_v2.MyCursorAdapter;
+import com.example.sami.visitmetz_v2.R;
+import com.example.sami.visitmetz_v2.models.CategorieData;
 
-import java.io.ByteArrayOutputStream;
-
-public class SitesOverviewFragment extends Fragment implements SearchView.OnQueryTextListener {
+public class CategoriesOverviewFragment extends Fragment implements SearchView.OnQueryTextListener {
 
     RecyclerView MyRecyclerView;
     MyAdapter adapter;
     TextView textViewNoData;
+    Spinner spinner;
+
+    private String newCategorie = "";
+    private EditText nCategorie;
 
     ContentResolver resolver;
 
-    EcouteurLoadEvenement ecouteurLoadEvenement;
+    EcouteurLoadEvenement_3 ecouteurLoadEvenement_3;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -88,6 +91,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
 
         View view = inflater.inflate(R.layout.fragment_card, container, false);
         textViewNoData = view.findViewById(R.id.textViewNoData);
+        spinner = view.findViewById(R.id.categorie_spinner);
         MyRecyclerView = view.findViewById(R.id.cardView);
         MyRecyclerView.setHasFixedSize(true);
         adapter= new MyAdapter(getContext(),null);
@@ -110,9 +114,9 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
         // We have a menu item to show in action bar.
         setHasOptionsMenu(true);
 
-        ecouteurLoadEvenement = new EcouteurLoadEvenement(getContext(), adapter, null);
+        ecouteurLoadEvenement_3 = new EcouteurLoadEvenement_3(getContext(), adapter, null);
 
-        getLoaderManager().initLoader(0, null, ecouteurLoadEvenement);
+        getLoaderManager().initLoader(0, null, ecouteurLoadEvenement_3);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -135,9 +139,9 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
         // Called when the action bar search text has changed.  Update
         // the search filter, and restart the loader to do a new query
         // with this filter.
-        ecouteurLoadEvenement = new EcouteurLoadEvenement(getContext(), adapter, s.trim().length() > 0 ? s : null);
+        ecouteurLoadEvenement_3 = new EcouteurLoadEvenement_3(getContext(), adapter, s.trim().length() > 0 ? s : null);
 
-        getLoaderManager().restartLoader(0, null, ecouteurLoadEvenement);
+        getLoaderManager().restartLoader(0, null, ecouteurLoadEvenement_3);
         return true;
     }
 
@@ -166,16 +170,16 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
 
         @NonNull
         @Override
-        public SitesOverviewFragment.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public CategoriesOverviewFragment.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             // create a new view
             View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.recycle_items, parent, false);
-            return new SitesOverviewFragment.MyViewHolder(view);
+                    .inflate(R.layout.recycle_items_categorie, parent, false);
+            return new CategoriesOverviewFragment.MyViewHolder(view);
         }
 
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, Cursor cursor) {
-            SitesOverviewFragment.MyViewHolder holder = (SitesOverviewFragment.MyViewHolder) viewHolder;
+            CategoriesOverviewFragment.MyViewHolder holder = (CategoriesOverviewFragment.MyViewHolder) viewHolder;
 
             // if (viewHolder != null && cursor != null) {
             //textViewNoData.setVisibility(View.INVISIBLE);
@@ -205,52 +209,15 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
     public class MyViewHolder extends RecyclerView.ViewHolder {
 
         TextView titleTextView;
-        ImageView coverImageView;
-        ImageView shareImageView;
         ImageView editImageView;
         ImageView deleteImageView;
-        ImageView likeImageView;
 
         MyViewHolder(View v) {
             super(v);
             titleTextView = v.findViewById(R.id.titleTextView);
-            coverImageView = v.findViewById(R.id.coverImageView);
-            shareImageView = v.findViewById(R.id.shareImageView);
             editImageView = v.findViewById(R.id.editImageView);
             deleteImageView = v.findViewById(R.id.deleteImageView);
-            likeImageView = v.findViewById(R.id.likeImageView);
 
-
-            likeImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String nomSite = titleTextView.getText().toString();
-
-                    int id_like = (int) likeImageView.getTag();
-                    if (id_like == R.drawable.ic_thumb_up_black_24dp) {
-
-                        likeImageView.setTag(R.drawable.ic_thumb_up_blue_24dp);
-                        likeImageView.setImageResource(R.drawable.ic_thumb_up_blue_24dp);
-
-
-                        byte[] image = getByteFromDrawable(coverImageView.getDrawable());
-                        // Add a new favorite site record
-                        ContentValues sitesFavorisValues = contentValues(nomSite, image);
-
-                        Uri uri = getActivity().getContentResolver().insert(
-                                SitesFavorisProvider.CONTENT_URI, sitesFavorisValues);
-
-                        Toast.makeText(getContext(), "Le site " + nomSite + " a été ajouté à vos favoris", Toast.LENGTH_LONG)
-                                .show();
-
-                    } else {
-
-                        likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
-                        likeImageView.setImageResource(R.drawable.ic_thumb_up_black_24dp);
-                    }
-                    adapter.notifyDataSetChanged();
-                }
-            });
 
             editImageView.setOnClickListener(new View.OnClickListener() {
 
@@ -258,57 +225,127 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                 public void onClick(View v) {
 
                     // The id we want to search for
-                    String siteToFind = titleTextView.getText().toString();
+                    String categorieToFind = titleTextView.getText().toString();
 
                     // Holds the column data we want to retrieve
-                    String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                    String[] projection = new String[]{"_id","nom"};
 
                     // Pass the URL for Content Provider, the projection,
                     // the where clause followed by the matches in an array for the ?
                     // null is for sort order
                     @SuppressLint("Recycle")
-                    Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projection, "NOM = ? ", new String[]{siteToFind}, null);
+                    Cursor foundCategorie = resolver.query(CategoriesProvider.CONTENT_URI, projection, "nom = ? ", new String[]{categorieToFind}, null);
 
                     // Cycle through our one result or print error
-                    if(foundSite!=null){
-                        if(foundSite.moveToFirst()){
+                    if(foundCategorie!=null){
+                        if(foundCategorie.moveToFirst()){
 
-                            int id = foundSite.getColumnIndex("_id ");
-                            int id_ext = foundSite.getColumnIndex("ID_EXT");
-                            String name = foundSite.getString(foundSite.getColumnIndex("NOM"));
-                            double latitude = Double.parseDouble(foundSite.getString(3));
-                            double longitude = Double.parseDouble(foundSite.getString(4));
-                            String adresse = foundSite.getString(foundSite.getColumnIndex("ADRESSE_POSTALE"));
-                            String categorie = foundSite.getString(foundSite.getColumnIndex("CATEGORIE"));
-                            String resume = foundSite.getString(foundSite.getColumnIndex("RESUME"));
-                            byte[] image = foundSite.getBlob(foundSite.getColumnIndex("IMAGE"));
+                            int id = foundCategorie.getColumnIndex("_id ");
+                            String name = foundCategorie.getString(foundCategorie.getColumnIndex("nom"));
 
-                            SiteData currentSite = new SiteData(id, id_ext, name, latitude, longitude, adresse, categorie, resume, image);
+                            CategorieData currentCategorie = new CategorieData(id, name);
 
-                            // Create new fragment, give it an object and start transaction
-                            Fragment newFragment = new AjouterSiteDetailsFragment();
-                            Bundle bundle = new Bundle();
-                            bundle.putSerializable("site", currentSite);
-                            newFragment.setArguments(bundle);
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                            builder.setTitle("Modifier une catégorie");
 
-                            // consider using Java coding conventions (upper first char class names!!!)
-                            FragmentTransaction transaction;
-                            if (getFragmentManager() != null) {
-                                transaction = getFragmentManager().beginTransaction();
-                                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+                            // I'm using fragment here so I'm using getView() to provide ViewGroup
+                            // but you can provide here any other instance of ViewGroup from your Fragment / Activity
+                            View viewInflated = LayoutInflater.from(getContext()).inflate(R.layout.dialog_categorie, (ViewGroup) getView(), false);
 
-                                // Replace whatever is in the fragment_container view with this fragment,
-                                // and add the transaction to the back stack
-                                transaction.replace(R.id.fragment_container, newFragment);
-                                transaction.addToBackStack(null);
+                            // Inflate and set the layout for the dialog
+                            // Pass null as the parent view because its going in the dialog layout
+                            builder.setView(viewInflated);
 
-                                // Commit the transaction
-                                transaction.commit();
-                            }
+                            // Set up the input
+                            nCategorie = viewInflated.findViewById(R.id.newcategorie);
+                            nCategorie.setText(currentCategorie.getName());
+
+                            // Add action buttons
+                            builder.setPositiveButton("Modifier", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    newCategorie = nCategorie.getText().toString().trim();
+
+                                    if (newCategorie.length() > 0) {
+                                        //On cherche si duplica
+                                        String[] projection = new String[]{"_id","nom"};
+                                        @SuppressLint("Recycle")
+                                        Cursor foundSite = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection, "nom = ?", new String[]{newCategorie}, null);
+
+                                        if(foundSite!=null) {
+                                            if (foundSite.moveToFirst()) {
+                                                Toast.makeText(getContext(), "Une categorie avec le nom '"+ newCategorie+"' existe déjà!", Toast.LENGTH_LONG).show();
+                                            } else {
+                                                ContentValues content = new ContentValues();
+                                                content.put("nom", newCategorie);
+
+                                                //Uri uri2 = getActivity().getContentResolver().insert(
+                                                       // CategoriesProvider.CONTENT_URI, content);
+
+                                                // Holds the column data we want to update
+                                                String[] selectionargs = new String[]{titleTextView.getText().toString().trim()};
+
+                                                int c = getActivity().getContentResolver().update(
+                                                        CategoriesProvider.CONTENT_URI, content, "nom = ?", selectionargs);
+
+                                                // Holds the column data we want to retrieve
+                                                String[] projection1 = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+
+                                                // Pass the URL for Content Provider, the projection,
+                                                // the where clause followed by the matches in an array for the ?
+                                                // null is for sort order
+                                                @SuppressLint("Recycle")
+                                                Cursor foundSite1 = resolver.query(SitesProvider.CONTENT_URI, projection1, "CATEGORIE = ? ", new String[]{titleTextView.getText().toString()}, null);
+
+                                                // Holds the column data we want to update
+                                                String[] selectionargs1 = new String[]{newCategorie};
+
+                                                // Cycle through our one result or print error
+                                                if(foundSite1!=null) {
+                                                    if (foundSite.moveToNext()) {
+                                                        int id2 =foundSite1.getColumnIndex("_id");
+                                                        int id_ext = foundSite1.getColumnIndex("ID_EXT");
+                                                        String nom = foundSite1.getString(foundSite1.getColumnIndex("NOM"));
+                                                        double latitude = Double.parseDouble(foundSite1.getString(3));
+                                                        double longitude = Double.parseDouble(foundSite1.getString(4));
+                                                        String adresse = foundSite1.getString(foundSite1.getColumnIndex("ADRESSE_POSTALE"));
+                                                        String categorie = foundSite1.getString(foundSite.getColumnIndex("CATEGORIE"));
+                                                        String resume = foundSite1.getString(foundSite1.getColumnIndex("RESUME"));
+                                                        byte[] image = foundSite1.getBlob(foundSite1.getColumnIndex("IMAGE"));
+
+                                                        ContentValues values = new ContentValues();
+                                                        values.put("id_ext",id_ext);
+                                                        values.put("nom",nom);
+                                                        values.put("image",image);
+                                                        values.put("latitude",latitude);
+                                                        values.put("longitude",longitude);
+                                                        values.put("adresse_postale",adresse);
+                                                        values.put("categorie",categorie);
+                                                        values.put("resume",resume);
+
+                                                        int i = getActivity().getContentResolver().update(
+                                                                SitesProvider.CONTENT_URI, values, " CATEGORIE = ?", selectionargs1);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        Toast.makeText(getContext(), "Le champ est vide!", Toast.LENGTH_LONG)
+                                                .show();
+                                        dialog.cancel();
+                                    }
+                                }
+                            });
+
+                            builder.setNegativeButton("Annuler", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    dialog.cancel();
+                                }
+                            });
+                            builder.create().show();
 
                         } else {
 
-                            Toast.makeText(getContext(), "Site introuvable", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Categorie introuvable", Toast.LENGTH_SHORT).show();
 
                         }
                     }else{
@@ -322,7 +359,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                 public void onClick(final View view) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                     builder.setCancelable(false);
-                    builder.setTitle("Supprimer le site " + titleTextView.getText().toString());
+                    builder.setTitle("Supprimer la categorie " + titleTextView.getText().toString());
                     builder.setMessage("Êtes-vous sûr?");
                     builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
                         @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -330,28 +367,28 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                         public void onClick(DialogInterface dialog, int which) {
 
                             // The id we want to search for
-                            String siteToDelete = titleTextView.getText().toString();
+                            String categorieToDelete = titleTextView.getText().toString();
 
                             // Holds the column data we want to retrieve
-                            String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                            String[] projection = new String[]{"_id","nom"};
 
                             // Pass the URL for Content Provider, the projection,
                             // the where clause followed by the matches in an array for the ?
                             // null is for sort order
                             @SuppressLint("Recycle")
-                            Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projection, "NOM = ? ", new String[]{siteToDelete}, null);
+                            Cursor foundCategorie = resolver.query(CategoriesProvider.CONTENT_URI, projection, "nom = ? ", new String[]{categorieToDelete}, null);
 
                             // Cycle through our one result or print error
-                            if(foundSite!=null) {
-                                if (foundSite.moveToFirst()) {
-                                    String id = foundSite.getString(foundSite.getColumnIndex("_id"));
-                                    String URL1 = "content://com.example.sami.visitmetz_v2.ContentProvider.SitesProvider/sites_table/#" + id;
+                            if(foundCategorie!=null) {
+                                if (foundCategorie.moveToFirst()) {
+                                    String id = foundCategorie.getString(foundCategorie.getColumnIndex("_id"));
+                                    String URL1 = "content://com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider/categories_table/#" + id;
                                     Uri uri1 = Uri.parse(URL1);
 
                                     // Holds the column data we want to update
                                     String[] selectionargs = new String[]{"" + id};
 
-                                    Toast.makeText(getActivity(), siteToDelete + " a été supprimé!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(getActivity(), categorieToDelete + " a été supprimé!", Toast.LENGTH_SHORT).show();
 
                                     // Use the resolver to delete ids by passing the content provider url
                                     // what you are targeting with the where and the string that replaces
@@ -368,7 +405,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                                         transaction = getFragmentManager().beginTransaction();
                                         // Replace whatever is in the fragment_container view with this fragment,
                                         // and add the transaction to the back stack
-                                        transaction.replace(R.id.fragment_container, new SitesOverviewFragment());
+                                        transaction.replace(R.id.fragment_container, new CategoriesOverviewFragment());
                                         transaction.addToBackStack(null);
 
                                         // Commit the transaction
@@ -388,57 +425,14 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                     builder.create().show();
                 }
             });
-
-
-            shareImageView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-
-                Uri imageUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE +
-                        "://" + getResources().getResourcePackageName(coverImageView.getId())
-                        + '/' + "drawable" + '/' + getResources().getResourceEntryName((int) coverImageView.getTag()));
-
-                Intent shareIntent = new Intent();
-                shareIntent.setAction(Intent.ACTION_SEND);
-                shareIntent.putExtra(Intent.EXTRA_STREAM,imageUri);
-                shareIntent.setType("image/jpeg");
-                startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.send_to)));
-
-                }
-            });
-        }
-
-        public ContentValues contentValues(String nom, byte[] image)
-        {
-            //Permits to add new info in the table
-            ContentValues values = new ContentValues();
-            values.put("nom",nom);
-            values.put("image", image);
-            return values;
-        }
-
-        @NonNull
-        public byte[] getByteFromDrawable(@NonNull Drawable drawable) {
-            final Bitmap bmp = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-            final Canvas canvas = new Canvas(bmp);
-            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-            drawable.draw(canvas);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bmp.compress(Bitmap.CompressFormat.JPEG,100,stream);
-            return stream.toByteArray();
         }
 
         public void setData(Cursor c) {
             if (c != null) {
                 textViewNoData.setVisibility(View.INVISIBLE);
-                byte[] img = c.getBlob(8);
-                Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
-                titleTextView.setText(c.getString(c.getColumnIndex("NOM")));
-                coverImageView.setImageBitmap(bitmap);
-                coverImageView.setTag(bitmap);
+                titleTextView.setText(c.getString(c.getColumnIndex("nom")));
                 editImageView.setTag(R.drawable.edit_black_24dp);
                 deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
-                likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
             } else {
                 textViewNoData.setVisibility(View.VISIBLE);
             }

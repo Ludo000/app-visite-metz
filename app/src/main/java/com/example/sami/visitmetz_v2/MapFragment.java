@@ -1,15 +1,22 @@
 package com.example.sami.visitmetz_v2;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -21,6 +28,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -109,6 +117,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     private static final float DEFAULT_ZOOM = 15f;
 
    // ArrayList<MarkerOptions> collection2 = new ArrayList<MarkerOptions>();
+   private LocationListener listener;
+   private LocationManager locationManager;
 
 
     private static final int PLACE_PICKER_REQUEST = 1;
@@ -116,6 +126,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     int PROXIMITY_RADIUS = 200;
 
     double latitude, longitude;
+
+    Location lastLoction = null;
 
     String PROVIDER_NAME = "com.example.sami.visitmetz_v2.ContentProvider.SitesProvider";
     String URL = "content://" + PROVIDER_NAME + "/sites_table";
@@ -128,6 +140,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
             new LatLng(-54.5247541978, 2.05338918702), new LatLng(9.56001631027, 51.1485061713));
 
+
+    @SuppressLint("MissingPermission")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -163,10 +177,63 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
 
         getLocationPermission();
+       // onLocationChanged();
+
+
+       listener = new LocationListener() {
+
+            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+            @Override
+            public void onLocationChanged (Location location){
+
+                Log.i(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx "  );
+
+                Log.i(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + location.getLatitude());
+                Log.i(TAG, "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq " + location.getLongitude());
+
+                lastLoction  =  location;
+
+                if(mRoyen.length() !=0 ){
+                    mMap.clear();
+                    drawCircle(new LatLng(location.getLatitude(),location.getLongitude()));
+                    listMarker (new LatLng(location.getLatitude(),location.getLongitude()));
+                }
+
+            }
+
+            @Override
+            public void onStatusChanged (String s,int i, Bundle bundle){
+
+            }
+
+            @Override
+            public void onProviderEnabled (String s){
+
+            }
+
+            @Override
+            public void onProviderDisabled (String s){
+
+            }
+
+        };
+        locationManager = (LocationManager)getActivity().getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
+        //noinspection MissingPermission
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,0,listener);
+
 
         return v;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(locationManager != null){
+
+             locationManager.removeUpdates(listener);
+        }
+    }
 
     private void init() {
         Log.d(TAG, "init: initializing");
@@ -204,9 +271,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             @Override
             public void onClick(View view) {
                 Log.d(TAG, "onClick: clicked gps icon");
-
                 getDeviceLocation();
                 mMap.clear();
+                //onLocationChanged(lastLoction);
+
             }
         });
 
@@ -250,100 +318,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View view) {
-                // Drawing circle on the map
-                MarkerOptions options = new MarkerOptions();
                 mMap.clear();
-                //collection.clear();
-                //collection2.clear();
+                // Drawing circle on the map
                 drawCircle(new LatLng(latitude, longitude));
-                ArrayList<CustomMarker> liste = allMarkers();
-                for(int i=0; i < liste.size(); i++)
-                {
-                    float results[] = new float[10];
-                    Location.distanceBetween(latitude, longitude, liste.get(i).getLat(), liste.get(i).getLongi(),  results);
-                    if (Integer.parseInt(mRoyen.getText().toString()) > results[0] ) {
-
-                        LatLng point = new LatLng(Double.valueOf(liste.get(i).getLat()), Double.valueOf(liste.get(i).getLongi()));
-                        options.position(point);
-                        options.title(liste.get(i).getName());
-                        options.snippet(  "Categorie: " +liste.get(i).getCategorie() + "  " + "Resumer: " + liste.get(i).getResumer());
-                        Log.d(TAG, "DIIIIIISTANCE :  " +   results[0]);
-                        Log.d(TAG, "TTMMMMMmmm:  " +   liste.get(i).getCategorie());
-
-                        if ( mSpinner.getSelectedItem().toString().equals(liste.get(i).getCategorie())){
-                            Log.d(TAG, "RTTTTT" +   mSpinner.getSelectedItem().toString());
-                            Log.d(TAG, "RRRRRRRTTTTT" +   liste.get(i).getCategorie());
-                            mMap.addMarker(options);
-                        } else if (mSpinner.getSelectedItem().toString().equals("Tout")){
-                            mMap.addMarker(options);
-                        }
-
-                       //-------------  if (mSpinner.getSelectedItem().toString().equals("Tout")){
-                    /*LatLng point = new LatLng(Double.valueOf(dataCursor.getString(3)), Double.valueOf(dataCursor.getString(4)));
-                    options.position(point);
-                    options.title(dataCursor.getString(2));
-                    options.snippet(  "Categorie: " +dataCursor.getString(6) + "  " + "Resumer: " + dataCursor.getString(7)
-                    );*/
-                            //  List<String> collection = new ArrayList<String>();
-                           // collection.add(dataCursor.getString(6));
-                           // collection2.add(options);
-                    /*for(int c=0;c<collection2.size();c++)
-                    {
-                        String current = collection.get(c);
-                        Log.d(TAG, "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp " + dataCursor.getString(6)   );
-                        Log.d(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + mSpinner.getSelectedItem().toString()   );
-                        if (mSpinner.getSelectedItem().toString().equals(current))
-                        {
-                            mMap.addMarker(options);
-                        }
-
-                    }*/
-                      //-------------  } */
-                        //  Toast.makeText(getActivity(),dataCursor.getString(6).toString(),Toast.LENGTH_LONG).show();
-
-
-
-                        //  mMap.addMarker(options);
-                    }
-
-           /*else if( Integer.parseInt(mRoyen.getText().toString()) > results[0] && mSpinner.getSelectedItem().toString() == dataCursor.getString(6).toString()){
-                Toast.makeText(getActivity(),"hellooo",Toast.LENGTH_LONG).show();
-
-        }
-        else {
-                Toast.makeText(getActivity(),"Nada",Toast.LENGTH_LONG).show();
-
-            } */
-
-                }
-
-       /*for(int a=0;a<collection.size();a++)
-
-        {
-
-           // Log.d(TAG, "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp " + collection2.size()   );
-
-           // Log.d(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + mSpinner.getSelectedItem().toString().equals(current)   );
-
-                mMap.addMarker(collection.get(a).getmOptions());
-
-         }*/
-               // dataCursor.close();
-
-               /* for(int c=0;c<collection2.size();c++)
-                {
-                    String current = collection.get(c);
-                    Log.d(TAG, "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp " + collection2.size()   );
-                    Log.d(TAG, "Current " + current   );
-                    Log.d(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + mSpinner.getSelectedItem().toString().equals(current)   );
-                    if (mSpinner.getSelectedItem().toString().equals(current))
-                    {
-                        mMap.addMarker(collection2.get(c));
-                    } else {
-                        continue;
-                    }
-
-                }*/
+                listMarker (new LatLng(latitude,longitude));
 
             }
 
@@ -351,25 +329,37 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
         );
 
-     /*   mRestaurant.setOnClickListener(new View.OnClickListener() {
-            Object dataTransfer[] = new Object[2];
-            GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
-
-            @Override
-            public void onClick(View view) {
-                mMap.clear();
-                String resturant = "resturant";
-                String  url = getUrl(latitude, longitude, resturant);
-                dataTransfer[0] = mMap;
-                dataTransfer[1] = url;
-
-                getNearbyPlacesData.execute(dataTransfer);
-                Toast.makeText(getActivity(), "Showing Nearby Restaurants", Toast.LENGTH_SHORT).show();
-
-            }
-        }); */
-
         hideSoftKeyboard();
+    }
+
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
+    private void listMarker ( LatLng latlong){
+        MarkerOptions options = new MarkerOptions();
+        ArrayList<CustomMarker> liste = allMarkers();
+        for (int i = 0; i < liste.size(); i++) {
+            float results[] = new float[10];
+            Location.distanceBetween(latlong.latitude, latlong.longitude, liste.get(i).getLat(), liste.get(i).getLongi(), results);
+            if (Integer.parseInt(mRoyen.getText().toString()) > results[0]) {
+
+                LatLng point = new LatLng(Double.valueOf(liste.get(i).getLat()), Double.valueOf(liste.get(i).getLongi()));
+                options.position(point);
+                options.title(liste.get(i).getName());
+                options.snippet("Categorie: " + liste.get(i).getCategorie() + "  " + "Resumer: " + liste.get(i).getResumer());
+                Log.d(TAG, "DIIIIIISTANCE :  " + results[0]);
+                Log.d(TAG, "TTMMMMMmmm:  " + liste.get(i).getCategorie());
+
+                if (mSpinner.getSelectedItem().toString().equals(liste.get(i).getCategorie())) {
+                    Log.d(TAG, "RTTTTT" + mSpinner.getSelectedItem().toString());
+                    Log.d(TAG, "RRRRRRRTTTTT" + liste.get(i).getCategorie());
+                    mMap.addMarker(options);
+                } else if (mSpinner.getSelectedItem().toString().equals("Tout")) {
+                    mMap.addMarker(options);
+                }
+            }
+        }
+
+
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -401,22 +391,31 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             options.position(point);
             options.title(currentSite.getNom());
             options.snippet("Categorie: " + currentSite.getCategorie() + "  " + "Resume: " + currentSite.getResume());
-            CustomMarker cMarker = new CustomMarker(currentSite.getCategorie(), options, currentSite.getLatitude(), currentSite.getLongitude(), currentSite.getNom(), currentSite.getResume());
+            CustomMarker cMarker = new CustomMarker(currentSite.getCategorie(), currentSite.getLatitude(), currentSite.getLongitude(), currentSite.getNom(), currentSite.getResume());
             collection.add(cMarker);
         }
         return collection;
     }
+
+
+
 
     private void drawCircle(LatLng point){
 
         // Instantiating CircleOptions to draw a circle around the marker
         CircleOptions circleOptions = new CircleOptions();
 
-        // Specifying the center of the circle
-        circleOptions.center(point);
+            circleOptions.center(point);
 
+
+       // if(Integer.parseInt(mRoyen.getText().toString()) != 0){
         // Radius of the circle
-        circleOptions.radius(Integer.parseInt(mRoyen.getText().toString()));
+         circleOptions.radius(Integer.parseInt(mRoyen.getText().toString()));
+
+       // }else {
+         //   circleOptions.radius(50);
+
+      //  }
 
         // Border color of the circle
         circleOptions.strokeColor(Color.BLACK);
@@ -497,7 +496,12 @@ SpinnerItems();
 
     }
 
+
+
+
+
     private void getDeviceLocation() {
+
         Log.d(TAG, "getDeviceLocation: getting the devices current location");
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this.getActivity());
         try {
@@ -513,12 +517,15 @@ SpinnerItems();
 
                             if (currentLocation != null) {
                                 latitude = currentLocation.getLatitude();
+
                             }
+
                             longitude = currentLocation.getLongitude();
+
+                          //  lastLoction = currentLocation;
 
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
                                     DEFAULT_ZOOM, "Moi !");
-
 
                         } else {
                             Log.d(TAG, "onComplete: current location is null");
@@ -530,6 +537,7 @@ SpinnerItems();
         } catch (SecurityException e) {
             Log.e(TAG, "getDeviceLocation: SecurityException: " + e.getMessage());
         }
+
     }
 
 
@@ -864,5 +872,6 @@ SpinnerItems();
             places.release();
         }
     };
+
 
 }

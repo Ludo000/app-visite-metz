@@ -10,7 +10,7 @@ public class CustomMarker {
     private String  name;
     private String resumer;
 
-    public CustomMarker(String Categorie, MarkerOptions mOptions, double lat, double longi, String name, String resumer) {
+    public CustomMarker(String Categorie, double lat, double longi, String name, String resumer) {
         this.Categorie = Categorie;
 
         this.lat =lat;

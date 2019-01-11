@@ -6,16 +6,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".AjouterSiteActivity">
+    tools:context=".AjouterSiteDetailsActivity">
 
     <LinearLayout
         android:id="@+id/site_form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fadeScrollbars="true"
+        android:hapticFeedbackEnabled="true"
         android:orientation="vertical"
         android:paddingLeft="24dp"
         android:paddingTop="10dp"
         android:paddingRight="24dp"
+        android:scrollbarAlwaysDrawVerticalTrack="false"
+        android:scrollbars="vertical"
         tools:ignore="UselessParent">
 
         <LinearLayout
@@ -26,29 +30,31 @@
 
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="10dp"
-                android:layout_marginRight="10dp"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:layout_marginStart="70dp"
+                android:layout_marginLeft="70dp"
+                android:orientation="vertical"
+                tools:ignore="RtlHardcoded">
 
                 <ImageView
                     android:id="@+id/imageView4"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     app:srcCompat="@mipmap/ic_launcher_round"
                     tools:ignore="ContentDescription" />
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginStart="10dp"
-                android:layout_marginLeft="10dp"
-                android:orientation="vertical">
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="50dp"
+                android:layout_marginLeft="50dp"
+                android:orientation="vertical"
+                tools:ignore="RtlHardcoded">
 
                 <ImageButton
                     android:id="@+id/bouton_choisir_image"
-                    android:layout_width="173dp"
+                    android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@android:color/transparent"
                     android:contentDescription="@string/prendre_photo"
@@ -162,7 +168,8 @@
                 android:layout_height="match_parent"
                 android:layout_marginEnd="20dp"
                 android:layout_marginRight="20dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                tools:ignore="RtlHardcoded">
 
                 <Button
                     android:id="@+id/bouton_ajouter_site"
@@ -180,7 +187,8 @@
                 android:layout_height="match_parent"
                 android:layout_marginStart="20dp"
                 android:layout_marginLeft="20dp"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                tools:ignore="RtlHardcoded">
 
                 <Button
                     android:id="@+id/bouton_annuler"
@@ -189,6 +197,25 @@
                     android:layout_height="match_parent"
                     android:background="@color/colorAccent"
                     android:text="@string/annuler_ajouter_site"
+                    android:textColor="@color/colorPrimary"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="20dp"
+                android:layout_marginLeft="20dp"
+                android:orientation="vertical"
+                tools:ignore="RtlHardcoded">
+
+                <Button
+                    android:id="@+id/bouton_ajouter_categorie"
+                    style="?android:textAppearanceSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@color/colorAccent"
+                    android:text="@string/ajouter_categorie"
                     android:textColor="@color/colorPrimary"
                     android:textStyle="bold" />
             </LinearLayout>

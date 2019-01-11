@@ -19,11 +19,10 @@
     <string name="nom_du_site">Nom du Site</string>
     <string name="send_to">Partager</string>
     <string name="annuler_ajouter_site">Annuler</string>
-    <string name="labelButtonUpload">Téléverser</string>
-    <string name="labelButtonDownload">Télécharger</string>
+    <string name="labelButtonSync">Synchroniser</string>
     <string name="ajouter_categorie">Nouvelle categorie</string>
     <string name="nouvelle_cat_gorie">Nouvelle catégorie</string>
     <string name="prompt_selectCat">-- Sélectionner une catégorie --</string>
     <string name="aucun_site_ajout">Aucun site ajouté</string>
-    <string name="labelButtonView" >Afficher</string>
+    <string name="labelButtonView" >Rafraichir</string>
 </resources>

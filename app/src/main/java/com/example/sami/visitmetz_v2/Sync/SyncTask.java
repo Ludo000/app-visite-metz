@@ -1,8 +1,12 @@
-package com.example.sami.visitmetz_v2;
+package com.example.sami.visitmetz_v2.Sync;
 
+import android.annotation.SuppressLint;
+import android.content.ContentValues;
+import android.database.Cursor;
 import android.os.AsyncTask;
-import android.view.View;
-
+import android.util.Log;
+import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
+import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 
@@ -13,20 +17,15 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
 
-public class UploadTask extends AsyncTask<String, Integer, String> {
-    private  SyncButtonListener syncButtonListener;
-    private List<SiteData> listSiteData;
-    public UploadTask(SyncButtonListener syncButtonListener){
+
+public class SyncTask extends AsyncTask<String, Integer, String> {
+    private SyncButtonListener syncButtonListener;
+    public SyncTask(SyncButtonListener syncButtonListener){
         this.syncButtonListener=syncButtonListener;
-        this.listSiteData = new ArrayList<>();
 
     }
     protected String doInBackground(String... urls) {
-        this.syncButtonListener.syncFragment.textSyncOutput.setText(this.syncButtonListener.getOutput() + "\n");
-
         URL url = null;
         try {
             url = new URL(urls[0]);
@@ -72,11 +71,10 @@ public class UploadTask extends AsyncTask<String, Integer, String> {
     }
 
     protected void onPostExecute(String result) {
-        this.syncButtonListener.syncFragment.textSyncOutput.setText(this.syncButtonListener.getOutput() + result + "\n");
-        this.syncButtonListener.syncFragment.buttonDownload.setEnabled(true);
-        this.syncButtonListener.syncFragment.buttonUpload.setEnabled(true);
-        this.syncButtonListener.syncFragment.buttonShow.setEnabled(true);
-        this.syncButtonListener.syncFragment.spinner.setVisibility(View.GONE);
+
+        this.syncButtonListener.giveBackUI(true);
+        this.syncButtonListener.syncFragment.textSyncOutput.setText(this.syncButtonListener.syncFragment.textSyncOutput.getText() + "Chargement réussie ! \n");
+
 
     }
 }

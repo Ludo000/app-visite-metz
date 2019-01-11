@@ -1,13 +1,8 @@
 package com.example.sami.visitmetz_v2.Sync;
 
-import android.annotation.SuppressLint;
-import android.content.ContentValues;
-import android.database.Cursor;
 import android.os.AsyncTask;
-import android.util.Log;
-import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
-import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
-import com.example.sami.visitmetz_v2.models.SiteData;
+import android.widget.Toast;
+
 
 
 import java.io.BufferedReader;
@@ -73,7 +68,7 @@ public class SyncTask extends AsyncTask<String, Integer, String> {
     protected void onPostExecute(String result) {
 
         this.syncButtonListener.giveBackUI(true);
-        this.syncButtonListener.syncFragment.textSyncOutput.setText(this.syncButtonListener.syncFragment.textSyncOutput.getText() + "Chargement réussie ! \n");
+        Toast.makeText(this.syncButtonListener.syncFragment.getContext(),"Synchronisation réussie !", Toast.LENGTH_SHORT).show();
 
 
     }

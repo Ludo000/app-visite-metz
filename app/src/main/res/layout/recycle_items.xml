@@ -63,14 +63,6 @@
             tools:ignore="RtlHardcoded">
 
             <ImageView
-                android:id="@+id/editImageView"
-                android:layout_width="@dimen/icon_width"
-                android:layout_height="@dimen/icon_height"
-                android:padding="@dimen/icon_padding"
-                android:src="@drawable/edit_black_24dp"
-                tools:ignore="ContentDescription" />
-
-            <ImageView
                 android:id="@+id/shareImageView"
                 android:layout_width="@dimen/icon_width"
                 android:layout_height="@dimen/icon_height"
@@ -84,6 +76,14 @@
                 android:layout_height="@dimen/icon_height"
                 android:padding="@dimen/icon_padding"
                 android:src="@drawable/ic_thumb_up_black_24dp"
+                tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:id="@+id/editImageView"
+                android:layout_width="@dimen/icon_width"
+                android:layout_height="@dimen/icon_height"
+                android:padding="@dimen/icon_padding"
+                android:src="@drawable/edit_black_24dp"
                 tools:ignore="ContentDescription" />
 
             <ImageView

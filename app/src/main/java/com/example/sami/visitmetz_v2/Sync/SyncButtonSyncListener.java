@@ -20,7 +20,6 @@ public class SyncButtonSyncListener extends SyncButtonListener {
         this.prepareUI();
 
         //Chargement
-        this.syncFragment.textSyncOutput.setText(this.getOutput() + "\n");
         for(SiteData siteData : this.syncFragment.listSiteData){
             this.resolver = this.syncFragment.getActivity().getContentResolver();
             //On cherche si duplica
@@ -88,6 +87,6 @@ public class SyncButtonSyncListener extends SyncButtonListener {
     }
     @Override
     public String getOutput(){
-        return ("Synchronisation de la base de donnée en cours...\n");
+        return ("Synchronisation de la base de données en cours...");
     }
 }

@@ -2,6 +2,7 @@ package com.example.sami.visitmetz_v2.Sync;
 
 import android.content.ContentResolver;
 import android.view.View;
+import android.widget.Toast;
 
 public class SyncButtonListener implements View.OnClickListener {
     public SyncFragment syncFragment;
@@ -23,14 +24,14 @@ public class SyncButtonListener implements View.OnClickListener {
     public void prepareUI(){
         this.syncFragment.buttonSync.setEnabled(false);
         this.syncFragment.buttonUpdate.setEnabled(false);
-        this.syncFragment.textSyncOutput.setText("");
+        this.syncFragment.cardListFragment.listView.setVisibility(View.INVISIBLE);
         this.syncFragment.spinner.setVisibility(View.VISIBLE);
-        this.syncFragment.textSyncOutput.setText(this.getOutput());
+        Toast.makeText(this.syncFragment.getContext(),this.getOutput(),Toast.LENGTH_SHORT).show();
     }
     public void giveBackUI(boolean resetList){
         this.syncFragment.buttonSync.setEnabled(true);
         this.syncFragment.buttonUpdate.setEnabled(true);
-
+        this.syncFragment.cardListFragment.listView.setVisibility(View.VISIBLE);
         this.syncFragment.spinner.setVisibility(View.GONE);
 
     }

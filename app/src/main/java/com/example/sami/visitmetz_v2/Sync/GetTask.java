@@ -19,7 +19,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+
 
 public class GetTask extends AsyncTask<String, Integer, String> {
     private SyncFragment syncFragment;
@@ -93,10 +93,10 @@ public class GetTask extends AsyncTask<String, Integer, String> {
                                 Base64.decode(((JSONObject) res.get(key)).getString("IMAGE"), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
 
                         this.syncFragment.listSiteData.add(siteTemp);
-                        this.syncFragment.listSite.add(siteTemp.getID() + " " + siteTemp.getIDEXT() + " " + siteTemp.getNom() + " " + siteTemp.getLongitude() + " " + siteTemp.getLatitude() + " " + siteTemp.getAdresse() + " " + siteTemp.getCategorie() + " " + siteTemp.getResume()  + "\n");
+                        this.syncFragment.cardListFragment.cardArrayAdapter.add(siteTemp);
                     }
                 }
-                this.syncFragment.adapter.notifyDataSetChanged();
+                this.syncFragment.cardListFragment.cardArrayAdapter.notifyDataSetChanged();
                 this.syncFragment.spinner.setVisibility(View.GONE);
 
 

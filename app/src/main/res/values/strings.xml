@@ -25,4 +25,5 @@
     <string name="prompt_selectCat">-- Sélectionner une catégorie --</string>
     <string name="aucun_site_ajout">Aucun site ajouté</string>
     <string name="labelButtonView" >Rafraichir</string>
+    <string name="labelTitreSync">Sauvegarde en ligne</string>
 </resources>

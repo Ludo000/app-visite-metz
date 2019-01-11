@@ -1,39 +1,57 @@
 package com.example.sami.visitmetz_v2.models;
 
+import android.media.Image;
 import android.net.Uri;
+import android.widget.ImageView;
 
 import com.google.android.gms.maps.model.LatLng;
 
 public class PlaceInfo {
 
+
     private String name;
     private String address;
     private String phoneNumber;
-    private String id;
+    private String id, id_ext;
     private Uri websiteUri;
     private LatLng latlng;
     private float rating;
     private String attributions;
-    private String categorie;
+    private byte[] image;
 
 
-
-    public PlaceInfo(String name, String address, String phoneNumber, String id, Uri websiteUri,
-                     LatLng latlng, float rating, String attributions, String categorie) {
+    public PlaceInfo(String id_ext,String name, String address, String phoneNumber, String id, Uri websiteUri,
+                     LatLng latlng, float rating, String attributions, byte[] image) {
         this.name = name;
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.id = id;
+        this.id_ext =  id_ext;
         this.websiteUri = websiteUri;
         this.latlng = latlng;
         this.rating = rating;
         this.attributions = attributions;
-        this.categorie = categorie;
+        this.image = image;
+
     }
 
-
-
     public PlaceInfo() {
+    }
+
+    public String getId_ext() {
+        return id_ext;
+    }
+
+    public void setId_ext(String id_ext) {
+        this.id_ext = id_ext;
+    }
+
+    public byte[] getImage() {
+        return image;
+    }
+
+    public void setImage(byte[] image) {
+        this.image = image;
     }
 
     public String getName() {
@@ -78,19 +96,6 @@ public class PlaceInfo {
     public void setRating(float rating) {
         this.rating = rating;
     }
-    public String getAttributions() {
-        return attributions;
-    }
-    public void setAttributions(String attributions) {
-        this.attributions = attributions;
-    }
-    public String getCategorie() {
-        return categorie;
-    }
-
-    public void setCategorie(String categorie) {
-        this.categorie = categorie;
-    }
 
     @Override
     public String toString() {
@@ -99,11 +104,12 @@ public class PlaceInfo {
                 ", address='" + address + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", id='" + id + '\'' +
+                ", id='" + id_ext + '\'' +
                 ", websiteUri=" + websiteUri +
                 ", latlng=" + latlng +
                 ", rating=" + rating +
                 ", attributions='" + attributions + '\'' +
-                ", categorie='" + categorie + '\'' +
+                ", image='" + image + '\'' +
                 '}';
     }
 

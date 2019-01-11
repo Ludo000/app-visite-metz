@@ -6,11 +6,13 @@ import android.app.Activity;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
@@ -20,6 +22,7 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -48,6 +51,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
+import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.models.PlaceInfo;
 import com.example.sami.visitmetz_v2.models.SiteData;
 import com.google.android.gms.common.ConnectionResult;
@@ -59,8 +63,13 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.AutocompletePrediction;
+import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.PlacePhotoMetadata;
+import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
+import com.google.android.gms.location.places.PlacePhotoMetadataResponse;
+import com.google.android.gms.location.places.PlacePhotoResponse;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -75,9 +84,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
@@ -93,12 +108,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
     //widgets
     private AutoCompleteTextView mSearchText;
-    private ImageView mGps, mInfo, mPlacePicker, mRestaurant;
+    private ImageView mGps, mInfo, mPlacePicker, mAdd;
     public PlaceInfo  mPlace;
     public Marker mMarker,mMarkerB;
     private EditText mRoyen;
     private Button  mValide;
     private Spinner mSpinner;
+
 
     public DatabaseHelper dbh;
 
@@ -156,14 +172,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         mValide = (Button)v.findViewById(R.id.btn_valide);
         mSpinner = (Spinner) v.findViewById(R.id.spinner);
 
-
-
-        /*  mRestaurant = (ImageView) v.findViewById(R.id.ic_restaurant); */
+        mAdd = (ImageView)v.findViewById(R.id.add_site);
 
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.nav_map);
 
         resolver = getContext().getContentResolver();
-
 
         mSearchText.setOnItemClickListener(mAutocompleteClickListener);
 
@@ -281,10 +294,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         mInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
                 Log.d(TAG, "onClick: clicked place info : ");
                 try{
-
                     if(mMarker.isInfoWindowShown()){
                         mMarker.hideInfoWindow();
                     }else{
@@ -312,6 +323,44 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             }
         });
 
+        mAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG, "onClick: clicked Add user sur la Map : ");
+                try{
+                    if(mMarker.isVisible()){
+                        String addNameSite = mPlace.getName();
+                        double addLatSite = mPlace.getLatlng().latitude;
+                        double addLongSite = mPlace.getLatlng().longitude;
+                        String addAdresseSite = mPlace.getAddress();
+                        String firstWord = mPlace.getName();
+                        String addCatSite;
+                        if(firstWord.contains(" ")) {
+                            firstWord = firstWord.substring(0, firstWord.indexOf(" "));
+                            addCatSite = firstWord.trim();
+
+                        }else {
+                            addCatSite = "";
+                        }
+
+                        byte[] addImage = mPlace.getImage();
+                        String addResumeSite = "Aucun";
+
+                        ajouterCategorie(addCatSite);
+
+                       ajoutSite(addNameSite,addLatSite, addLongSite, addAdresseSite, addCatSite, addImage,addResumeSite);
+
+
+
+
+
+                        }else{
+                        Log.d(TAG, "no Marker " + mPlace.toString());
+                    }
+                } catch (NullPointerException e) {
+                        Log.e(TAG, "onClick: GooglePlayServicesRepairableException: " + e.getMessage() );
+                    }
+        }});
 
         mValide.setOnClickListener(new View.OnClickListener() {
 
@@ -398,6 +447,66 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     }
 
 
+    private void ajouterCategorie(String nomeCat){
+        //On cherche si duplica
+        String[] projection = new String[]{"_id","nom"};
+        @SuppressLint("Recycle")
+        Cursor foundSite = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection, "nom = ?", new String[]{nomeCat}, null);
+
+        if(foundSite!=null) {
+            if (foundSite.moveToFirst()) {
+                Toast.makeText(getContext(), "Une categorie avec le nom '"+ nomeCat+"' existe déjà!", Toast.LENGTH_LONG).show();
+            } else {
+                ContentValues content = new ContentValues();
+                content.put("nom", nomeCat);
+
+                Uri uri2 = getActivity().getContentResolver().insert(
+                        CategoriesProvider.CONTENT_URI, content);
+            }}}
+
+
+
+    private void ajoutSite(String nomSite, double latSite, double longSite, String adressSite, String categorieSite, byte[] ImageSite,String resumeSite){
+        //Checks if it is not empty
+        if (nomSite.length() > 0 && latSite > 0 && longSite >0) {
+
+            //On cherche si duplica
+            String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+            @SuppressLint("Recycle")
+            Cursor foundSite = getContext().getContentResolver().query(SitesProvider.CONTENT_URI, projection, "NOM = ? AND LATITUDE=? AND LONGITUDE=? ", new String[]{nomSite, Double.toString(latSite), Double.toString(longSite)}, null);
+
+            if(foundSite!=null) {
+                if (foundSite.moveToFirst()) {
+                    Toast.makeText(getContext(), "Un site avec le nom '"+ nomSite + "' existe déjà!", Toast.LENGTH_LONG).show();
+                } else {
+
+                    // Add a new site record
+                    ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
+
+                    Uri uri = getActivity().getContentResolver().insert(
+                            SitesProvider.CONTENT_URI, sitesValues);
+
+                    Toast.makeText(getContext(), "Le site " + nomSite + " a été bien ajouté: " , Toast.LENGTH_LONG)
+                            .show();
+                }
+            }
+        }
+    }
+
+    public ContentValues contentValues(int id_ext, String nom, double latitude, double longitude, String adresse, String categorie, String resume, byte[] image)
+    {
+        //Permits to add new info in the table
+        ContentValues values = new ContentValues();
+        values.put("id_ext",id_ext);
+        values.put("nom",nom);
+        values.put("image",image);
+        values.put("latitude",latitude);
+        values.put("longitude",longitude);
+        values.put("adresse_postale",adresse);
+        values.put("categorie",categorie);
+        values.put("resume",resume);
+        return values;
+    }
 
 
     private void drawCircle(LatLng point){
@@ -562,8 +671,6 @@ SpinnerItems();
                         .title(placeInfo.getName())
                         .snippet(snippet);
                 mMarker = mMap.addMarker(options);
-
-
 
 
                 Toast.makeText(this.getActivity(), formatNumber(results[0]), Toast.LENGTH_LONG).show();
@@ -836,6 +943,9 @@ SpinnerItems();
             placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
         }
     };
+
+
+
     private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback = new ResultCallback<PlaceBuffer>() {
         @Override
         public void onResult(@NonNull PlaceBuffer places) {
@@ -847,6 +957,8 @@ SpinnerItems();
             final Place place = places.get(0);
             try{
                 mPlace = new PlaceInfo();
+
+                mPlace.setId(place.getId());
                 mPlace.setName(place.getName().toString());
                 Log.d(TAG, "onResult: name: " + place.getName());
                 mPlace.setAddress(place.getAddress().toString());
@@ -860,8 +972,10 @@ SpinnerItems();
                 mPlace.setPhoneNumber(place.getPhoneNumber().toString());
                 Log.d(TAG, "onResult: phone number: " + place.getPhoneNumber());
                 mPlace.setWebsiteUri(place.getWebsiteUri());
-
                 Log.d(TAG, "onResult: website uri: " + place.getWebsiteUri());
+
+                mPlace.setImage(getPhotos(place.getId()));
+
                 Log.d(TAG, "onResult: place: " + mPlace.toString());
             }catch (NullPointerException e){
                 Log.e(TAG, "onResult: NullPointerException: " + e.getMessage() );
@@ -873,5 +987,42 @@ SpinnerItems();
         }
     };
 
+
+
+    // Request photos and metadata for the specified place.
+    private byte[] getPhotos(String placeId) {
+        final byte[][] byteArray = {new byte[1]};
+        final GeoDataClient mGeoDataClient = Places.getGeoDataClient(this.getActivity());
+        final Task<PlacePhotoMetadataResponse> photoMetadataResponse = mGeoDataClient.getPlacePhotos(placeId);
+        photoMetadataResponse.addOnCompleteListener(new OnCompleteListener<PlacePhotoMetadataResponse>() {
+            @Override
+            public void onComplete(@NonNull Task<PlacePhotoMetadataResponse> task) {
+                // Get the list of photos.
+                PlacePhotoMetadataResponse photos = task.getResult();
+                // Get the PlacePhotoMetadataBuffer (metadata for all of the photos).
+                PlacePhotoMetadataBuffer photoMetadataBuffer = photos.getPhotoMetadata();
+                // Get the first photo in the list.
+                PlacePhotoMetadata photoMetadata = photoMetadataBuffer.get(0);
+                // Get the attribution text.
+                CharSequence attribution = photoMetadata.getAttributions();
+                // Get a full-size bitmap for the photo.
+                Task<PlacePhotoResponse> photoResponse = mGeoDataClient.getPhoto(photoMetadata);
+                photoResponse.addOnCompleteListener(new OnCompleteListener<PlacePhotoResponse>() {
+                    @Override
+                    public void onComplete(@NonNull Task<PlacePhotoResponse> task) {
+                        PlacePhotoResponse photo = task.getResult();
+                        Bitmap bitmap = photo.getBitmap();
+
+                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                        byteArray[0] = stream.toByteArray();
+                        bitmap.recycle();
+
+                    }
+                });
+            }
+        });
+        return byteArray[0];
+    }
 
 }

@@ -104,6 +104,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     }
 
     private GoogleMap mMap;
+    private GeoDataClient mGeoDataClient;
+    private ArrayList<Bitmap> bitmapArray = new ArrayList<>();
+    private byte[] imageGoogleMap;
 
     SupportMapFragment mapFragment;
 
@@ -115,10 +118,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     private EditText mRoyen;
     private Button  mValide;
     private Spinner mSpinner;
-
-
     public DatabaseHelper dbh;
-
 
 
     //vars
@@ -168,6 +168,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         mGps = (ImageView) v.findViewById(R.id.ic_gps);
         mInfo = (ImageView) v.findViewById(R.id.place_info);
         mPlacePicker = (ImageView) v.findViewById(R.id.place_picker);
+        mGeoDataClient = Places.getGeoDataClient(this.getActivity());
 
         mRoyen = (EditText)v.findViewById(R.id.input_cercle);
         mValide = (Button)v.findViewById(R.id.btn_valide);
@@ -827,9 +828,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                 mPlace.setWebsiteUri(place.getWebsiteUri());
                 Log.d(TAG, "onResult: website uri: " + place.getWebsiteUri());
 
-
-
-                mPlace.setImage(getPhotos(place.getId()));
+                //récupère la photo de manière asynchrone et la met dans imageGoogleMap
+                getPhotos(mPlace.getId());
 
                 Log.d(TAG, "onResult: place: " + mPlace.toString());
             }catch (NullPointerException e){
@@ -845,10 +845,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
 
     // Request photos and metadata for the specified place.
-    private byte[] getPhotos(String placeId) {
-        final byte[][] byteArray = {new byte[1]};
-
-        final GeoDataClient mGeoDataClient = Places.getGeoDataClient(this.getActivity());
+    private void getPhotos(String placeId) {
         final Task<PlacePhotoMetadataResponse> photoMetadataResponse = mGeoDataClient.getPlacePhotos(placeId);
         photoMetadataResponse.addOnCompleteListener(new OnCompleteListener<PlacePhotoMetadataResponse>() {
             @Override
@@ -868,17 +865,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                     public void onComplete(@NonNull Task<PlacePhotoResponse> task) {
                         PlacePhotoResponse photo = task.getResult();
                         Bitmap bitmap = photo.getBitmap();
-
+                        bitmapArray.add(bitmap); // Add a bitmap to array
+                        //handle the new bitmap here
                         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                        byteArray[0] = stream.toByteArray();
-                        bitmap.recycle();
+                        Bitmap bmp = bitmapArray.get(0);
+                        bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                        imageGoogleMap = stream.toByteArray();
+                        bmp.recycle();
+                        mPlace.setImage(imageGoogleMap);
 
                     }
                 });
             }
         });
-        return byteArray[0];
     }
 
 }

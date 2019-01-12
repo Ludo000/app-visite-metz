@@ -89,6 +89,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -199,64 +200,45 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             @Override
             public void onLocationChanged (Location location){
 
-                Log.i(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx "  );
-
                 Log.i(TAG, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx " + location.getLatitude());
                 Log.i(TAG, "qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq " + location.getLongitude());
-
                 lastLoction  =  location;
-
                 if(mRoyen.length() !=0 ){
                     mMap.clear();
                     drawCircle(new LatLng(location.getLatitude(),location.getLongitude()));
                     listMarker (new LatLng(location.getLatitude(),location.getLongitude()));
                 }
-
             }
-
             @Override
             public void onStatusChanged (String s,int i, Bundle bundle){
-
             }
-
             @Override
             public void onProviderEnabled (String s){
-
             }
-
             @Override
             public void onProviderDisabled (String s){
-
             }
-
         };
         locationManager = (LocationManager)getActivity().getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
-
         //noinspection MissingPermission
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,0,listener);
-
-
         return v;
     }
-
     @Override
     public void onDestroy() {
         super.onDestroy();
         if(locationManager != null){
-
              locationManager.removeUpdates(listener);
         }
     }
 
     private void init() {
         Log.d(TAG, "init: initializing");
-
         mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
                 .addApi(Places.GEO_DATA_API)
                 .addApi(Places.PLACE_DETECTION_API)
                 .enableAutoManage(this.getActivity(), 0,this)
                 .build();
-
         mPlaceAutocompleteAdapter = new PlaceAutocompleteAdapter(this.getActivity(), mGoogleApiClient,
                 LAT_LNG_BOUNDS, null);
 
@@ -269,12 +251,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                         || actionId == EditorInfo.IME_ACTION_DONE
                         || keyEvent.getAction() == KeyEvent.ACTION_DOWN
                         || keyEvent.getAction() == KeyEvent.KEYCODE_ENTER) {
-
                     //execute our method for searching
                     geoLocate();
                 }
-
-
                 return false;
             }
 
@@ -338,21 +317,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                         if(firstWord.contains(" ")) {
                             firstWord = firstWord.substring(0, firstWord.indexOf(" "));
                             addCatSite = firstWord.trim();
-
                         }else {
                             addCatSite = "";
                         }
 
                         byte[] addImage = mPlace.getImage();
                         String addResumeSite = "Aucun";
-
                         ajouterCategorie(addCatSite);
-
-                       ajoutSite(addNameSite,addLatSite, addLongSite, addAdresseSite, addCatSite, addImage,addResumeSite);
-
-
-
-
+                        ajoutSite(addNameSite,addLatSite, addLongSite, addAdresseSite, addCatSite, addImage,addResumeSite);
 
                         }else{
                         Log.d(TAG, "no Marker " + mPlace.toString());
@@ -363,24 +335,26 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         }});
 
         mValide.setOnClickListener(new View.OnClickListener() {
-
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
             @Override
             public void onClick(View view) {
-                mMap.clear();
-                // Drawing circle on the map
-                drawCircle(new LatLng(latitude, longitude));
-                listMarker (new LatLng(latitude,longitude));
 
+                if(mRoyen.length() !=0){
+                    mMap.clear();
+                    // Dessiner un cercle map
+                    drawCircle(new LatLng(latitude, longitude));
+                    // Ajouter Marker dans Map
+                    listMarker (new LatLng(latitude,longitude));
+                }else {
+                    Toast.makeText(getContext(), "le Royen est Vide !", Toast.LENGTH_LONG).show();
+                }
             }
-
         }
-
         );
-
         hideSoftKeyboard();
     }
 
+    /* ----------------------- Methode pour ajouter les markers dans Map ----------------------------------- */
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void listMarker ( LatLng latlong){
@@ -390,40 +364,32 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             float results[] = new float[10];
             Location.distanceBetween(latlong.latitude, latlong.longitude, liste.get(i).getLat(), liste.get(i).getLongi(), results);
             if (Integer.parseInt(mRoyen.getText().toString()) > results[0]) {
-
                 LatLng point = new LatLng(Double.valueOf(liste.get(i).getLat()), Double.valueOf(liste.get(i).getLongi()));
                 options.position(point);
                 options.title(liste.get(i).getName());
                 options.snippet("Categorie: " + liste.get(i).getCategorie() + "  " + "Resumer: " + liste.get(i).getResumer());
-                Log.d(TAG, "DIIIIIISTANCE :  " + results[0]);
-                Log.d(TAG, "TTMMMMMmmm:  " + liste.get(i).getCategorie());
-
+                Log.d(TAG, "La distance entre la place actuel est le site  :  " + results[0]);
+                Log.d(TAG, "la categorie de ce site est :  " + liste.get(i).getCategorie());
                 if (mSpinner.getSelectedItem().toString().equals(liste.get(i).getCategorie())) {
-                    Log.d(TAG, "RTTTTT" + mSpinner.getSelectedItem().toString());
-                    Log.d(TAG, "RRRRRRRTTTTT" + liste.get(i).getCategorie());
-                    mMap.addMarker(options);
+                     mMap.addMarker(options);
                 } else if (mSpinner.getSelectedItem().toString().equals("Tout")) {
                     mMap.addMarker(options);
                 }
             }
         }
-
-
     }
+
+    /* ----------------------- Cette Methode pour stocké un marker et une categorie de chaque marker dans une ArrayList ----------------------------------- */
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private ArrayList<CustomMarker> allMarkers(){
         MarkerOptions options = new MarkerOptions();
         ArrayList<CustomMarker> collection = new ArrayList<CustomMarker>();
-
         // Projection contains the columns we want
         String[] projection = new String[]{"_ID", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
                 "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
-
         // Pass the URL, projection and I'll cover the other options below
         Cursor dataCursor = resolver.query(uri, projection, null, null, null, null);
-        //Toast.makeText(getActivity(),""+dataCursor.getCount(),Toast.LENGTH_LONG).show();
-
         while (dataCursor.moveToNext()) {
             int id = dataCursor.getColumnIndex("_id ");
             int id_ext = dataCursor.getColumnIndex("ID_EXT");
@@ -434,18 +400,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             String categorie = dataCursor.getString(dataCursor.getColumnIndex("CATEGORIE"));
             String resume = dataCursor.getString(dataCursor.getColumnIndex("RESUME"));
             byte[] image = dataCursor.getBlob(dataCursor.getColumnIndex("IMAGE"));
-
             SiteData currentSite = new SiteData(id, id_ext, name, lat, longi, adresse, categorie, resume, image);
             LatLng point = new LatLng(currentSite.getLatitude(), currentSite.getLongitude());
             options.position(point);
             options.title(currentSite.getNom());
             options.snippet("Categorie: " + currentSite.getCategorie() + "  " + "Resume: " + currentSite.getResume());
             CustomMarker cMarker = new CustomMarker(currentSite.getCategorie(), currentSite.getLatitude(), currentSite.getLongitude(), currentSite.getNom(), currentSite.getResume());
+           // Collection contien Marker et catégorie
             collection.add(cMarker);
         }
         return collection;
     }
 
+    /* ----------------------- Cette Methode c'est pour Ajouter une Categorie d'un site dans la BD ----------------------------------- */
 
     private void ajouterCategorie(String nomeCat){
         //On cherche si duplica
@@ -464,12 +431,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                         CategoriesProvider.CONTENT_URI, content);
             }}}
 
-
+    /* ----------------------- Cette Methode c'est pour Ajouter un Site dans la BD ----------------------------------- */
 
     private void ajoutSite(String nomSite, double latSite, double longSite, String adressSite, String categorieSite, byte[] ImageSite,String resumeSite){
         //Checks if it is not empty
         if (nomSite.length() > 0 && latSite > 0 && longSite >0) {
-
             //On cherche si duplica
             String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
             @SuppressLint("Recycle")
@@ -479,19 +445,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                 if (foundSite.moveToFirst()) {
                     Toast.makeText(getContext(), "Un site avec le nom '"+ nomSite + "' existe déjà!", Toast.LENGTH_LONG).show();
                 } else {
-
                     // Add a new site record
                     ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
 
                     Uri uri = getActivity().getContentResolver().insert(
                             SitesProvider.CONTENT_URI, sitesValues);
-
                     Toast.makeText(getContext(), "Le site " + nomSite + " a été bien ajouté: " , Toast.LENGTH_LONG)
                             .show();
                 }
             }
         }
     }
+
+    /* -----------------------cette methode on l'a utilisé pour nous aide a ajouter un site au BD depuis la Map ----------------------------------- */
 
     public ContentValues contentValues(int id_ext, String nom, double latitude, double longitude, String adresse, String categorie, String resume, byte[] image)
     {
@@ -508,23 +474,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         return values;
     }
 
+    /* ----------------------- Dessiner un cercle dans la Map avec Radius de l'input 'Royen' et LatLng ----------------------------------- */
 
     private void drawCircle(LatLng point){
 
         // Instantiating CircleOptions to draw a circle around the marker
         CircleOptions circleOptions = new CircleOptions();
 
-            circleOptions.center(point);
+        circleOptions.center(point);
 
-
-       // if(Integer.parseInt(mRoyen.getText().toString()) != 0){
         // Radius of the circle
          circleOptions.radius(Integer.parseInt(mRoyen.getText().toString()));
-
-       // }else {
-         //   circleOptions.radius(50);
-
-      //  }
 
         // Border color of the circle
         circleOptions.strokeColor(Color.BLACK);
@@ -540,18 +500,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
     }
 
-
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    public void AddMarker (){
-
-    }
-
-
-
     public void  onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PLACE_PICKER_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
-
                 Place place = PlacePicker.getPlace(getActivity(), data);
                 PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
                         .getPlaceById(mGoogleApiClient, place.getId());
@@ -573,18 +524,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         }
         if (list.size() > 0) {
             Address address = list.get(0);
-
             Log.d(TAG, "geoLocate: found a location: " + address.toString());
             moveCamera(new LatLng(address.getLatitude(), address.getLongitude()), DEFAULT_ZOOM,
                     address.getAddressLine(0));
         }
     }
 
+    /* ----------------------- dans ce cas the map is ready to be used ----------------------------------- */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
         if (mLocationPermissionsGranted) {
             getDeviceLocation();
             if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION)
@@ -594,23 +544,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             }
             mMap.setMyLocationEnabled(true);
             mMap.getUiSettings().setMyLocationButtonEnabled(false);
-SpinnerItems();
+            SpinnerItems();
             init();
-          //  Toast.makeText(getActivity(),"Bla bla",Toast.LENGTH_LONG).show();
-
-           //
         }
-
-
-
     }
-
-
-
-
-
+    /* -----------------------Pour avoir the current place de l'utilisateur----------------------------------- */
     private void getDeviceLocation() {
-
         Log.d(TAG, "getDeviceLocation: getting the devices current location");
         mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this.getActivity());
         try {
@@ -619,23 +558,15 @@ SpinnerItems();
                 location.addOnCompleteListener(new OnCompleteListener() {
                     @Override
                     public void onComplete(@NonNull Task task) {
-
                         if (task.isSuccessful()) {
                             Log.d(TAG, "onComplete: found location!");
                             Location currentLocation = (Location) task.getResult();
-
                             if (currentLocation != null) {
                                 latitude = currentLocation.getLatitude();
-
                             }
-
                             longitude = currentLocation.getLongitude();
-
-                          //  lastLoction = currentLocation;
-
                             moveCamera(new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude()),
                                     DEFAULT_ZOOM, "Moi !");
-
                         } else {
                             Log.d(TAG, "onComplete: current location is null");
                             Toast.makeText(getActivity(), "unable to get current location", Toast.LENGTH_SHORT).show();
@@ -646,9 +577,9 @@ SpinnerItems();
         } catch (SecurityException e) {
             Log.e(TAG, "getDeviceLocation: SecurityException: " + e.getMessage());
         }
-
     }
 
+    /* ------------------------Changment Camera ver le site lorsque l'utilisateur click sur un site dans l'input recherche---------------------------------------- */
 
     private void moveCamera(LatLng latLng, float zoom, PlaceInfo placeInfo){
         Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude );
@@ -658,9 +589,7 @@ SpinnerItems();
         if(placeInfo != null){
             try{
                 float results[] = new float[10];
-
                 Location.distanceBetween(latitude, longitude, latLng.latitude , latLng.longitude, results);
-
                 String snippet = "Address: " + placeInfo.getAddress() + "\n" +
                         "Phone Number: " + placeInfo.getPhoneNumber() + "\n" +
                         "Website: " + placeInfo.getWebsiteUri() + "\n" +
@@ -671,11 +600,8 @@ SpinnerItems();
                         .title(placeInfo.getName())
                         .snippet(snippet);
                 mMarker = mMap.addMarker(options);
-
-
-                Toast.makeText(this.getActivity(), formatNumber(results[0]), Toast.LENGTH_LONG).show();
-                //       Toast.makeText(this.getActivity(),item.getNomCard() , Toast.LENGTH_LONG).show();
-            }catch (NullPointerException e){
+                Toast.makeText(this.getActivity(), "La distance entre " + placeInfo.getName()+" et vous est : " +formatNumber(results[0]), Toast.LENGTH_LONG).show();
+             }catch (NullPointerException e){
                 Log.e(TAG, "moveCamera: NullPointerException: " + e.getMessage() );
             }
         }else{
@@ -684,7 +610,7 @@ SpinnerItems();
         hideSoftKeyboard();
     }
 
-
+    /* -----------------------changer ormat de distance entre les deux lieu 'ex : current place et le Marker'------------------------ */
     private String formatNumber(float distance) {
         String unit = "m";
         if (distance < 1) {
@@ -694,77 +620,10 @@ SpinnerItems();
             distance /= 1000;
             unit = "km";
         }
-
         return String.format("%4.3f%s", distance, unit);
     }
 
     /* --------------------------------------------------------------------------------------------- */
-
-   /*
-    public void onClick(View v)
-    {
-        Object dataTransfer[] = new Object[2];
-        GetNearbyPlacesData getNearbyPlacesData = new GetNearbyPlacesData();
-
-        switch(v.getId())
-        { */
-
-          /*  case R.id.B_hopistals:
-                mMap.clear();
-                String hospital = "hospital";
-                String url = getUrl(latitude, longitude, hospital);
-                dataTransfer[0] = mMap;
-                dataTransfer[1] = url;
-
-                getNearbyPlacesData.execute(dataTransfer);
-                Toast.makeText(MapsActivity.this, "Showing Nearby Hospitals", Toast.LENGTH_SHORT).show();
-                break;
-
-
-            case R.id.B_schools:
-                mMap.clear();
-                String school = "school";
-                url = getUrl(latitude, longitude, school);
-                dataTransfer[0] = mMap;
-                dataTransfer[1] = url;
-
-                getNearbyPlacesData.execute(dataTransfer);
-                Toast.makeText(MapsActivity.this, "Showing Nearby Schools", Toast.LENGTH_SHORT).show();
-                break; */
-       /*     case R.id.ic_restaurant:
-                mMap.clear();
-                String resturant = "restuarant";
-                String  url = getUrl(latitude, longitude, resturant);
-                dataTransfer[0] = mMap;
-                dataTransfer[1] = url;
-
-                getNearbyPlacesData.execute(dataTransfer);
-                Toast.makeText(getActivity(), "Showing Nearby Restaurants", Toast.LENGTH_SHORT).show();
-                break;
-
-        }
-    }
-      */
-
- /*   private String getUrl(double latitude , double longitude , String nearbyPlace)
-    {
-
-        StringBuilder googlePlaceUrl = new StringBuilder("https://maps.googleapis.com/maps/api/place/nearbysearch/json?");
-        googlePlaceUrl.append("location="+latitude+","+longitude);
-        googlePlaceUrl.append("&radius="+PROXIMITY_RADIUS);
-        googlePlaceUrl.append("&type="+nearbyPlace);
-       // googlePlaceUrl.append("&keyword="+nearbyPlace);
-        googlePlaceUrl.append("&sensor=true");
-        googlePlaceUrl.append("&key="+"AIzaSyD5k31sShLlOA_yZOMsEqJ5oy2SPB9ojBE");
-
-        Log.d("MapsActivity", "url = "+googlePlaceUrl.toString());
-
-        return googlePlaceUrl.toString();
-    } */
-
-
-    /* --------------------------------------------------------------------------------------------- */
-
 
     private void moveCamera(LatLng latLng, float zoom, String title) {
         Log.d(TAG, "moveCamera: moving the camera to: lat: " + latLng.latitude + ", lng: " + latLng.longitude);
@@ -826,25 +685,20 @@ SpinnerItems();
 
         // Pass the URL, projection and I'll cover the other options below
         Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);
-
         // Spinner Drop down elements
         List<String> categories = new ArrayList<String>();
-        categories.add("-- Sélectionner une catégorie --");
+        categories.add("Sélectionner une catégorie");
         while(data.moveToNext())
         {
             categories.add(data.getString(data.getColumnIndex("nom")));
         }
-
         data.close();
-
         // Spinner click listener
         mSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
                 // On selecting a spinner item
                 String item = parent.getItemAtPosition(position).toString();
-
             }
 
             @Override
@@ -875,7 +729,6 @@ SpinnerItems();
 
         // Drop down layout style - list view with radio button
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
         // attaching data adapter to spinner
         mSpinner.setAdapter(dataAdapter);
         dataAdapter.add("Tout");
@@ -974,6 +827,8 @@ SpinnerItems();
                 mPlace.setWebsiteUri(place.getWebsiteUri());
                 Log.d(TAG, "onResult: website uri: " + place.getWebsiteUri());
 
+
+
                 mPlace.setImage(getPhotos(place.getId()));
 
                 Log.d(TAG, "onResult: place: " + mPlace.toString());
@@ -992,6 +847,7 @@ SpinnerItems();
     // Request photos and metadata for the specified place.
     private byte[] getPhotos(String placeId) {
         final byte[][] byteArray = {new byte[1]};
+
         final GeoDataClient mGeoDataClient = Places.getGeoDataClient(this.getActivity());
         final Task<PlacePhotoMetadataResponse> photoMetadataResponse = mGeoDataClient.getPlacePhotos(placeId);
         photoMetadataResponse.addOnCompleteListener(new OnCompleteListener<PlacePhotoMetadataResponse>() {

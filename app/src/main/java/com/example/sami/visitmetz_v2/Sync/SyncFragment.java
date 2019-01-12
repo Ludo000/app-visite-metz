@@ -77,7 +77,6 @@ public class SyncFragment extends Fragment {
 
     public void loadSiteIntoLocalBdd(String result){
 
-        if(result.substring(0,1).equals("{")) {
             this.listSiteData = new ArrayList<>();
             this.cardListFragment.cardArrayAdapter = new SiteDataArrayAdapter(this.getContext(), R.layout.recycle_items, this);
             this.cardListFragment.listView.setAdapter(this.cardListFragment.cardArrayAdapter);
@@ -108,7 +107,7 @@ public class SyncFragment extends Fragment {
                 Log.e("json", e.getMessage());
                 e.printStackTrace();
             }
-        }
+
     }
 
 }

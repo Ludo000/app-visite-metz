@@ -268,8 +268,19 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
                                     if (newCategorie.length() > 0) {
                                         //On cherche si duplica
                                         String[] projection = new String[]{"_id","nom"};
+
                                         @SuppressLint("Recycle")
                                         Cursor foundSite = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection, "nom = ?", new String[]{newCategorie}, null);
+
+                                        // Holds the column data we want to retrieve
+                                        String[] projection1 = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+
+
+                                        // Pass the URL for Content Provider, the projection,
+                                        // the where clause followed by the matches in an array for the ?
+                                        // null is for sort order
+                                        @SuppressLint("Recycle")
+                                        Cursor foundSite1 = resolver.query(SitesProvider.CONTENT_URI, projection1, "CATEGORIE = ? ", new String[]{titleTextView.getText().toString().trim()}, null);
 
                                         if(foundSite!=null) {
                                             if (foundSite.moveToFirst()) {
@@ -287,30 +298,24 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
                                                 int c = getActivity().getContentResolver().update(
                                                         CategoriesProvider.CONTENT_URI, content, "nom = ?", selectionargs);
 
-                                                // Holds the column data we want to retrieve
-                                                String[] projection1 = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
-
-                                                // Pass the URL for Content Provider, the projection,
-                                                // the where clause followed by the matches in an array for the ?
-                                                // null is for sort order
-                                                @SuppressLint("Recycle")
-                                                Cursor foundSite1 = resolver.query(SitesProvider.CONTENT_URI, projection1, "CATEGORIE = ? ", new String[]{titleTextView.getText().toString()}, null);
-
-                                                // Holds the column data we want to update
-                                                String[] selectionargs1 = new String[]{newCategorie};
+                                                Toast.makeText(getContext(), "La catégorie a été modifiée!", Toast.LENGTH_SHORT)
+                                                        .show();
 
                                                 // Cycle through our one result or print error
-                                                if(foundSite1!=null) {
-                                                    if (foundSite.moveToNext()) {
-                                                        int id2 =foundSite1.getColumnIndex("_id");
+                                                if(foundSite1 != null) {
+                                                    while (foundSite1.moveToNext()) {
+                                                        int id2 = foundSite1.getColumnIndex("_id");
                                                         int id_ext = foundSite1.getColumnIndex("ID_EXT");
                                                         String nom = foundSite1.getString(foundSite1.getColumnIndex("NOM"));
                                                         double latitude = Double.parseDouble(foundSite1.getString(3));
                                                         double longitude = Double.parseDouble(foundSite1.getString(4));
                                                         String adresse = foundSite1.getString(foundSite1.getColumnIndex("ADRESSE_POSTALE"));
-                                                        String categorie = foundSite1.getString(foundSite.getColumnIndex("CATEGORIE"));
+                                                        String categorie = foundSite1.getString(foundSite1.getColumnIndex("CATEGORIE"));
                                                         String resume = foundSite1.getString(foundSite1.getColumnIndex("RESUME"));
                                                         byte[] image = foundSite1.getBlob(foundSite1.getColumnIndex("IMAGE"));
+
+                                                        // Holds the column data we want to update
+                                                        String[] selectionargs1 = new String[]{categorie};
 
                                                         ContentValues values = new ContentValues();
                                                         values.put("id_ext",id_ext);
@@ -319,11 +324,14 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
                                                         values.put("latitude",latitude);
                                                         values.put("longitude",longitude);
                                                         values.put("adresse_postale",adresse);
-                                                        values.put("categorie",categorie);
+                                                        values.put("categorie",newCategorie);
                                                         values.put("resume",resume);
 
+                                                        Toast.makeText(getContext(), "==> "+ categorie+ "    ====> " +newCategorie, Toast.LENGTH_LONG)
+                                                                .show();
+
                                                         int i = getActivity().getContentResolver().update(
-                                                                SitesProvider.CONTENT_URI, values, " CATEGORIE = ?", selectionargs1);
+                                                                SitesProvider.CONTENT_URI, values, "CATEGORIE = ?", selectionargs1);
                                                     }
                                                 }
                                             }

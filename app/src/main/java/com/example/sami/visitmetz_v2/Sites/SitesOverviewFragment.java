@@ -52,7 +52,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
 
     ContentResolver resolver;
 
-    EcouteurLoadEvenement ecouteurLoadEvenement;
+    public EcouteurLoadEvenement ecouteurLoadEvenement;
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
@@ -285,7 +285,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                             byte[] image = foundSite.getBlob(foundSite.getColumnIndex("IMAGE"));
 
                             SiteData currentSite = new SiteData(id, id_ext, name, latitude, longitude, adresse, categorie, resume, image);
-
+                            Toast.makeText(getContext(), currentSite.getCategorie(), Toast.LENGTH_SHORT).show();
                             // Create new fragment, give it an object and start transaction
                             Fragment newFragment = new AjouterSiteDetailsFragment();
                             Bundle bundle = new Bundle();

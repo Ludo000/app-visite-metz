@@ -103,13 +103,13 @@ public class AjouterSiteDetailsFragment extends Fragment {
             nom.setText(site.getNom());
             oldName = site.getNom();
             for(int i=0; i < categories.size(); i++) {
-                Toast(""+ categories.size()+ ", " +site.getCategorie()+ ", "+ categories.get(i));
+                //Toast(""+ categories.size()+ ", " +site.getCategorie()+ ", "+ categories.get(i));
                 if (site.getCategorie().equals(categories.get(i))) {
                     spinner.setSelection(i);
                 }
             }
-            longitude.setText(Double.toString(site.getLongitude()));
-            latitude.setText(Double.toString(site.getLatitude()));
+            longitude.setText(""+site.getLongitude());
+            latitude.setText(""+site.getLatitude());
             adresse_postale.setText(site.getAdresse());
             resume.setText(site.getResume());
         }
@@ -192,6 +192,8 @@ public class AjouterSiteDetailsFragment extends Fragment {
                                     Uri uri2 = getActivity().getContentResolver().insert(
                                             CategoriesProvider.CONTENT_URI, content);
                                     loadspinner();
+                                    Toast.makeText(getContext(), "La catégorie '"+ newCategorie+"' a été ajoutée!", Toast.LENGTH_LONG).show();
+
                                 }
                             }
                         } else {

@@ -31,8 +31,6 @@ public class SiteDataListFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.site_data_listview, container, false);
         this.listView = view.findViewById(R.id.site_data_listView);
-        this.cardArrayAdapter = new SiteDataArrayAdapter(this.getContext(), R.layout.recycle_items);
-        this.listView.setAdapter(cardArrayAdapter);
 
         return view;
     }

@@ -19,17 +19,19 @@ import java.util.List;
 
 public class SiteDataArrayAdapter extends ArrayAdapter<SiteData> {
     private List<SiteData> siteDataList = new ArrayList<SiteData>();
-
+    private SyncFragment syncFragment;
     static class SiteDataViewHolder {
         TextView titleTextView;
         ImageView coverImageView;
+        ImageView shareImageView;
         ImageView editImageView;
         ImageView deleteImageView;
         ImageView likeImageView;
     }
 
-    public SiteDataArrayAdapter(Context context, int textViewResourceId) {
+    public SiteDataArrayAdapter(Context context, int textViewResourceId, SyncFragment syncFragment) {
         super(context, textViewResourceId);
+        this.syncFragment=syncFragment;
     }
 
     @Override
@@ -71,11 +73,9 @@ public class SiteDataArrayAdapter extends ArrayAdapter<SiteData> {
         viewHolder.coverImageView.setImageBitmap(bitmap);
         viewHolder.coverImageView.setTag(bitmap);
         viewHolder.likeImageView.setVisibility(View.INVISIBLE);
+        viewHolder.editImageView.setVisibility(View.INVISIBLE);
+        viewHolder.deleteImageView.setOnClickListener(new SyncButtonSupprListener(this.syncFragment, Integer.toString(siteData.getIDEXT()),siteData));
 
         return row;
-    }
-
-    public Bitmap decodeToBitmap(byte[] decodedByte) {
-        return BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
     }
 }

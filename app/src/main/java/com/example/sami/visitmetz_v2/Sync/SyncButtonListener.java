@@ -18,21 +18,16 @@ public class SyncButtonListener implements View.OnClickListener {
 
 
     }
+
     public String getOutput(){
         return null;
     }
+
     public void prepareUI(){
         this.syncFragment.buttonSync.setEnabled(false);
         this.syncFragment.buttonUpdate.setEnabled(false);
         this.syncFragment.cardListFragment.listView.setVisibility(View.INVISIBLE);
         this.syncFragment.spinner.setVisibility(View.VISIBLE);
         Toast.makeText(this.syncFragment.getContext(),this.getOutput(),Toast.LENGTH_SHORT).show();
-    }
-    public void giveBackUI(boolean resetList){
-        this.syncFragment.buttonSync.setEnabled(true);
-        this.syncFragment.buttonUpdate.setEnabled(true);
-        this.syncFragment.cardListFragment.listView.setVisibility(View.VISIBLE);
-        this.syncFragment.spinner.setVisibility(View.GONE);
-
     }
 }

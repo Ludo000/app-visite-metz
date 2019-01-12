@@ -1,8 +1,6 @@
 package com.example.sami.visitmetz_v2.Sync;
 
 import android.os.AsyncTask;
-import android.widget.Toast;
-
 
 
 import java.io.BufferedReader;
@@ -14,10 +12,14 @@ import java.net.ProtocolException;
 import java.net.URL;
 
 
-public class SyncTask extends AsyncTask<String, Integer, String> {
-    private SyncButtonListener syncButtonListener;
-    public SyncTask(SyncButtonListener syncButtonListener){
-        this.syncButtonListener=syncButtonListener;
+public class HttpTask extends AsyncTask<String, Integer, String> {
+    private SyncFragment syncFragment;
+    private Boolean andOneMoreRefresh;
+    private Boolean andGiveBackUI;
+    public HttpTask(SyncFragment syncFragment, Boolean andOneMoreRefresh, Boolean andGiveBackUI){
+        this.syncFragment=syncFragment;
+        this.andOneMoreRefresh=andOneMoreRefresh;
+        this.andGiveBackUI=andGiveBackUI;
 
     }
     protected String doInBackground(String... urls) {
@@ -66,10 +68,10 @@ public class SyncTask extends AsyncTask<String, Integer, String> {
     }
 
     protected void onPostExecute(String result) {
-
-        this.syncButtonListener.giveBackUI(true);
-        Toast.makeText(this.syncButtonListener.syncFragment.getContext(),"Synchronisation réussie !", Toast.LENGTH_SHORT).show();
-
-
+        this.syncFragment.loadSiteIntoLocalBdd(result);
+        if(andOneMoreRefresh)
+            new HttpTask(this.syncFragment, false, true).execute("https://www.mettreauclair.fr/appVisiteMetz/get.php");
+        if(this.andGiveBackUI)
+            this.syncFragment.giveBackUI();
     }
 }

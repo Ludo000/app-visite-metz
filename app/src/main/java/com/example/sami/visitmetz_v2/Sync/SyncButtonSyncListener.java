@@ -73,7 +73,7 @@ public class SyncButtonSyncListener extends SyncButtonListener {
 
         if(foundSite!=null) {
             while (foundSite.moveToNext()) {
-                new SyncTask(this).execute("https://www.mettreauclair.fr/appVisiteMetz/add.php"
+                new HttpTask(this.syncFragment, foundSite.isLast(), false).execute("https://www.mettreauclair.fr/appVisiteMetz/add.php"
                         + "?NOM=" + foundSite.getString(foundSite.getColumnIndex("NOM"))
                         + "&LATITUDE=" + Double.parseDouble(foundSite.getString(3))
                         + "&LONGITUDE=" + Double.parseDouble(foundSite.getString(4))
@@ -83,7 +83,6 @@ public class SyncButtonSyncListener extends SyncButtonListener {
                         + "&IMAGE=" + Base64.encodeToString(foundSite.getBlob(foundSite.getColumnIndex("IMAGE")), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
             }
         }
-
     }
     @Override
     public String getOutput(){

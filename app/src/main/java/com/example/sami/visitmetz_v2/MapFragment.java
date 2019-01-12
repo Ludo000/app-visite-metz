@@ -853,29 +853,42 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                 // Get the list of photos.
                 PlacePhotoMetadataResponse photos = task.getResult();
                 // Get the PlacePhotoMetadataBuffer (metadata for all of the photos).
-                PlacePhotoMetadataBuffer photoMetadataBuffer = photos.getPhotoMetadata();
-                // Get the first photo in the list.
-                PlacePhotoMetadata photoMetadata = photoMetadataBuffer.get(0);
-                // Get the attribution text.
-                CharSequence attribution = photoMetadata.getAttributions();
-                // Get a full-size bitmap for the photo.
-                Task<PlacePhotoResponse> photoResponse = mGeoDataClient.getPhoto(photoMetadata);
-                photoResponse.addOnCompleteListener(new OnCompleteListener<PlacePhotoResponse>() {
-                    @Override
-                    public void onComplete(@NonNull Task<PlacePhotoResponse> task) {
-                        PlacePhotoResponse photo = task.getResult();
-                        Bitmap bitmap = photo.getBitmap();
-                        bitmapArray.add(bitmap); // Add a bitmap to array
-                        //handle the new bitmap here
-                        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                        Bitmap bmp = bitmapArray.get(0);
-                        bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
-                        imageGoogleMap = stream.toByteArray();
-                        bmp.recycle();
-                        mPlace.setImage(imageGoogleMap);
+                final PlacePhotoMetadataBuffer photoMetadataBuffer;
 
+                photoMetadataBuffer = photos.getPhotoMetadata();
+                // Get the first photo in the list.
+                if(photoMetadataBuffer!=null){
+                    PlacePhotoMetadata photoMetadata;
+                    if(photoMetadataBuffer.getCount()>0) {
+                        photoMetadata = photoMetadataBuffer.get(0);
+
+                        // Get the attribution text.
+                        CharSequence attribution = photoMetadata.getAttributions();
+                        // Get a full-size bitmap for the photo.
+
+                        Task<PlacePhotoResponse> photoResponse = mGeoDataClient.getPhoto(photoMetadata);
+                        photoResponse.addOnCompleteListener(new OnCompleteListener<PlacePhotoResponse>() {
+                            @Override
+                            public void onComplete(@NonNull Task<PlacePhotoResponse> task) {
+                                PlacePhotoResponse photo = task.getResult();
+                                Bitmap bitmap = photo.getBitmap();
+                                if (bitmap != null) {
+                                    bitmapArray.add(bitmap); // Add a bitmap to array
+                                    //handle the new bitmap here
+                                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+
+                                    Bitmap bmp = bitmapArray.get(0);
+                                    bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
+                                    imageGoogleMap = stream.toByteArray();
+                                    bmp.recycle();
+                                    mPlace.setImage(imageGoogleMap);
+                                    photoMetadataBuffer.release();
+                                }
+
+                            }
+                        });
                     }
-                });
+                }
             }
         });
     }

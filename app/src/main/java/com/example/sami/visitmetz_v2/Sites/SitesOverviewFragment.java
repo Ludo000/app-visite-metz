@@ -415,13 +415,16 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
             if (c != null) {
                 textViewNoData.setVisibility(View.INVISIBLE);
                 byte[] img = c.getBlob(8);
-                Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
-                titleTextView.setText(c.getString(c.getColumnIndex("NOM")));
-                coverImageView.setImageBitmap(bitmap);
-                coverImageView.setTag(bitmap);
+                if(img!=null) {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
+                    titleTextView.setText(c.getString(c.getColumnIndex("NOM")));
+                    coverImageView.setImageBitmap(bitmap);
+                    coverImageView.setTag(bitmap);
+                }
                 editImageView.setTag(R.drawable.edit_black_24dp);
                 deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
                 likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
+
             } else {
                 textViewNoData.setVisibility(View.VISIBLE);
             }

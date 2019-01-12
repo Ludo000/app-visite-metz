@@ -1,19 +1,17 @@
 package com.example.sami.visitmetz_v2;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -22,7 +20,6 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
@@ -31,7 +28,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -45,11 +41,9 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.models.PlaceInfo;
@@ -83,17 +77,10 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.OnConnectionFailedListener, GoogleApiClient.ConnectionCallbacks {
@@ -102,12 +89,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
     }
-
     private GoogleMap mMap;
     private GeoDataClient mGeoDataClient;
     private ArrayList<Bitmap> bitmapArray = new ArrayList<>();
     private byte[] imageGoogleMap;
-
     SupportMapFragment mapFragment;
 
     //widgets
@@ -118,70 +103,47 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     private EditText mRoyen;
     private Button  mValide;
     private Spinner mSpinner;
-    public DatabaseHelper dbh;
-
-
+    private Drawable defultImage;
     //vars
     private Boolean mLocationPermissionsGranted = false;
     private FusedLocationProviderClient mFusedLocationProviderClient;
     private PlaceAutocompleteAdapter mPlaceAutocompleteAdapter;
     private GoogleApiClient mGoogleApiClient;
-
     private static final String TAG = "MapActivity";
     private static final String FINE_LOCATION = Manifest.permission.ACCESS_FINE_LOCATION;
     private static final String COURSE_LOCATION = Manifest.permission.ACCESS_COARSE_LOCATION;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1234;
     private static final float DEFAULT_ZOOM = 15f;
-
-   // ArrayList<MarkerOptions> collection2 = new ArrayList<MarkerOptions>();
    private LocationListener listener;
    private LocationManager locationManager;
-
-
     private static final int PLACE_PICKER_REQUEST = 1;
-
-    int PROXIMITY_RADIUS = 200;
-
     double latitude, longitude;
-
     Location lastLoction = null;
-
     String PROVIDER_NAME = "com.example.sami.visitmetz_v2.ContentProvider.SitesProvider";
     String URL = "content://" + PROVIDER_NAME + "/sites_table";
     Uri uri = Uri.parse(URL);
-
     // Provides access to other applications Content Providers
     ContentResolver resolver;
-
-
     private static final LatLngBounds LAT_LNG_BOUNDS = new LatLngBounds(
             new LatLng(-54.5247541978, 2.05338918702), new LatLng(9.56001631027, 51.1485061713));
-
-
     @SuppressLint("MissingPermission")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         View v = inflater.inflate(R.layout.fragment_map, container, false);
         mSearchText = (AutoCompleteTextView) v.findViewById(R.id.input_search);
         mGps = (ImageView) v.findViewById(R.id.ic_gps);
         mInfo = (ImageView) v.findViewById(R.id.place_info);
         mPlacePicker = (ImageView) v.findViewById(R.id.place_picker);
         mGeoDataClient = Places.getGeoDataClient(this.getActivity());
-
+        defultImage = getResources().getDrawable( R.mipmap.ic_launcher);
         mRoyen = (EditText)v.findViewById(R.id.input_cercle);
         mValide = (Button)v.findViewById(R.id.btn_valide);
         mSpinner = (Spinner) v.findViewById(R.id.spinner);
-
         mAdd = (ImageView)v.findViewById(R.id.add_site);
-
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.nav_map);
-
         resolver = getContext().getContentResolver();
-
         mSearchText.setOnItemClickListener(mAutocompleteClickListener);
-
         if (mapFragment == null) {
             FragmentManager fm = getFragmentManager();
             FragmentTransaction ft = fm.beginTransaction();
@@ -189,12 +151,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             ft.replace(R.id.nav_map, mapFragment).commit();
         }
         mapFragment.getMapAsync(this);
-
-
         getLocationPermission();
-       // onLocationChanged();
-
-
        listener = new LocationListener() {
 
             @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -221,6 +178,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             }
         };
         locationManager = (LocationManager)getActivity().getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+
+        if (ActivityCompat.checkSelfPermission(this.getActivity(),
+                Manifest.permission.ACCESS_FINE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this.getActivity(),
+                Manifest.permission.ACCESS_COARSE_LOCATION) !=
+                PackageManager.PERMISSION_GRANTED) {
+            return v;
+        }
+
         //noinspection MissingPermission
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,3000,0,listener);
         return v;
@@ -266,7 +233,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                 Log.d(TAG, "onClick: clicked gps icon");
                 getDeviceLocation();
                 mMap.clear();
-                //onLocationChanged(lastLoction);
 
             }
         });
@@ -321,8 +287,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                         }else {
                             addCatSite = "";
                         }
+                        byte[] addImage;
+                        if (mPlace.getImage()== null){
+                            mPlace.setImage( getByteFromDrawable(defultImage));
+                           addImage = mPlace.getImage();
+                        }else {
+                            addImage = mPlace.getImage();
+                        }
 
-                        byte[] addImage = mPlace.getImage();
                         String addResumeSite = "Aucun";
                         ajouterCategorie(addCatSite);
                         ajoutSite(addNameSite,addLatSite, addLongSite, addAdresseSite, addCatSite, addImage,addResumeSite);
@@ -770,17 +742,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         }
     }
 
-
-
     @Override
     public void onConnected(@Nullable Bundle bundle) {
     }
     @Override
     public void onConnectionSuspended(int i) {
     }
-
-
-
 
 
     /* --------------------------- google places API autocomplete suggestions -----------------*/
@@ -842,7 +809,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         }
     };
 
-
+    @NonNull
+    public byte[] getByteFromDrawable(@NonNull Drawable drawable) {
+        final Bitmap bmp = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        final Canvas canvas = new Canvas(bmp);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bmp.compress(Bitmap.CompressFormat.JPEG,100,stream);
+        return stream.toByteArray();
+    }
 
     // Request photos and metadata for the specified place.
     private void getPhotos(String placeId) {
@@ -861,7 +837,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                     PlacePhotoMetadata photoMetadata;
                     if(photoMetadataBuffer.getCount()>0) {
                         photoMetadata = photoMetadataBuffer.get(0);
-
                         // Get the attribution text.
                         CharSequence attribution = photoMetadata.getAttributions();
                         // Get a full-size bitmap for the photo.
@@ -876,7 +851,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                                     bitmapArray.add(bitmap); // Add a bitmap to array
                                     //handle the new bitmap here
                                     ByteArrayOutputStream stream = new ByteArrayOutputStream();
-
                                     Bitmap bmp = bitmapArray.get(0);
                                     bmp.compress(Bitmap.CompressFormat.PNG, 100, stream);
                                     imageGoogleMap = stream.toByteArray();
@@ -884,6 +858,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                                     mPlace.setImage(imageGoogleMap);
                                     photoMetadataBuffer.release();
                                 }
+
 
                             }
                         });

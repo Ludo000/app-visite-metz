@@ -11,16 +11,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.R;
+import com.example.sami.visitmetz_v2.Sites.SitesOverviewFragment;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -32,10 +35,13 @@ public class SyncFragment extends Fragment {
     public ProgressBar spinner;
     public List<SiteData> listSiteData;
     public SiteDataListFragment cardListFragment;
+    public SitesOverviewFragment sitesOverviewFragment;
+    public FrameLayout frameLayout;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.sitesOverviewFragment = new SitesOverviewFragment();
     }
 
     @Nullable
@@ -45,6 +51,8 @@ public class SyncFragment extends Fragment {
         this.buttonSync = view.findViewById(R.id.buttonSync);
         this.buttonUpdate = view.findViewById(R.id.buttonUpdate);
         this.spinner = view.findViewById(R.id.progressBar1);
+        this.frameLayout = view.findViewById(R.id.fragment_container);
+        this.frameLayout.setVisibility(View.INVISIBLE);
 
         this.syncButtonSyncListener = new SyncButtonSyncListener(this);
         this.syncButtonUpdateListener = new SyncButtonUpdateListener(this);
@@ -57,7 +65,8 @@ public class SyncFragment extends Fragment {
 
         this.cardListFragment = new SiteDataListFragment();
         this.cardListFragment.cardArrayAdapter = new SiteDataArrayAdapter(this.getContext(), R.layout.recycle_items, this);
-        getFragmentManager().beginTransaction().replace(R.id.syncCardFragmentContainer, this.cardListFragment);
+        getFragmentManager().beginTransaction().replace(R.id.syncCardFragmentContainerLeft, this.cardListFragment);
+        getFragmentManager().beginTransaction().replace(R.id.syncCardFragmentContainerRight, this.sitesOverviewFragment);
 
         this.cardListFragment.listView = view.findViewById(R.id.site_data_listView);
         this.cardListFragment.listView.setAdapter(this.cardListFragment.cardArrayAdapter);
@@ -82,26 +91,27 @@ public class SyncFragment extends Fragment {
             this.cardListFragment.listView.setAdapter(this.cardListFragment.cardArrayAdapter);
 
             try {
-                JSONObject res = new JSONObject(result);
-                Iterator<String> keys = res.keys();
-                while (keys.hasNext()) {
-                    String key = keys.next();
-                    if (res.get(key) instanceof JSONObject) {
-                        SiteData siteTemp = new SiteData(
-                                0,
-                                Integer.parseInt(((JSONObject) res.get(key)).getString("_ID")),
-                                ((JSONObject) res.get(key)).getString("NOM"),
-                                Double.parseDouble(((JSONObject) res.get(key)).getString("LATITUDE")),
-                                Double.parseDouble(((JSONObject) res.get(key)).getString("LONGITUDE")),
-                                ((JSONObject) res.get(key)).getString("ADRESSE_POSTALE"),
-                                ((JSONObject) res.get(key)).getString("CATEGORIE"),
-                                ((JSONObject) res.get(key)).getString("RESUME"),
-                                Base64.decode(((JSONObject) res.get(key)).getString("IMAGE"), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
+                    JSONObject res = new JSONObject(result);
+                    Iterator<String> keys = res.keys();
+                    while (keys.hasNext()) {
+                        String key = keys.next();
+                        if (res.get(key) instanceof JSONObject) {
+                            SiteData siteTemp = new SiteData(
+                                    0,
+                                    Integer.parseInt(((JSONObject) res.get(key)).getString("_ID")),
+                                    ((JSONObject) res.get(key)).getString("NOM"),
+                                    Double.parseDouble(((JSONObject) res.get(key)).getString("LATITUDE")),
+                                    Double.parseDouble(((JSONObject) res.get(key)).getString("LONGITUDE")),
+                                    ((JSONObject) res.get(key)).getString("ADRESSE_POSTALE"),
+                                    ((JSONObject) res.get(key)).getString("CATEGORIE"),
+                                    ((JSONObject) res.get(key)).getString("RESUME"),
+                                    Base64.decode(((JSONObject) res.get(key)).getString("IMAGE"), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
 
-                        this.listSiteData.add(siteTemp);
-                        this.cardListFragment.cardArrayAdapter.add(siteTemp);
+                            this.listSiteData.add(siteTemp);
+                            this.cardListFragment.cardArrayAdapter.add(siteTemp);
+                        }
                     }
-                }
+
 
             } catch (JSONException e) {
                 Log.e("json", e.getMessage());

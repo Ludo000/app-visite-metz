@@ -15,6 +15,7 @@ import com.example.sami.visitmetz_v2.R;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class SiteDataArrayAdapter extends ArrayAdapter<SiteData> {
@@ -23,7 +24,6 @@ public class SiteDataArrayAdapter extends ArrayAdapter<SiteData> {
     static class SiteDataViewHolder {
         TextView titleTextView;
         ImageView coverImageView;
-        ImageView shareImageView;
         ImageView editImageView;
         ImageView deleteImageView;
         ImageView likeImageView;

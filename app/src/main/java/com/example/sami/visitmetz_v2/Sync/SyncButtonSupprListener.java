@@ -15,7 +15,8 @@ public class SyncButtonSupprListener extends SyncButtonListener {
     }
     @Override
     public void onClick(View v) {
-        new HttpTask(this.syncFragment, false, true).execute("https://www.mettreauclair.fr/appVisiteMetz/delete.php?ID=" + this.id);
+        this.prepareUI();
+        new HttpTask(this.syncFragment, true, true).execute("https://www.mettreauclair.fr/appVisiteMetz/delete.php?ID=" + this.id);
         this.syncFragment.listSiteData.remove(siteToRemove);
         this.syncFragment.cardListFragment.cardArrayAdapter = new SiteDataArrayAdapter(this.syncFragment.getContext(), R.layout.recycle_items, this.syncFragment);
         this.syncFragment.cardListFragment.listView.setAdapter(this.syncFragment.cardListFragment.cardArrayAdapter);

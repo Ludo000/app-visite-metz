@@ -390,7 +390,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             double lat = Double.parseDouble(dataCursor.getString(3));
             double longi = Double.parseDouble(dataCursor.getString(4));
             String adresse = dataCursor.getString(dataCursor.getColumnIndex("ADRESSE_POSTALE"));
-            int idCategorie = dataCursor.getColumnIndex("_idCategorie");
+            int idCategorie = dataCursor.getInt(dataCursor.getColumnIndex("_idCategorie"));
             String resume = dataCursor.getString(dataCursor.getColumnIndex("RESUME"));
             byte[] image = dataCursor.getBlob(dataCursor.getColumnIndex("IMAGE"));
             SiteData currentSite = new SiteData(id, id_ext, name, lat, longi, adresse, idCategorie,"", resume, image);
@@ -406,7 +406,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             Cursor categorie = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projectionCategorie, "_idCategorie = ?", selectionargCategorie, null);
             if(categorie!=null) {
                 if (categorie.moveToFirst()) {
-                    String nomCategorie = categorie.getString(categorie.getColumnIndex("_idCategorie"));
+                    String nomCategorie = categorie.getString(categorie.getColumnIndex("nom"));
                     currentSite.setCategorieName(nomCategorie);
                     options.snippet("Categorie: " + nomCategorie + "  " + "Resume: " + currentSite.getResume());
                     CustomMarker cMarker = new CustomMarker(nomCategorie, currentSite.getLatitude(), currentSite.getLongitude(), currentSite.getNom(), currentSite.getResume());

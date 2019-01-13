@@ -109,7 +109,7 @@ public class SitesFavorisOverviewFragment extends Fragment {
         // We have a menu item to show in action bar.
         setHasOptionsMenu(true);
 
-        ecouteurLoadEvenement_2 = new EcouteurLoadEvenement_2(getContext(), adapter, null);
+        ecouteurLoadEvenement_2 = new EcouteurLoadEvenement_2(getContext(), adapter);
 
         getLoaderManager().initLoader(0, null, ecouteurLoadEvenement_2);
     }

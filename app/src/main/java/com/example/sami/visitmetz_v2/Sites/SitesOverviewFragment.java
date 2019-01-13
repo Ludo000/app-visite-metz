@@ -25,6 +25,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -242,21 +243,41 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                         // the where clause followed by the matches in an array for the ?
                         // null is for sort order
                         @SuppressLint("Recycle")
-                        Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projection, "NOM = ? ", new String[]{nomSite}, null);
+                        Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projection, "NOM = ?", new String[]{nomSite}, null);
 
                         // Cycle through our one result or print error
                         if(foundSite!=null) {
                             if (foundSite.moveToFirst()) {
-                                int id = foundSite.getColumnIndex("_id ");
+                                int id = foundSite.getInt(foundSite.getColumnIndex("_id"));
+                                Log.d("######>>> ", ""+id);
 
-                                // Add a new favorite site record
-                                ContentValues sitesFavorisValues = contentValues(id);
+                                // Holds the column data we want to retrieve
+                                String[] projectionFavoris = new String[]{"_idFavoris", "_id"};
 
-                                Uri uri = getActivity().getContentResolver().insert(
-                                        SitesFavorisProvider.CONTENT_URI, sitesFavorisValues);
+                                // Pass the URL for Content Provider, the projection,
+                                // the where clause followed by the matches in an array for the ?
+                                // null is for sort order
+                                @SuppressLint("Recycle")
+                                Cursor foundSiteFavoris = resolver.query(SitesFavorisProvider.CONTENT_URI, projectionFavoris, "_id=?", new String[]{""+id}, null);
 
-                                Toast.makeText(getContext(), "Le site " + nomSite + " a été ajouté à vos favoris", Toast.LENGTH_LONG)
-                                        .show();
+                                // Cycle through our one result or print error
+                                if(foundSiteFavoris!=null) {
+                                    if (foundSiteFavoris.moveToFirst()) {
+                                            Toast.makeText(getContext(), "Le site " + nomSite + " existe déjà dans vos favoris", Toast.LENGTH_LONG)
+                                                    .show();
+                                        Log.d("######>>>+++++ ", ""+foundSiteFavoris.getInt(foundSiteFavoris.getColumnIndex("_id")));
+                                    } else {
+
+                                        // Add a new favorite site record
+                                        ContentValues sitesFavorisValues = contentValues(id);
+                                        Log.d("######>>----- ", ""+id);
+                                        Uri uri = getContext().getContentResolver().insert(
+                                                SitesFavorisProvider.CONTENT_URI, sitesFavorisValues);
+
+                                        Toast.makeText(getContext(), "Le site " + nomSite + " a été ajouté à vos favoris", Toast.LENGTH_LONG)
+                                                .show();
+                                    }
+                                }
                             }
                         }
 

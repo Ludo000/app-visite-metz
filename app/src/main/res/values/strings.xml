@@ -23,7 +23,7 @@
     <string name="ajouter_categorie">Nouvelle categorie</string>
     <string name="nouvelle_cat_gorie">Nouvelle catégorie</string>
     <string name="prompt_selectCat">-- Sélectionner une catégorie --</string>
-    <string name="aucun_site_ajout">Aucun site ajouté</string>
+    <string name="aucun_site_ajout">Aucun ajout effectué</string>
     <string name="labelButtonView" >Rafraichir</string>
     <string name="labelTitreSync">Sauvegarde en ligne</string>
     <string name="labelTitreLocalSync">Base locale</string>

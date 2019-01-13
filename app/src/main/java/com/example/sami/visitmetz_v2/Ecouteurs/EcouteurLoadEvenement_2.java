@@ -9,14 +9,13 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider;
 import com.example.sami.visitmetz_v2.Sites.SitesFavorisOverviewFragment;
 
 public class EcouteurLoadEvenement_2 implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    Context context;
+    private Context context;
 
     private SitesFavorisOverviewFragment.MyAdapter mAdapter;
 
@@ -42,14 +41,9 @@ public class EcouteurLoadEvenement_2 implements LoaderManager.LoaderCallbacks<Cu
         // currently filtering.
         Uri baseUri = SitesFavorisProvider.CONTENT_URI;
         CursorLoader cursorLoader;
-        if (this.mCurFilter == null || this.mCurFilter.trim().length() == 0) {
-            cursorLoader = new CursorLoader(this.context, baseUri, projection, null, null, "_idFavoris desc");
-            //Toast.makeText(this.context, "Aucun site retrouvé!", Toast.LENGTH_LONG).show();
-        }
-        else {
-            cursorLoader = new CursorLoader(this.context, baseUri, projection, "NOM LIKE ?", new String[]{"%"+this.mCurFilter.trim()+"%"}, null);
-            //Toast.makeText(this.context, "Site retrouvé: " + this.mCurFilter, Toast.LENGTH_SHORT).show();
-        }
+        cursorLoader = new CursorLoader(this.context, baseUri, projection, null, null, null);
+
+        
         //and get a CursorLoader from my contentprovider
         return cursorLoader;
     }

@@ -334,9 +334,9 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                                 transaction = getFragmentManager().beginTransaction();
                                 transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
 
-                                // Replace whatever is in the fragment_container view with this fragment,
+                                // Replace whatever is in the fragment_container_SO view with this fragment,
                                 // and add the transaction to the back stack
-                                transaction.replace(R.id.fragment_container, newFragment);
+                                transaction.replace(R.id.fragment_container_SO, newFragment);
                                 transaction.addToBackStack(null);
 
                                 // Commit the transaction
@@ -396,20 +396,6 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                                             "_id = ? ", selectionargs);
 
                                     adapter.notifyDataSetChanged();
-
-
-                                    // consider using Java coding conventions (upper first char class names!!!)
-                                    FragmentTransaction transaction;
-                                    if (getFragmentManager() != null) {
-                                        transaction = getFragmentManager().beginTransaction();
-                                        // Replace whatever is in the fragment_container view with this fragment,
-                                        // and add the transaction to the back stack
-                                        transaction.replace(R.id.fragment_container, new SitesOverviewFragment());
-                                        transaction.addToBackStack(null);
-
-                                        // Commit the transaction
-                                        transaction.commit();
-                                    }
                                 }
                             }
                         }

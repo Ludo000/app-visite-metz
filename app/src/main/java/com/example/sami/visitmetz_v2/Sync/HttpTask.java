@@ -20,7 +20,6 @@ public class HttpTask extends AsyncTask<String, Integer, String> {
         this.syncFragment=syncFragment;
         this.andOneMoreRefresh=andOneMoreRefresh;
         this.andGiveBackUI=andGiveBackUI;
-
     }
     protected String doInBackground(String... urls) {
         URL url = null;
@@ -68,9 +67,9 @@ public class HttpTask extends AsyncTask<String, Integer, String> {
     }
 
     protected void onPostExecute(String result) {
-        this.syncFragment.loadSiteIntoLocalBdd(result);
+        this.syncFragment.loadSiteData(result);
         if(andOneMoreRefresh)
-            new HttpTask(this.syncFragment, false, true).execute("https://www.mettreauclair.fr/appVisiteMetz/get.php");
+            new HttpTask(this.syncFragment,false, true).execute("https://www.mettreauclair.fr/appVisiteMetz/get.php");
         if(this.andGiveBackUI)
             this.syncFragment.giveBackUI();
     }

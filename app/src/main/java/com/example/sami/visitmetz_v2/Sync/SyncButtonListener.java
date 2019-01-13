@@ -1,6 +1,7 @@
 package com.example.sami.visitmetz_v2.Sync;
 
 import android.content.ContentResolver;
+import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.widget.Toast;
 
@@ -28,6 +29,8 @@ public class SyncButtonListener implements View.OnClickListener {
         this.syncFragment.buttonUpdate.setEnabled(false);
         this.syncFragment.cardListFragment.listView.setVisibility(View.INVISIBLE);
         this.syncFragment.spinner.setVisibility(View.VISIBLE);
+        this.syncFragment.hideLocale.setVisibility(View.VISIBLE);
+
         Toast.makeText(this.syncFragment.getContext(),this.getOutput(),Toast.LENGTH_SHORT).show();
     }
 }

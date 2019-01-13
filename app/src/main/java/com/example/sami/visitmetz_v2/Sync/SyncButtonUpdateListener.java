@@ -15,7 +15,7 @@ public class SyncButtonUpdateListener extends SyncButtonListener {
         this.syncFragment.listSiteData.clear();
         this.syncFragment.cardListFragment.cardArrayAdapter.notifyDataSetChanged();
         Toast.makeText(this.syncFragment.getContext(),this.getOutput(),Toast.LENGTH_SHORT).show();
-        new HttpTask(this.syncFragment, false, true).execute("https://www.mettreauclair.fr/appVisiteMetz/get.php");
+        new HttpTask(this.syncFragment,false, true).execute("https://www.mettreauclair.fr/appVisiteMetz/get.php");
     }
     @Override
     public String getOutput(){

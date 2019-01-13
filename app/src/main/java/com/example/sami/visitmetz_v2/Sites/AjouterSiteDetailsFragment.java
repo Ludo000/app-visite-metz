@@ -148,9 +148,12 @@ public class AjouterSiteDetailsFragment extends Fragment {
                 }
                 if (transaction != null) {
                     transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                    // Replace whatever is in the fragment_container view with this fragment,
-                    // and add the transaction to the back stack
-                    transaction.replace(R.id.fragment_container, newFragment);
+
+                    for (Fragment fragment:getFragmentManager().getFragments()) {
+                        if (fragment instanceof AjouterSiteDetailsFragment) {
+                            getFragmentManager().beginTransaction().remove(fragment).commit();
+                        }
+                    }
                     transaction.addToBackStack(null);
 
                     // Commit the transaction
@@ -280,16 +283,16 @@ public class AjouterSiteDetailsFragment extends Fragment {
                                     Toast.makeText(getContext(), "Le site a été modifié!", Toast.LENGTH_LONG)
                                             .show();
 
-                                    // Create new fragment and transaction
-                                    Fragment newFragment = new SitesOverviewFragment();
-                                    // consider using Java coding conventions (upper first char class names!!!)
+
                                     FragmentTransaction transaction;
                                     if (getFragmentManager() != null) {
                                         transaction = getFragmentManager().beginTransaction();
 
-                                        // Replace whatever is in the fragment_container view with this fragment,
-                                        // and add the transaction to the back stack
-                                        transaction.replace(R.id.fragment_container, newFragment);
+                                        for (Fragment fragment:getFragmentManager().getFragments()) {
+                                            if (fragment instanceof AjouterSiteDetailsFragment) {
+                                                getFragmentManager().beginTransaction().remove(fragment).commit();
+                                            }
+                                        }
                                         transaction.addToBackStack(null);
 
                                         // Commit the transaction

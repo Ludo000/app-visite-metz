@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -37,11 +38,13 @@ public class SyncFragment extends Fragment {
     public SiteDataListFragment cardListFragment;
     public SitesOverviewFragment sitesOverviewFragment;
     public FrameLayout frameLayout;
+    public ImageView hideLocale;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.sitesOverviewFragment = new SitesOverviewFragment();
+        this.listSiteData = new ArrayList<>();
     }
 
     @Nullable
@@ -52,13 +55,13 @@ public class SyncFragment extends Fragment {
         this.buttonUpdate = view.findViewById(R.id.buttonUpdate);
         this.spinner = view.findViewById(R.id.progressBar1);
         this.frameLayout = view.findViewById(R.id.fragment_container);
-        this.frameLayout.setVisibility(View.INVISIBLE);
+        this.hideLocale = view.findViewById(R.id.hideLocale);
 
         this.syncButtonSyncListener = new SyncButtonSyncListener(this);
         this.syncButtonUpdateListener = new SyncButtonUpdateListener(this);
         this.buttonSync.setOnClickListener(this.syncButtonSyncListener);
         this.buttonUpdate.setOnClickListener(this.syncButtonUpdateListener);
-
+        this.hideLocale.setVisibility(View.VISIBLE);
         this.spinner.setVisibility(View.VISIBLE);
         this.buttonSync.setEnabled(false);
         this.buttonUpdate.setEnabled(false);
@@ -72,7 +75,7 @@ public class SyncFragment extends Fragment {
         this.cardListFragment.listView.setAdapter(this.cardListFragment.cardArrayAdapter);
 
         Toast.makeText(this.getContext(),"Récupération de la sauvegarde en cours...",Toast.LENGTH_SHORT).show();
-        new HttpTask(this, false, true).execute("https://www.mettreauclair.fr/appVisiteMetz/get.php");
+        new HttpTask(this,false, true).execute("https://www.mettreauclair.fr/appVisiteMetz/get.php");
 
         return view;
     }
@@ -82,14 +85,16 @@ public class SyncFragment extends Fragment {
         this.buttonUpdate.setEnabled(true);
         this.cardListFragment.listView.setVisibility(View.VISIBLE);
         this.spinner.setVisibility(View.GONE);
+        this.hideLocale.setVisibility(View.GONE);
+
     }
 
-    public void loadSiteIntoLocalBdd(String result){
+    public void loadSiteData(String result){
 
-            this.listSiteData = new ArrayList<>();
+
             this.cardListFragment.cardArrayAdapter = new SiteDataArrayAdapter(this.getContext(), R.layout.recycle_items, this);
             this.cardListFragment.listView.setAdapter(this.cardListFragment.cardArrayAdapter);
-
+            this.listSiteData = new ArrayList<>();
             try {
                 JSONObject res = new JSONObject(result);
                 Iterator<String> keys = res.keys();

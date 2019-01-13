@@ -35,6 +35,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.Ecouteurs.EcouteurLoadEvenement;
@@ -234,15 +235,30 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                         likeImageView.setImageResource(R.drawable.ic_thumb_up_blue_24dp);
 
 
-                        byte[] image = getByteFromDrawable(coverImageView.getDrawable());
-                        // Add a new favorite site record
-                        ContentValues sitesFavorisValues = contentValues(nomSite, image);
+                        // Holds the column data we want to retrieve
+                        String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
 
-                        Uri uri = getActivity().getContentResolver().insert(
-                                SitesFavorisProvider.CONTENT_URI, sitesFavorisValues);
+                        // Pass the URL for Content Provider, the projection,
+                        // the where clause followed by the matches in an array for the ?
+                        // null is for sort order
+                        @SuppressLint("Recycle")
+                        Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projection, "NOM = ? ", new String[]{nomSite}, null);
 
-                        Toast.makeText(getContext(), "Le site " + nomSite + " a été ajouté à vos favoris", Toast.LENGTH_LONG)
-                                .show();
+                        // Cycle through our one result or print error
+                        if(foundSite!=null) {
+                            if (foundSite.moveToFirst()) {
+                                int id = foundSite.getColumnIndex("_id ");
+
+                                // Add a new favorite site record
+                                ContentValues sitesFavorisValues = contentValues(id);
+
+                                Uri uri = getActivity().getContentResolver().insert(
+                                        SitesFavorisProvider.CONTENT_URI, sitesFavorisValues);
+
+                                Toast.makeText(getContext(), "Le site " + nomSite + " a été ajouté à vos favoris", Toast.LENGTH_LONG)
+                                        .show();
+                            }
+                        }
 
                     } else {
 
@@ -262,7 +278,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                     String siteToFind = titleTextView.getText().toString();
 
                     // Holds the column data we want to retrieve
-                    String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                    String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
 
                     // Pass the URL for Content Provider, the projection,
                     // the where clause followed by the matches in an array for the ?
@@ -273,19 +289,18 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                     // Cycle through our one result or print error
                     if(foundSite!=null){
                         if(foundSite.moveToFirst()){
-
                             int id = foundSite.getColumnIndex("_id ");
-                            int id_ext = foundSite.getColumnIndex("ID_EXT");
+                            int id_ext = Integer.parseInt(foundSite.getString(foundSite.getColumnIndex("ID_EXT")));
                             String name = foundSite.getString(foundSite.getColumnIndex("NOM"));
                             double latitude = Double.parseDouble(foundSite.getString(3));
                             double longitude = Double.parseDouble(foundSite.getString(4));
                             String adresse = foundSite.getString(foundSite.getColumnIndex("ADRESSE_POSTALE"));
-                            String categorie = foundSite.getString(foundSite.getColumnIndex("CATEGORIE"));
+                            int idCategorie = Integer.parseInt(foundSite.getString(foundSite.getColumnIndex("_idCategorie")));
                             String resume = foundSite.getString(foundSite.getColumnIndex("RESUME"));
                             byte[] image = foundSite.getBlob(foundSite.getColumnIndex("IMAGE"));
 
-                            SiteData currentSite = new SiteData(id, id_ext, name, latitude, longitude, adresse, categorie, resume, image);
-                            Toast.makeText(getContext(), currentSite.getCategorie(), Toast.LENGTH_SHORT).show();
+                            SiteData currentSite = new SiteData(id, id_ext, name, latitude, longitude, adresse, idCategorie, "", resume, image);
+                            //Toast.makeText(getContext(), currentSite.getIdCategorie(), Toast.LENGTH_SHORT).show();
                             // Create new fragment, give it an object and start transaction
                             Fragment newFragment = new AjouterSiteDetailsFragment();
                             Bundle bundle = new Bundle();
@@ -306,14 +321,13 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                                 // Commit the transaction
                                 transaction.commit();
                             }
-
                         } else {
 
                             Toast.makeText(getContext(), "Site introuvable", Toast.LENGTH_SHORT).show();
 
                         }
                     }else{
-                        Toast.makeText(getContext(), "ERROR !!!", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "ERROR SITE!!!", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -334,7 +348,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                             String siteToDelete = titleTextView.getText().toString();
 
                             // Holds the column data we want to retrieve
-                            String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                            String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
 
                             // Pass the URL for Content Provider, the projection,
                             // the where clause followed by the matches in an array for the ?
@@ -391,12 +405,11 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
             });
         }
 
-        public ContentValues contentValues(String nom, byte[] image)
+        public ContentValues contentValues(int idSite)
         {
             //Permits to add new info in the table
             ContentValues values = new ContentValues();
-            values.put("nom",nom);
-            values.put("image", image);
+            values.put("_id",idSite);
             return values;
         }
 
@@ -415,10 +428,14 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
             if (c != null) {
                 textViewNoData.setVisibility(View.INVISIBLE);
                 byte[] img = c.getBlob(8);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
+                titleTextView.setText(c.getString(c.getColumnIndex("NOM")));
+                coverImageView.setImageBitmap(bitmap);
+                coverImageView.setTag(bitmap);
                 if(img!=null) {
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
+                    Bitmap bitmap1 = BitmapFactory.decodeByteArray(img, 0, img.length);
                     titleTextView.setText(c.getString(c.getColumnIndex("NOM")));
-                    coverImageView.setImageBitmap(bitmap);
+                    coverImageView.setImageBitmap(bitmap1);
                     coverImageView.setTag(bitmap);
                 }
                 editImageView.setTag(R.drawable.edit_black_24dp);
@@ -428,7 +445,6 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
             } else {
                 textViewNoData.setVisibility(View.VISIBLE);
             }
-
         }
     }
 }

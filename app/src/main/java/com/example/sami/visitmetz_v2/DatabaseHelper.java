@@ -27,81 +27,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         // Ajouter le nom de la table et les lignes de celle-ci
-        db.execSQL("CREATE TABLE " + Table_Site + "(_id INTEGER PRIMARY KEY AUTOINCREMENT, ID_EXT INTEGER, NOM TEXT, LATITUDE REAL, LONGITUDE REAL, ADRESSE_POSTALE TEXT, CATEGORIE TEXT, RESUME TEXT, IMAGE BLOB)");
-        db.execSQL("CREATE TABLE " + Table_Categorie + "(_id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT)");
-        db.execSQL("CREATE TABLE " + Table_SitesFavoris + "(_id INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT, image BLOB)");
+        db.execSQL("CREATE TABLE " + Table_Categorie + "(_idCategorie INTEGER PRIMARY KEY AUTOINCREMENT, nom TEXT)");
+        db.execSQL("CREATE TABLE " + Table_Site + "(_id INTEGER PRIMARY KEY AUTOINCREMENT, ID_EXT INTEGER, NOM TEXT, LATITUDE REAL, LONGITUDE REAL, ADRESSE_POSTALE TEXT, _idCategorie INTEGER REFERENCES "+ Table_Categorie +", RESUME TEXT, IMAGE BLOB)");
+        db.execSQL("CREATE TABLE " + Table_SitesFavoris + "(_idFavoris INTEGER PRIMARY KEY AUTOINCREMENT, _id INTEGER REFERENCES "+Table_Site+")");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Si une version de la base de données existe, elle sera supprimée et remplacée par la nouvelle
-        db.execSQL("DROP TABLE IF EXISTS " + Table_Site);
         db.execSQL("DROP TABLE IF EXISTS " + Table_Categorie);
+        db.execSQL("DROP TABLE IF EXISTS " + Table_Site);
         db.execSQL("DROP TABLE IF EXISTS " + Table_SitesFavoris);
         onCreate(db);
     }
-
-    /*boolean addData(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image)
-    {
-        //Opens the database that will be used for writing and reading
-        SQLiteDatabase db  = this.getWritableDatabase();
-        //Permits to add new info in the table
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("id_ext",0);
-        contentValues.put("nom",nom);
-        contentValues.put("image",image);
-        contentValues.put("latitude",latitude);
-        contentValues.put("longitude",longitude);
-        contentValues.put("adresse_postale",adresse);
-        contentValues.put("categorie",categorie);
-        contentValues.put("resume",resume);
-        //inserts a row into database
-        long result = db.insert(Table_Name,null,contentValues);
-        //Check if value is correctly inserted
-        return result != -1;
-    }
-
-    void updateData(String nom, Double latitude, Double longitude, String adresse, String categorie, String resume, byte[] image) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-        contentValues.put("nom",nom);
-        contentValues.put("image",image);
-        contentValues.put("latitude",latitude);
-        contentValues.put("longitude",longitude);
-        contentValues.put("adresse_postale",adresse);
-        contentValues.put("categorie",categorie);
-        contentValues.put("resume",resume);
-        String query = "Update "+ Table_Name + " Where NOM"  + " = '" +  nom + "'";
-        db.execSQL(query);
-    }*/
-
-    /*Cursor getAllData()
-    {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "Select * from " + Table_Site;
-        //Runs the provided SQL and returns a Cursor on the added result set
-        return db.rawQuery(query,null);
-    }
-
-    Cursor getData(String name)
-    {
-        SQLiteDatabase db = this.getWritableDatabase();
-        String query = "Select * from "+ Table_Site + " Where NOM"  + " = '" +  name + "'";
-        return db.rawQuery(query, null);
-    }
-
-    void deleteData(String nom_site)
-    {
-        try {
-            SQLiteDatabase db  = this.getWritableDatabase();
-            String query = "DELETE FROM "+ Table_Name +
-                    " WHERE NOM" + " = '" + nom_site + "';";
-            db.execSQL(query);
-            db.delete(
-                    Table_Name,
-                    "NOM" + " = " + nom_site,null);
-        } catch (SQLiteException e) {
-            e.printStackTrace();
-        }
-    }*/
 }

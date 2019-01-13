@@ -91,26 +91,27 @@ public class SyncFragment extends Fragment {
             this.cardListFragment.listView.setAdapter(this.cardListFragment.cardArrayAdapter);
 
             try {
-                    JSONObject res = new JSONObject(result);
-                    Iterator<String> keys = res.keys();
-                    while (keys.hasNext()) {
-                        String key = keys.next();
-                        if (res.get(key) instanceof JSONObject) {
-                            SiteData siteTemp = new SiteData(
-                                    0,
-                                    Integer.parseInt(((JSONObject) res.get(key)).getString("_ID")),
-                                    ((JSONObject) res.get(key)).getString("NOM"),
-                                    Double.parseDouble(((JSONObject) res.get(key)).getString("LATITUDE")),
-                                    Double.parseDouble(((JSONObject) res.get(key)).getString("LONGITUDE")),
-                                    ((JSONObject) res.get(key)).getString("ADRESSE_POSTALE"),
-                                    ((JSONObject) res.get(key)).getString("CATEGORIE"),
-                                    ((JSONObject) res.get(key)).getString("RESUME"),
-                                    Base64.decode(((JSONObject) res.get(key)).getString("IMAGE"), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
+                JSONObject res = new JSONObject(result);
+                Iterator<String> keys = res.keys();
+                while (keys.hasNext()) {
+                    String key = keys.next();
+                    if (res.get(key) instanceof JSONObject) {
+                        SiteData siteTemp = new SiteData(
+                                0,
+                                Integer.parseInt(((JSONObject) res.get(key)).getString("_ID")),
+                                ((JSONObject) res.get(key)).getString("NOM"),
+                                Double.parseDouble(((JSONObject) res.get(key)).getString("LATITUDE")),
+                                Double.parseDouble(((JSONObject) res.get(key)).getString("LONGITUDE")),
+                                ((JSONObject) res.get(key)).getString("ADRESSE_POSTALE"),
+                                Integer.parseInt(((JSONObject) res.get(key)).getString("idCategorie")),
+                                ((JSONObject) res.get(key)).getString("CATEGORIE"),
+                                ((JSONObject) res.get(key)).getString("RESUME"),
+                                Base64.decode(((JSONObject) res.get(key)).getString("IMAGE"), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
 
-                            this.listSiteData.add(siteTemp);
-                            this.cardListFragment.cardArrayAdapter.add(siteTemp);
-                        }
+                        this.listSiteData.add(siteTemp);
+                        this.cardListFragment.cardArrayAdapter.add(siteTemp);
                     }
+                }
 
 
             } catch (JSONException e) {

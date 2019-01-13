@@ -36,6 +36,7 @@ import com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.Ecouteurs.EcouteurLoadEvenement_2;
 import com.example.sami.visitmetz_v2.MyCursorAdapter;
+import com.example.sami.visitmetz_v2.MyCursorAdapter_2;
 import com.example.sami.visitmetz_v2.R;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
@@ -145,18 +146,7 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
         return true;
     }
 
-    /*@NonNull
-    public byte[] getByteFromDrawable(@NonNull Drawable drawable) {
-        final Bitmap bmp = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-        final Canvas canvas = new Canvas(bmp);
-        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-        drawable.draw(canvas);
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bmp.compress(Bitmap.CompressFormat.JPEG,100,stream);
-        return stream.toByteArray();
-    }*/
-
-    public class MyAdapter extends MyCursorAdapter {
+    public class MyAdapter extends MyCursorAdapter_2 {
 
         MyAdapter(Context context, Cursor cursor) {
             super(context, cursor);
@@ -175,13 +165,8 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, Cursor cursor) {
             SitesFavorisOverviewFragment.MyViewHolder holder = (SitesFavorisOverviewFragment.MyViewHolder) viewHolder;
 
-            // if (viewHolder != null && cursor != null) {
-            //textViewNoData.setVisibility(View.INVISIBLE);
             cursor.moveToPosition(cursor.getPosition());
             holder.setData(cursor);
-           /* } else {
-                textViewNoData.setVisibility(View.VISIBLE);
-            }*/
         }
 
         @Override
@@ -204,7 +189,6 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
 
         TextView titleTextView;
         ImageView coverImageView;
-        ImageView shareImageView;
         ImageView editImageView;
         ImageView deleteImageView;
         ImageView likeImageView;
@@ -227,36 +211,34 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
                     String siteToFind = titleTextView.getText().toString();
 
                     // Holds the column data we want to retrieve
-                    String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                    String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
 
                     // Pass the URL for Content Provider, the projection,
                     // the where clause followed by the matches in an array for the ?
                     // null is for sort order
                     @SuppressLint("Recycle")
-                    Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projection, "NOM = ? ", new String[]{siteToFind}, null);
+                    Cursor site = resolver.query(SitesProvider.CONTENT_URI, projection, "NOM = ? ", new String[]{siteToFind}, null);
 
                     // Cycle through our one result or print error
-                    if(foundSite!=null){
-                        if(foundSite.moveToFirst()){
+                    if(site!=null){
+                        if(site.moveToFirst()){
 
-                            int id = foundSite.getColumnIndex("_id");
-                            int id_ext = foundSite.getColumnIndex("ID_EXT");
-                            String name = foundSite.getString(foundSite.getColumnIndex("NOM"));
-                            double latitude = Double.parseDouble(foundSite.getString(3));
-                            double longitude = Double.parseDouble(foundSite.getString(4));
-                            String adresse = foundSite.getString(foundSite.getColumnIndex("ADRESSE_POSTALE"));
-                            String categorie = foundSite.getString(foundSite.getColumnIndex("CATEGORIE"));
-                            String resume = foundSite.getString(foundSite.getColumnIndex("RESUME"));
-                            byte[] image = foundSite.getBlob(foundSite.getColumnIndex("IMAGE"));
+                            int id = site.getColumnIndex("_id");
+                            int id_ext = Integer.parseInt(site.getString(site.getColumnIndex("ID_EXT")));
+                            String name = site.getString(site.getColumnIndex("NOM"));
+                            double latitude = Double.parseDouble(site.getString(3));
+                            double longitude = Double.parseDouble(site.getString(4));
+                            String adresse = site.getString(site.getColumnIndex("ADRESSE_POSTALE"));
+                            int idCategorie = Integer.parseInt(site.getString(site.getColumnIndex("_idCategorie")));
+                            String resume = site.getString(site.getColumnIndex("RESUME"));
+                            byte[] image = site.getBlob(site.getColumnIndex("IMAGE"));
 
-                            SiteData currentSite = new SiteData(id, id_ext, name, latitude, longitude, adresse, categorie, resume, image);
+                            SiteData currentSite = new SiteData(id, id_ext, name, latitude, longitude, adresse, idCategorie,"", resume, image);
 
                             // Create new fragment, give it an object and start transaction
                             Fragment newFragment = new AjouterSiteDetailsFragment();
                             Bundle bundle = new Bundle();
                             bundle.putSerializable("site", currentSite);
-                            bundle.putString("latitude", foundSite.getString(foundSite.getColumnIndex("LATITUDE")));
-                            bundle.putString("longitude", foundSite.getString(foundSite.getColumnIndex("LONGITUDE")));
                             newFragment.setArguments(bundle);
 
                             // consider using Java coding conventions (upper first char class names!!!)
@@ -301,46 +283,62 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
                             String siteToDelete = titleTextView.getText().toString();
 
                             // Holds the column data we want to retrieve
-                            String[] projection = new String[]{"_id","nom"};
+                            String[] projection = new String[]{"_idFavoris","_id"};
+
+                            // Holds the column data we want to retrieve
+                            String[] projectionSite = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
 
                             // Pass the URL for Content Provider, the projection,
                             // the where clause followed by the matches in an array for the ?
                             // null is for sort order
                             @SuppressLint("Recycle")
-                            Cursor foundSite = resolver.query(SitesFavorisProvider.CONTENT_URI, projection, "nom = ? ", new String[]{siteToDelete}, null);
+                            Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projectionSite, "NOM = ? ", new String[]{siteToDelete}, null);
 
                             // Cycle through our one result or print error
                             if(foundSite!=null) {
                                 if (foundSite.moveToFirst()) {
-                                    String id = foundSite.getString(foundSite.getColumnIndex("_id"));
-                                    String URL1 = "content://com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider/SitesFavoris_table/#" + id;
-                                    Uri uri1 = Uri.parse(URL1);
+                                    int idSite = foundSite.getColumnIndex("_id");
 
-                                    // Holds the column data we want to update
-                                    String[] selectionargs = new String[]{"" + id};
+                                    // Pass the URL for Content Provider, the projection,
+                                    // the where clause followed by the matches in an array for the ?
+                                    // null is for sort order
+                                    @SuppressLint("Recycle")
+                                    Cursor foundSiteFavoris = resolver.query(SitesFavorisProvider.CONTENT_URI, projection, "_id = ? ", new String[]{""+idSite}, null);
 
-                                    Toast.makeText(getActivity(), siteToDelete + " a été retiré de vos favoris!", Toast.LENGTH_SHORT).show();
+                                    // Cycle through our one result or print error
+                                    if (foundSiteFavoris != null) {
+                                        if (foundSiteFavoris.moveToFirst()) {
+                                            String idFavoris = foundSiteFavoris.getString(foundSiteFavoris.getColumnIndex("_idFavoris"));
+                                            String URL1 = "content://com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider/SitesFavoris_table/#" + idFavoris;
+                                            Uri uri1 = Uri.parse(URL1);
 
-                                    // Use the resolver to delete ids by passing the content provider url
-                                    // what you are targeting with the where and the string that replaces
-                                    // the ? in the where clause
-                                    resolver.delete(uri1,
-                                            "_id = ? ", selectionargs);
+                                            // Holds the column data we want to update
+                                            String[] selectionargs = new String[]{idFavoris};
 
-                                    adapter.notifyDataSetChanged();
+                                            Toast.makeText(getActivity(), siteToDelete + " a été retiré de vos favoris!", Toast.LENGTH_SHORT).show();
+
+                                            // Use the resolver to delete ids by passing the content provider url
+                                            // what you are targeting with the where and the string that replaces
+                                            // the ? in the where clause
+                                            resolver.delete(uri1,
+                                                    "_idFavoris = ? ", selectionargs);
+
+                                            adapter.notifyDataSetChanged();
 
 
-                                    // consider using Java coding conventions (upper first char class names!!!)
-                                    FragmentTransaction transaction;
-                                    if (getFragmentManager() != null) {
-                                        transaction = getFragmentManager().beginTransaction();
-                                        // Replace whatever is in the fragment_container view with this fragment,
-                                        // and add the transaction to the back stack
-                                        transaction.replace(R.id.fragment_container, new SitesFavorisOverviewFragment());
-                                        transaction.addToBackStack(null);
+                                            // consider using Java coding conventions (upper first char class names!!!)
+                                            FragmentTransaction transaction;
+                                            if (getFragmentManager() != null) {
+                                                transaction = getFragmentManager().beginTransaction();
+                                                // Replace whatever is in the fragment_container view with this fragment,
+                                                // and add the transaction to the back stack
+                                                transaction.replace(R.id.fragment_container, new SitesFavorisOverviewFragment());
+                                                transaction.addToBackStack(null);
 
-                                        // Commit the transaction
-                                        transaction.commit();
+                                                // Commit the transaction
+                                                transaction.commit();
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -362,16 +360,35 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
             if (c != null) {
                 textViewNoData.setVisibility(View.INVISIBLE);
 
-                //byte[] img = c.getBlob(2);
-                byte[] img = c.getBlob(c.getColumnIndex("image"));
-                Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
-                titleTextView.setText(c.getString(c.getColumnIndex("nom")));
-                coverImageView.setImageBitmap(bitmap);
-                coverImageView.setTag(bitmap);
-                editImageView.setTag(R.drawable.edit_black_24dp);
-                deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
-                likeImageView.setVisibility(View.GONE);
+                int id = c.getColumnIndex("_id");
+                int idFavoris = c.getColumnIndex("_idFavoris");
+                Toast.makeText(getActivity(), id + " !  "+ idFavoris + "  !", Toast.LENGTH_SHORT).show();
 
+                // Holds the column data we want to retrieve
+                String[] projectionSite = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
+
+                // Pass the URL for Content Provider, the projection,
+                // the where clause followed by the matches in an array for the ?
+                // null is for sort order
+                @SuppressLint("Recycle")
+                Cursor site = resolver.query(SitesProvider.CONTENT_URI, projectionSite, "_id = ? ", new String[]{""+id}, null);
+
+                // Cycle through our one result or print error
+                if(site!=null) {
+                    if (site.moveToFirst()) {
+                        String nSite = site.getString(site.getColumnIndex("NOM"));
+                        Toast.makeText(getActivity(), nSite + " !", Toast.LENGTH_SHORT).show();
+
+                        byte[] img = site.getBlob(8);
+                        Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
+                        titleTextView.setText(nSite);
+                        coverImageView.setImageBitmap(bitmap);
+                        coverImageView.setTag(bitmap);
+                        editImageView.setTag(R.drawable.edit_black_24dp);
+                        deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
+                        likeImageView.setVisibility(View.GONE);
+                    }
+                }
             } else {
                 textViewNoData.setVisibility(View.VISIBLE);
             }

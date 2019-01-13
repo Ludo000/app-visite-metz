@@ -9,14 +9,13 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.Categories.CategoriesOverviewFragment;
 import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
 
 public class EcouteurLoadEvenement_3 implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    Context context;
+    private Context context;
 
     private CategoriesOverviewFragment.MyAdapter mAdapter;
 
@@ -25,7 +24,7 @@ public class EcouteurLoadEvenement_3 implements LoaderManager.LoaderCallbacks<Cu
     private String mCurFilter;
 
     // Projection contains the columns we want
-    private String[] projection = new String[]{"_id", "nom"};
+    private String[] projection = new String[]{"_idCategorie", "nom"};
 
     public EcouteurLoadEvenement_3(Context context, CategoriesOverviewFragment.MyAdapter adapter, String curFilter) {
         this.context = context;
@@ -43,7 +42,7 @@ public class EcouteurLoadEvenement_3 implements LoaderManager.LoaderCallbacks<Cu
         Uri baseUri = CategoriesProvider.CONTENT_URI;
         CursorLoader cursorLoader;
         if (this.mCurFilter == null || this.mCurFilter.trim().length() == 0) {
-            cursorLoader = new CursorLoader(this.context, baseUri, projection, null, null, "_id desc");
+            cursorLoader = new CursorLoader(this.context, baseUri, projection, null, null, "_idCategorie desc");
             //Toast.makeText(this.context, "Aucun site retrouvé!", Toast.LENGTH_LONG).show();
         }
         else {

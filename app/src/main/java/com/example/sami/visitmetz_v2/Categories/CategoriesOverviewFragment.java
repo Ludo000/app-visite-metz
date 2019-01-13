@@ -34,9 +34,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
-import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.Ecouteurs.EcouteurLoadEvenement_3;
-import com.example.sami.visitmetz_v2.MyCursorAdapter;
+import com.example.sami.visitmetz_v2.MyCursorAdapter_3;
 import com.example.sami.visitmetz_v2.R;
 import com.example.sami.visitmetz_v2.models.CategorieData;
 
@@ -162,7 +161,7 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
         return stream.toByteArray();
     }*/
 
-    public class MyAdapter extends MyCursorAdapter {
+    public class MyAdapter extends MyCursorAdapter_3 {
 
         MyAdapter(Context context, Cursor cursor) {
             super(context, cursor);
@@ -228,7 +227,7 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
                     String categorieToFind = titleTextView.getText().toString();
 
                     // Holds the column data we want to retrieve
-                    String[] projection = new String[]{"_id","nom"};
+                    String[] projection = new String[]{"_idCategorie","nom"};
 
                     // Pass the URL for Content Provider, the projection,
                     // the where clause followed by the matches in an array for the ?
@@ -239,8 +238,7 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
                     // Cycle through our one result or print error
                     if(foundCategorie!=null){
                         if(foundCategorie.moveToFirst()){
-
-                            int id = foundCategorie.getColumnIndex("_id ");
+                            int id = foundCategorie.getColumnIndex("_idCategorie ");
                             String name = foundCategorie.getString(foundCategorie.getColumnIndex("nom"));
 
                             CategorieData currentCategorie = new CategorieData(id, name);
@@ -267,30 +265,17 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
 
                                     if (newCategorie.length() > 0) {
                                         //On cherche si duplica
-                                        String[] projection = new String[]{"_id","nom"};
+                                        String[] projection = new String[]{"_idCategorie","nom"};
 
                                         @SuppressLint("Recycle")
-                                        Cursor foundSite = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection, "nom = ?", new String[]{newCategorie}, null);
+                                        Cursor categorie = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection, "nom = ?", new String[]{newCategorie}, null);
 
-                                        // Holds the column data we want to retrieve
-                                        String[] projection1 = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
-
-
-                                        // Pass the URL for Content Provider, the projection,
-                                        // the where clause followed by the matches in an array for the ?
-                                        // null is for sort order
-                                        @SuppressLint("Recycle")
-                                        Cursor foundSite1 = resolver.query(SitesProvider.CONTENT_URI, projection1, "CATEGORIE = ? ", new String[]{titleTextView.getText().toString().trim()}, null);
-
-                                        if(foundSite!=null) {
-                                            if (foundSite.moveToFirst()) {
+                                        if(categorie!=null) {
+                                            if (categorie.moveToFirst()) {
                                                 Toast.makeText(getContext(), "Une categorie avec le nom '"+ newCategorie+"' existe déjà!", Toast.LENGTH_LONG).show();
                                             } else {
                                                 ContentValues content = new ContentValues();
                                                 content.put("nom", newCategorie);
-
-                                                //Uri uri2 = getActivity().getContentResolver().insert(
-                                                       // CategoriesProvider.CONTENT_URI, content);
 
                                                 // Holds the column data we want to update
                                                 String[] selectionargs = new String[]{titleTextView.getText().toString().trim()};
@@ -300,40 +285,6 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
 
                                                 Toast.makeText(getContext(), "La catégorie a été modifiée!", Toast.LENGTH_SHORT)
                                                         .show();
-
-                                                // Cycle through our one result or print error
-                                                if(foundSite1 != null) {
-                                                    while (foundSite1.moveToNext()) {
-                                                        int id2 = foundSite1.getColumnIndex("_id");
-                                                        int id_ext = foundSite1.getColumnIndex("ID_EXT");
-                                                        String nom = foundSite1.getString(foundSite1.getColumnIndex("NOM"));
-                                                        double latitude = Double.parseDouble(foundSite1.getString(3));
-                                                        double longitude = Double.parseDouble(foundSite1.getString(4));
-                                                        String adresse = foundSite1.getString(foundSite1.getColumnIndex("ADRESSE_POSTALE"));
-                                                        String categorie = foundSite1.getString(foundSite1.getColumnIndex("CATEGORIE"));
-                                                        String resume = foundSite1.getString(foundSite1.getColumnIndex("RESUME"));
-                                                        byte[] image = foundSite1.getBlob(foundSite1.getColumnIndex("IMAGE"));
-
-                                                        // Holds the column data we want to update
-                                                        String[] selectionargs1 = new String[]{categorie};
-
-                                                        ContentValues values = new ContentValues();
-                                                        values.put("id_ext",id_ext);
-                                                        values.put("nom",nom);
-                                                        values.put("image",image);
-                                                        values.put("latitude",latitude);
-                                                        values.put("longitude",longitude);
-                                                        values.put("adresse_postale",adresse);
-                                                        values.put("categorie",newCategorie);
-                                                        values.put("resume",resume);
-
-                                                        Toast.makeText(getContext(), "==> "+ categorie+ "    ====> " +newCategorie, Toast.LENGTH_LONG)
-                                                                .show();
-
-                                                        int i = getActivity().getContentResolver().update(
-                                                                SitesProvider.CONTENT_URI, values, "CATEGORIE = ?", selectionargs1);
-                                                    }
-                                                }
                                             }
                                         }
                                     } else {
@@ -378,7 +329,7 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
                             String categorieToDelete = titleTextView.getText().toString();
 
                             // Holds the column data we want to retrieve
-                            String[] projection = new String[]{"_id","nom"};
+                            String[] projection = new String[]{"_idCategorie","nom"};
 
                             // Pass the URL for Content Provider, the projection,
                             // the where clause followed by the matches in an array for the ?
@@ -389,7 +340,7 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
                             // Cycle through our one result or print error
                             if(foundCategorie!=null) {
                                 if (foundCategorie.moveToFirst()) {
-                                    String id = foundCategorie.getString(foundCategorie.getColumnIndex("_id"));
+                                    String id = foundCategorie.getString(foundCategorie.getColumnIndex("_idCategorie"));
                                     String URL1 = "content://com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider/categories_table/#" + id;
                                     Uri uri1 = Uri.parse(URL1);
 
@@ -402,7 +353,7 @@ public class CategoriesOverviewFragment extends Fragment implements SearchView.O
                                     // what you are targeting with the where and the string that replaces
                                     // the ? in the where clause
                                     resolver.delete(uri1,
-                                            "_id = ? ", selectionargs);
+                                            "_idCategorie = ? ", selectionargs);
 
                                     adapter.notifyDataSetChanged();
 

@@ -167,7 +167,7 @@ public class SitesFavorisOverviewFragment extends Fragment {
             coverImageView = v.findViewById(R.id.coverImageView);
             editImageView = v.findViewById(R.id.editImageView);
             deleteImageView = v.findViewById(R.id.deleteImageView);
-            likeImageView = v.findViewById(R.id.likeImageView);
+           // likeImageView = v.findViewById(R.id.likeImageView);
 
 
             editImageView.setOnClickListener(new View.OnClickListener() {

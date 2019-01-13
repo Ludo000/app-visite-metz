@@ -213,7 +213,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
         ImageView coverImageView;
         ImageView editImageView;
         ImageView deleteImageView;
-        ImageView likeImageView;
+        //ImageView likeImageView;
 
         MyViewHolder(View v) {
             super(v);
@@ -221,10 +221,10 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
             coverImageView = v.findViewById(R.id.coverImageView);
             editImageView = v.findViewById(R.id.editImageView);
             deleteImageView = v.findViewById(R.id.deleteImageView);
-            likeImageView = v.findViewById(R.id.likeImageView);
+           // likeImageView = v.findViewById(R.id.likeImageView);
 
 
-            likeImageView.setOnClickListener(new View.OnClickListener() {
+            /*likeImageView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     String nomSite = titleTextView.getText().toString();
@@ -288,7 +288,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                     }
                     adapter.notifyDataSetChanged();
                 }
-            });
+            });*/
 
             editImageView.setOnClickListener(new View.OnClickListener() {
 
@@ -447,7 +447,7 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                 }
                 editImageView.setTag(R.drawable.edit_black_24dp);
                 deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
-                likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
+                //likeImageView.setTag(R.drawable.ic_thumb_up_black_24dp);
 
             } else {
                 textViewNoData.setVisibility(View.VISIBLE);

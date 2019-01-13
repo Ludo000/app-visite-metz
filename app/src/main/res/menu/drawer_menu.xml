@@ -4,6 +4,10 @@
     tools:showIn="navigation_view">
 
     <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_map"
+            android:icon="@drawable/ic_map"
+            android:title="Map Metz" />
 
         <item
             android:id="@+id/nav_ajouter"
@@ -15,15 +19,12 @@
             android:icon="@drawable/ic_apps_black_24dp"
             android:title="Tous les sites" />
 
-        <item
+        <!--<item
             android:id="@+id/nav_sitesFavoris"
             android:icon="@drawable/ic_thumb_up_black_24dp"
-            android:title="Mes sites favoris" />
+            android:title="Mes sites favoris" />-->
 
-        <item
-            android:id="@+id/nav_map"
-            android:icon="@drawable/ic_map"
-            android:title="Map Metz" />
+
 
         <item
             android:id="@+id/nav_categories"

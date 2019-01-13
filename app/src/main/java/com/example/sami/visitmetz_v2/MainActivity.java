@@ -72,10 +72,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         new SitesOverviewFragment()).commit();
                 break;
 
-            case R.id.nav_sitesFavoris:
+            /*case R.id.nav_sitesFavoris:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                         new SitesFavorisOverviewFragment()).commit();
-                break;
+                break;*/
 
             case R.id.nav_map:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,

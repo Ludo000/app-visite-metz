@@ -62,7 +62,7 @@ public class SiteDataArrayAdapter extends ArrayAdapter<SiteData> {
             viewHolder.coverImageView= row.findViewById(R.id.coverImageView);
             viewHolder.editImageView= row.findViewById(R.id.editImageView);
             viewHolder.deleteImageView= row.findViewById(R.id.deleteImageView);
-            viewHolder.likeImageView= row.findViewById(R.id.likeImageView);
+            //viewHolder.likeImageView= row.findViewById(R.id.likeImageView);
             row.setTag(viewHolder);
         } else {
             viewHolder = (SiteDataViewHolder) row.getTag();
@@ -72,7 +72,7 @@ public class SiteDataArrayAdapter extends ArrayAdapter<SiteData> {
         Bitmap bitmap = BitmapFactory.decodeByteArray(siteData.getImage(), 0, siteData.getImage().length);
         viewHolder.coverImageView.setImageBitmap(bitmap);
         viewHolder.coverImageView.setTag(bitmap);
-        viewHolder.likeImageView.setVisibility(View.INVISIBLE);
+        //viewHolder.likeImageView.setVisibility(View.INVISIBLE);
         viewHolder.editImageView.setVisibility(View.INVISIBLE);
         viewHolder.deleteImageView.setOnClickListener(new SyncButtonSupprListener(this.syncFragment, Integer.toString(siteData.getIDEXT()),siteData));
 

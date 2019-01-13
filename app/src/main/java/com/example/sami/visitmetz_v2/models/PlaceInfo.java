@@ -1,8 +1,6 @@
 package com.example.sami.visitmetz_v2.models;
 
-import android.media.Image;
 import android.net.Uri;
-import android.widget.ImageView;
 
 import com.google.android.gms.maps.model.LatLng;
 

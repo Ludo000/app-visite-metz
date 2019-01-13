@@ -138,8 +138,6 @@ public class AjouterSiteDetailsFragment extends Fragment {
         btnAnnuler.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Create new fragment, give it an object and start transaction
-                Fragment newFragment = new SitesOverviewFragment();
 
                 // consider using Java coding conventions (upper first char class names!!!)
                 FragmentTransaction transaction = null;

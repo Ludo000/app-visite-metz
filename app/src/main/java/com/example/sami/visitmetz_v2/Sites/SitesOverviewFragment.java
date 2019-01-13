@@ -3,14 +3,11 @@ package com.example.sami.visitmetz_v2.Sites;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -25,7 +22,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,15 +32,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.sami.visitmetz_v2.ContentProvider.CategoriesProvider;
-import com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider;
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.Ecouteurs.EcouteurLoadEvenement;
 import com.example.sami.visitmetz_v2.MyCursorAdapter;
 import com.example.sami.visitmetz_v2.R;
 import com.example.sami.visitmetz_v2.models.SiteData;
-
-import java.io.ByteArrayOutputStream;
 
 public class SitesOverviewFragment extends Fragment implements SearchView.OnQueryTextListener {
 
@@ -60,30 +52,6 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        /*byte[] img1=getByteFromDrawable(Objects.requireNonNull(getDrawable(Objects.requireNonNull(getContext()), R.drawable.cathedrale_st_etienne)));
-
-        byte[] img2=getByteFromDrawable(Objects.requireNonNull(getDrawable(getContext(), R.drawable.centre_pompidou)));
-
-        byte[] img3=getByteFromDrawable(Objects.requireNonNull(getDrawable(getContext(), R.drawable.stade_st_symphorien)));
-
-        // Add a new site record
-        ContentValues sitesValues = contentValues("Cathédrale Saint-Étienne", 49.120484, 6.176334,"Place d'Armes, 57000 Metz, France", "Sites historiques, monuments, musées et statues", "La cathédrale Saint-Étienne de Metz est la cathédrale catholique du diocèse de Metz, dans le département français de la Moselle en région Grand Est.",  img1);
-
-        Uri uri = getContext().getContentResolver().insert(
-                SitesProvider.CONTENT_URI, sitesValues);
-
-        // Add a new student record
-        sitesValues = contentValues("Centre Pompidou-Metz", 49.108465, 6.181730, "1 Parvis des Droits de l'Homme, 57020 Metz, France","Sites historiques, monuments, musées et statues", "Le centre Pompidou-Metz est un établissement public de coopération culturelle d’art situé à Metz, entre le parc de la Seille et la gare. Sa construction est réalisée dans le cadre de l’opération d’aménagement du quartier de l’Amphithéâtre.", img2);
-
-        uri = getContext().getContentResolver().insert(
-                SitesProvider.CONTENT_URI, sitesValues);
-
-        // Add a new student record
-        sitesValues = contentValues("Stade St Symphorien", 49.109968, 6.159747, "3 Boulevard Saint-Symphorien, 57050 Longeville-lès-Metz, France", "Jeux et divertissements", "Le stade Saint-Symphorien est l'enceinte sportive principale de l'agglomération messine. C'est un stade consacré au football qui est utilisé par le Football Club de Metz.", img3);
-
-        uri = getContext().getContentResolver().insert(
-                SitesProvider.CONTENT_URI, sitesValues);*/
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -410,25 +378,6 @@ public class SitesOverviewFragment extends Fragment implements SearchView.OnQuer
                     builder.create().show();
                 }
             });
-        }
-
-        public ContentValues contentValues(int idSite)
-        {
-            //Permits to add new info in the table
-            ContentValues values = new ContentValues();
-            values.put("_id",idSite);
-            return values;
-        }
-
-        @NonNull
-        public byte[] getByteFromDrawable(@NonNull Drawable drawable) {
-            final Bitmap bmp = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
-            final Canvas canvas = new Canvas(bmp);
-            drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-            drawable.draw(canvas);
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bmp.compress(Bitmap.CompressFormat.JPEG,100,stream);
-            return stream.toByteArray();
         }
 
         public void setData(Cursor c) {

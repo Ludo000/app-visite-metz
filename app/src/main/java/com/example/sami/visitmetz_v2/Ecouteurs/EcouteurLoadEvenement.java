@@ -9,16 +9,15 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.widget.Toast;
 
 import com.example.sami.visitmetz_v2.ContentProvider.SitesProvider;
 import com.example.sami.visitmetz_v2.Sites.SitesOverviewFragment;
 
 public class EcouteurLoadEvenement implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    Context context;
+    private Context context;
 
-    SitesOverviewFragment.MyAdapter mAdapter;
+    private SitesOverviewFragment.MyAdapter mAdapter;
 
 
     // If non-null, this is the current filter the user has provided.

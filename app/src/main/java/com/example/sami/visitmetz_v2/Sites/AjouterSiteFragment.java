@@ -57,7 +57,6 @@ public class AjouterSiteFragment extends Fragment {
     EditText longitude;
     EditText latitude;
     EditText adresse_postale;
-    EditText categorie;
     EditText resume;
     ImageView editImage;
 
@@ -292,7 +291,7 @@ public class AjouterSiteFragment extends Fragment {
                 startActivityForResult(intent, REQUEST_CODE_GALLERY);
             }
             else {
-                Toast.makeText(getActivity().getApplicationContext(), "Vous ne disposez pas d'autorisation pour mener cette action !", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Vous ne disposez pas d'autorisation pour mener cette action !", Toast.LENGTH_SHORT).show();
             }
             return;
         }

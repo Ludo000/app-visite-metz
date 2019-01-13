@@ -40,7 +40,7 @@ import com.example.sami.visitmetz_v2.MyCursorAdapter_2;
 import com.example.sami.visitmetz_v2.R;
 import com.example.sami.visitmetz_v2.models.SiteData;
 
-public class SitesFavorisOverviewFragment extends Fragment implements SearchView.OnQueryTextListener {
+public class SitesFavorisOverviewFragment extends Fragment {
 
     RecyclerView MyRecyclerView;
     MyAdapter adapter;
@@ -112,38 +112,6 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
         ecouteurLoadEvenement_2 = new EcouteurLoadEvenement_2(getContext(), adapter, null);
 
         getLoaderManager().initLoader(0, null, ecouteurLoadEvenement_2);
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        // Place an action bar item for searching.
-        MenuItem item = menu.add("Search");
-        item.setIcon(android.R.drawable.ic_menu_search);
-        Drawable newIcon = item.getIcon();
-        newIcon.mutate().setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
-        item.setIcon(newIcon);
-        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-        SearchView sv = new SearchView(getActivity());
-        sv.setOnQueryTextListener(this);
-        item.setActionView(sv);
-    }
-
-    @Override
-    public boolean onQueryTextSubmit(String s) {
-        // Called when the action bar search text has changed.  Update
-        // the search filter, and restart the loader to do a new query
-        // with this filter.
-        ecouteurLoadEvenement_2 = new EcouteurLoadEvenement_2(getContext(), adapter, s.trim().length() > 0 ? s : null);
-
-        getLoaderManager().restartLoader(0, null, ecouteurLoadEvenement_2);
-        return true;
-    }
-
-    @Override
-    public boolean onQueryTextChange(String s) {
-        onQueryTextSubmit(s);
-        return true;
     }
 
     public class MyAdapter extends MyCursorAdapter_2 {
@@ -223,8 +191,8 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
                     if(site!=null){
                         if(site.moveToFirst()){
 
-                            int id = site.getColumnIndex("_id");
-                            int id_ext = Integer.parseInt(site.getString(site.getColumnIndex("ID_EXT")));
+                            int id = site.getInt(site.getColumnIndex("_id"));
+                            int id_ext = site.getInt(site.getColumnIndex("ID_EXT"));
                             String name = site.getString(site.getColumnIndex("NOM"));
                             double latitude = Double.parseDouble(site.getString(3));
                             double longitude = Double.parseDouble(site.getString(4));
@@ -292,28 +260,28 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
                             // the where clause followed by the matches in an array for the ?
                             // null is for sort order
                             @SuppressLint("Recycle")
-                            Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projectionSite, "NOM = ? ", new String[]{siteToDelete}, null);
+                            Cursor foundSite = resolver.query(SitesProvider.CONTENT_URI, projectionSite, "NOM = ?", new String[]{siteToDelete}, null);
 
                             // Cycle through our one result or print error
                             if(foundSite!=null) {
                                 if (foundSite.moveToFirst()) {
-                                    int idSite = foundSite.getColumnIndex("_id");
+                                    int idSite = foundSite.getInt(foundSite.getColumnIndex("_id"));
 
                                     // Pass the URL for Content Provider, the projection,
                                     // the where clause followed by the matches in an array for the ?
                                     // null is for sort order
                                     @SuppressLint("Recycle")
-                                    Cursor foundSiteFavoris = resolver.query(SitesFavorisProvider.CONTENT_URI, projection, "_id = ? ", new String[]{""+idSite}, null);
+                                    Cursor foundSiteFavoris = resolver.query(SitesFavorisProvider.CONTENT_URI, projection, "_id = ?", new String[]{""+idSite}, null);
 
                                     // Cycle through our one result or print error
                                     if (foundSiteFavoris != null) {
                                         if (foundSiteFavoris.moveToFirst()) {
-                                            String idFavoris = foundSiteFavoris.getString(foundSiteFavoris.getColumnIndex("_idFavoris"));
+                                            int idFavoris = foundSiteFavoris.getInt(foundSiteFavoris.getColumnIndex("_idFavoris"));
                                             String URL1 = "content://com.example.sami.visitmetz_v2.ContentProvider.SitesFavorisProvider/SitesFavoris_table/#" + idFavoris;
                                             Uri uri1 = Uri.parse(URL1);
 
                                             // Holds the column data we want to update
-                                            String[] selectionargs = new String[]{idFavoris};
+                                            String[] selectionargs = new String[]{""+idFavoris};
 
                                             Toast.makeText(getActivity(), siteToDelete + " a été retiré de vos favoris!", Toast.LENGTH_SHORT).show();
 
@@ -321,7 +289,7 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
                                             // what you are targeting with the where and the string that replaces
                                             // the ? in the where clause
                                             resolver.delete(uri1,
-                                                    "_idFavoris = ? ", selectionargs);
+                                                    "_idFavoris = ?", selectionargs);
 
                                             adapter.notifyDataSetChanged();
 
@@ -359,34 +327,35 @@ public class SitesFavorisOverviewFragment extends Fragment implements SearchView
         public void setData(Cursor c) {
             if (c != null) {
                 textViewNoData.setVisibility(View.INVISIBLE);
+                while (c.moveToNext()) {
+                    int id = c.getColumnIndex("_id");
+                    int idFavoris = c.getColumnIndex("_idFavoris");
+                    Toast.makeText(getActivity(), id + " !  " + idFavoris + "  !", Toast.LENGTH_SHORT).show();
 
-                int id = c.getColumnIndex("_id");
-                int idFavoris = c.getColumnIndex("_idFavoris");
-                Toast.makeText(getActivity(), id + " !  "+ idFavoris + "  !", Toast.LENGTH_SHORT).show();
+                    // Holds the column data we want to retrieve
+                    String[] projectionSite = new String[]{"_id", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
 
-                // Holds the column data we want to retrieve
-                String[] projectionSite = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
+                    // Pass the URL for Content Provider, the projection,
+                    // the where clause followed by the matches in an array for the ?
+                    // null is for sort order
+                    @SuppressLint("Recycle")
+                    Cursor site = resolver.query(SitesProvider.CONTENT_URI, projectionSite, "_id = ?", new String[]{"" + id}, null);
 
-                // Pass the URL for Content Provider, the projection,
-                // the where clause followed by the matches in an array for the ?
-                // null is for sort order
-                @SuppressLint("Recycle")
-                Cursor site = resolver.query(SitesProvider.CONTENT_URI, projectionSite, "_id = ? ", new String[]{""+id}, null);
+                    // Cycle through our one result or print error
+                    if (site != null) {
+                        if (site.moveToFirst()) {
+                            String nSite = site.getString(site.getColumnIndex("NOM"));
+                            //Toast.makeText(getActivity(), nSite + " !", Toast.LENGTH_SHORT).show();
 
-                // Cycle through our one result or print error
-                if(site!=null) {
-                    if (site.moveToFirst()) {
-                        String nSite = site.getString(site.getColumnIndex("NOM"));
-                        Toast.makeText(getActivity(), nSite + " !", Toast.LENGTH_SHORT).show();
-
-                        byte[] img = site.getBlob(8);
-                        Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
-                        titleTextView.setText(nSite);
-                        coverImageView.setImageBitmap(bitmap);
-                        coverImageView.setTag(bitmap);
-                        editImageView.setTag(R.drawable.edit_black_24dp);
-                        deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
-                        likeImageView.setVisibility(View.GONE);
+                            byte[] img = site.getBlob(8);
+                            Bitmap bitmap = BitmapFactory.decodeByteArray(img, 0, img.length);
+                            titleTextView.setText(nSite);
+                            coverImageView.setImageBitmap(bitmap);
+                            coverImageView.setTag(bitmap);
+                            editImageView.setTag(R.drawable.edit_black_24dp);
+                            deleteImageView.setTag(R.drawable.ic_delete_black_24dp);
+                            likeImageView.setVisibility(View.GONE);
+                        }
                     }
                 }
             } else {

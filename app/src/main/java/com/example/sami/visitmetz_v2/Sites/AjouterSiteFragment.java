@@ -20,6 +20,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -135,7 +136,7 @@ public class AjouterSiteFragment extends Fragment {
                        if (newCategorie.length() > 0) {
 
                            //On cherche si duplica
-                           String[] projection = new String[]{"_id","nom"};
+                           String[] projection = new String[]{"_idCategorie","nom"};
                            @SuppressLint("Recycle")
                            Cursor foundSite = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection, "nom = ?", new String[]{newCategorie}, null);
 
@@ -185,7 +186,7 @@ public class AjouterSiteFragment extends Fragment {
                 if (nomSite.length() > 0 && latSite > 0 && longSite >0) {
 
                     //On cherche si duplica
-                    String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                    String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
                     @SuppressLint("Recycle")
                     Cursor foundSite = getContext().getContentResolver().query(SitesProvider.CONTENT_URI, projection, "NOM = ? AND LATITUDE=? AND LONGITUDE=? ", new String[]{nomSite, Double.toString(latSite), Double.toString(longSite)}, null);
 
@@ -194,29 +195,44 @@ public class AjouterSiteFragment extends Fragment {
                             Toast.makeText(getContext(), "Un site avec le nom '"+ nomSite + "' existe déjà!", Toast.LENGTH_LONG).show();
                         } else {
 
-                            // Add a new site record
-                            ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
+                            String[] projectionCategorie = new String[]{"_idCategorie","nom"};
 
-                            Uri uri = getActivity().getContentResolver().insert(
-                                    SitesProvider.CONTENT_URI, sitesValues);
+                            String[] selectionargCategorie = new String[]{categorieSite};
 
-                            Toast.makeText(getContext(), uri + ": Le site " + nomSite + " a été ajouté: " + latSite + ", " + longSite, Toast.LENGTH_LONG)
-                                    .show();
+                            @SuppressLint("Recycle")
+                            Cursor categorie = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projectionCategorie, "nom = ?", selectionargCategorie, null);
+                            if(categorie!=null) {
+                                if (categorie.moveToFirst()) {
+                                    int idCategorie = Integer.parseInt(categorie.getString(categorie.getColumnIndex("_idCategorie")));
+                                    // Add a new site record
+                                    ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, idCategorie, resumeSite, ImageSite);
 
-                            // Create new fragment and transaction
-                            Fragment newFragment = new SitesOverviewFragment();
-                            // consider using Java coding conventions (upper first char class names!!!)
-                            FragmentTransaction transaction;
-                            if (getFragmentManager() != null) {
-                                transaction = getFragmentManager().beginTransaction();
+                                    Uri uri = getActivity().getContentResolver().insert(
+                                            SitesProvider.CONTENT_URI, sitesValues);
 
-                                // Replace whatever is in the fragment_container view with this fragment,
-                                // and add the transaction to the back stack
-                                transaction.replace(R.id.fragment_container, newFragment);
-                                transaction.addToBackStack(null);
+                                    Toast.makeText(getContext(), uri + ": Le site " + nomSite + " a été ajouté: " + latSite + ", " + longSite, Toast.LENGTH_LONG)
+                                            .show();
 
-                                // Commit the transaction
-                                transaction.commit();
+                                    // Create new fragment and transaction
+                                    Fragment newFragment = new SitesOverviewFragment();
+                                    // consider using Java coding conventions (upper first char class names!!!)
+                                    FragmentTransaction transaction;
+                                    if (getFragmentManager() != null) {
+                                        transaction = getFragmentManager().beginTransaction();
+
+                                        // Replace whatever is in the fragment_container view with this fragment,
+                                        // and add the transaction to the back stack
+                                        transaction.replace(R.id.fragment_container, newFragment);
+                                        transaction.addToBackStack(null);
+
+                                        // Commit the transaction
+                                        transaction.commit();
+                                    }
+                                } else {
+                                    Log.d("#### ==> ", "Categorie introuvable !");
+                                }
+                            } else {
+                                Log.d("#### ==> ","ERROR Categorie !");
                             }
                         }
                     }
@@ -229,7 +245,7 @@ public class AjouterSiteFragment extends Fragment {
         return v;
     }
 
-    public ContentValues contentValues(int id_ext, String nom, double latitude, double longitude, String adresse, String categorie, String resume, byte[] image)
+    public ContentValues contentValues(int id_ext, String nom, double latitude, double longitude, String adresse, int idCategorie, String resume, byte[] image)
     {
         //Permits to add new info in the table
         ContentValues values = new ContentValues();
@@ -239,7 +255,7 @@ public class AjouterSiteFragment extends Fragment {
         values.put("latitude",latitude);
         values.put("longitude",longitude);
         values.put("adresse_postale",adresse);
-        values.put("categorie",categorie);
+        values.put("_idCategorie",idCategorie);
         values.put("resume",resume);
         return values;
     }
@@ -316,7 +332,7 @@ public class AjouterSiteFragment extends Fragment {
     private void loadspinner(){
 
         // Projection contains the columns we want
-        String[] projection1 = new String[]{"_id", "nom"};
+        String[] projection1 = new String[]{"_idCategorie", "nom"};
 
         // Pass the URL, projection and I'll cover the other options below
         Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);

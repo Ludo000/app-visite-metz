@@ -25,7 +25,7 @@ public class EcouteurLoadEvenement_2 implements LoaderManager.LoaderCallbacks<Cu
     private String mCurFilter;
 
     // Projection contains the columns we want
-    private String[] projection = new String[]{"_id", "nom", "image"};
+    private String[] projection = new String[]{"_idFavoris", "_id"};
 
     public EcouteurLoadEvenement_2(Context context, SitesFavorisOverviewFragment.MyAdapter adapter, String curFilter) {
         this.context = context;
@@ -43,7 +43,7 @@ public class EcouteurLoadEvenement_2 implements LoaderManager.LoaderCallbacks<Cu
         Uri baseUri = SitesFavorisProvider.CONTENT_URI;
         CursorLoader cursorLoader;
         if (this.mCurFilter == null || this.mCurFilter.trim().length() == 0) {
-            cursorLoader = new CursorLoader(this.context, baseUri, projection, null, null, "_id desc");
+            cursorLoader = new CursorLoader(this.context, baseUri, projection, null, null, "_idFavoris desc");
             //Toast.makeText(this.context, "Aucun site retrouvé!", Toast.LENGTH_LONG).show();
         }
         else {

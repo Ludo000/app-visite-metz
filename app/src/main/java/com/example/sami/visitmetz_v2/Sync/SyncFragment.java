@@ -94,7 +94,7 @@ public class SyncFragment extends Fragment {
                                 Double.parseDouble(((JSONObject) res.get(key)).getString("LATITUDE")),
                                 Double.parseDouble(((JSONObject) res.get(key)).getString("LONGITUDE")),
                                 ((JSONObject) res.get(key)).getString("ADRESSE_POSTALE"),
-                                ((JSONObject) res.get(key)).getString("CATEGORIE"),
+                                Integer.parseInt(((JSONObject) res.get(key)).getString("_idCategorie")),
                                 ((JSONObject) res.get(key)).getString("RESUME"),
                                 Base64.decode(((JSONObject) res.get(key)).getString("IMAGE"), Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP));
 

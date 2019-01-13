@@ -26,7 +26,7 @@ public class EcouteurLoadEvenement implements LoaderManager.LoaderCallbacks<Curs
 
     // Projection contains the columns we want
     private String[] projection = new String[]{"_id", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
-            "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+            "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
 
     public EcouteurLoadEvenement(Context context, SitesOverviewFragment.MyAdapter adapter, String curFilter) {
         this.context = context;

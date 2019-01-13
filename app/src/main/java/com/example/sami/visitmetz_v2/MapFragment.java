@@ -274,37 +274,57 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             public void onClick(View view) {
                 Log.d(TAG, "onClick: clicked Add user sur la Map : ");
                 try{
-                    if(mMarker.isVisible()){
+                    if(mMarker.isVisible()) {
                         String addNameSite = mPlace.getName();
                         double addLatSite = mPlace.getLatlng().latitude;
                         double addLongSite = mPlace.getLatlng().longitude;
                         String addAdresseSite = mPlace.getAddress();
                         String firstWord = mPlace.getName();
                         String addCatSite;
-                        if(firstWord.contains(" ")) {
+                        if (firstWord.contains(" ")) {
                             firstWord = firstWord.substring(0, firstWord.indexOf(" "));
                             addCatSite = firstWord.trim();
-                        }else {
+                        } else if(firstWord.trim().length() > 0) {
+                            addCatSite = firstWord.trim();
+                        }
+                        else {
                             addCatSite = "";
                         }
                         byte[] addImage;
-                        if (mPlace.getImage()== null){
-                            mPlace.setImage( getByteFromDrawable(defultImage));
-                           addImage = mPlace.getImage();
-                        }else {
+                        if (mPlace.getImage() == null) {
+                            mPlace.setImage(getByteFromDrawable(defultImage));
+                            addImage = mPlace.getImage();
+                        } else {
                             addImage = mPlace.getImage();
                         }
 
                         String addResumeSite = "Aucun";
                         ajouterCategorie(addCatSite);
-                        ajoutSite(addNameSite,addLatSite, addLongSite, addAdresseSite, addCatSite, addImage,addResumeSite);
 
-                        }else{
-                        Log.d(TAG, "no Marker " + mPlace.toString());
-                    }
+                        // Holds the column data we want to retrieve
+                        String[] projectionCategorie = new String[]{"_idCategorie", "nom"};
+
+                        // Pass the URL for Content Provider, the projection,
+                        // the where clause followed by the matches in an array for the ?
+                        // null is for sort order
+                        @SuppressLint("Recycle")
+                        Cursor foundCategorie = resolver.query(CategoriesProvider.CONTENT_URI, projectionCategorie, "nom = ? ", new String[]{addCatSite}, null);
+
+                        // Cycle through our one result or print error
+                        if (foundCategorie != null) {
+                            if (foundCategorie.moveToFirst()) {
+                                int id = Integer.parseInt(foundCategorie.getString(0));
+                                ajoutSite(addNameSite, addLatSite, addLongSite, addAdresseSite, id, addImage, addResumeSite);
+                            }
+                        }
+
+
+                    } else{
+                    Log.d(TAG, "no Marker " + mPlace.toString());
+                }
                 } catch (NullPointerException e) {
-                        Log.e(TAG, "onClick: GooglePlayServicesRepairableException: " + e.getMessage() );
-                    }
+                    Log.e(TAG, "onClick: GooglePlayServicesRepairableException: " + e.getMessage() );
+                }
         }});
 
         mValide.setOnClickListener(new View.OnClickListener() {
@@ -360,7 +380,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         ArrayList<CustomMarker> collection = new ArrayList<CustomMarker>();
         // Projection contains the columns we want
         String[] projection = new String[]{"_ID", "ID_EXT", "NOM", "LATITUDE", "LONGITUDE",
-                "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+                "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
         // Pass the URL, projection and I'll cover the other options below
         Cursor dataCursor = resolver.query(uri, projection, null, null, null, null);
         while (dataCursor.moveToNext()) {
@@ -370,17 +390,31 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
             double lat = Double.parseDouble(dataCursor.getString(3));
             double longi = Double.parseDouble(dataCursor.getString(4));
             String adresse = dataCursor.getString(dataCursor.getColumnIndex("ADRESSE_POSTALE"));
-            String categorie = dataCursor.getString(dataCursor.getColumnIndex("CATEGORIE"));
+            int idCategorie = dataCursor.getColumnIndex("_idCategorie");
             String resume = dataCursor.getString(dataCursor.getColumnIndex("RESUME"));
             byte[] image = dataCursor.getBlob(dataCursor.getColumnIndex("IMAGE"));
-            SiteData currentSite = new SiteData(id, id_ext, name, lat, longi, adresse, categorie, resume, image);
+            SiteData currentSite = new SiteData(id, id_ext, name, lat, longi, adresse, idCategorie, resume, image);
             LatLng point = new LatLng(currentSite.getLatitude(), currentSite.getLongitude());
             options.position(point);
             options.title(currentSite.getNom());
-            options.snippet("Categorie: " + currentSite.getCategorie() + "  " + "Resume: " + currentSite.getResume());
-            CustomMarker cMarker = new CustomMarker(currentSite.getCategorie(), currentSite.getLatitude(), currentSite.getLongitude(), currentSite.getNom(), currentSite.getResume());
-           // Collection contien Marker et catégorie
-            collection.add(cMarker);
+
+            String[] projectionCategorie = new String[]{"_idCategorie","nom"};
+
+            String[] selectionargCategorie = new String[]{""+currentSite.getIdCategorie()};
+
+            @SuppressLint("Recycle")
+            Cursor categorie = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projectionCategorie, "_idCategorie = ?", selectionargCategorie, null);
+            if(categorie!=null) {
+                if (categorie.moveToFirst()) {
+                    String nomCategorie = categorie.getString(categorie.getColumnIndex("_idCategorie"));
+                    options.snippet("Categorie: " + nomCategorie + "  " + "Resume: " + currentSite.getResume());
+                    CustomMarker cMarker = new CustomMarker(nomCategorie, currentSite.getLatitude(), currentSite.getLongitude(), currentSite.getNom(), currentSite.getResume());
+                    // Collection contien Marker et catégorie
+                    collection.add(cMarker);
+                } else {
+                    Log.d("#### ==> ","Categorie introuvable!");
+                }
+            }
         }
         return collection;
     }
@@ -389,7 +423,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
     private void ajouterCategorie(String nomeCat){
         //On cherche si duplica
-        String[] projection = new String[]{"_id","nom"};
+        String[] projection = new String[]{"_idCategorie","nom"};
         @SuppressLint("Recycle")
         Cursor foundSite = getContext().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection, "nom = ?", new String[]{nomeCat}, null);
 
@@ -406,11 +440,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
     /* ----------------------- Cette Methode c'est pour Ajouter un Site dans la BD ----------------------------------- */
 
-    private void ajoutSite(String nomSite, double latSite, double longSite, String adressSite, String categorieSite, byte[] ImageSite,String resumeSite){
+    private void ajoutSite(String nomSite, double latSite, double longSite, String adressSite, int idCategorie, byte[] ImageSite,String resumeSite){
         //Checks if it is not empty
         if (nomSite.length() > 0 && latSite > 0 && longSite >0) {
             //On cherche si duplica
-            String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "CATEGORIE", "RESUME", "IMAGE"};
+            String[] projection = new String[]{"_id","ID_EXT", "NOM", "LATITUDE", "LONGITUDE", "ADRESSE_POSTALE", "_idCategorie", "RESUME", "IMAGE"};
             @SuppressLint("Recycle")
             Cursor foundSite = getContext().getContentResolver().query(SitesProvider.CONTENT_URI, projection, "NOM = ? AND LATITUDE=? AND LONGITUDE=? ", new String[]{nomSite, Double.toString(latSite), Double.toString(longSite)}, null);
 
@@ -419,7 +453,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
                     Toast.makeText(getContext(), "Un site avec le nom '"+ nomSite + "' existe déjà!", Toast.LENGTH_LONG).show();
                 } else {
                     // Add a new site record
-                    ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, categorieSite, resumeSite, ImageSite);
+                    ContentValues sitesValues = contentValues(0, nomSite, latSite, longSite, adressSite, idCategorie, resumeSite, ImageSite);
 
                     Uri uri = getActivity().getContentResolver().insert(
                             SitesProvider.CONTENT_URI, sitesValues);
@@ -432,7 +466,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
 
     /* -----------------------cette methode on l'a utilisé pour nous aide a ajouter un site au BD depuis la Map ----------------------------------- */
 
-    public ContentValues contentValues(int id_ext, String nom, double latitude, double longitude, String adresse, String categorie, String resume, byte[] image)
+    public ContentValues contentValues(int id_ext, String nom, double latitude, double longitude, String adresse, int idCategorie, String resume, byte[] image)
     {
         //Permits to add new info in the table
         ContentValues values = new ContentValues();
@@ -442,7 +476,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
         values.put("latitude",latitude);
         values.put("longitude",longitude);
         values.put("adresse_postale",adresse);
-        values.put("categorie",categorie);
+        values.put("_idCategorie",idCategorie);
         values.put("resume",resume);
         return values;
     }
@@ -654,7 +688,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleA
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void SpinnerItems() {
         // Projection contains the columns we want
-        String[] projection1 = new String[]{"_id", "nom"};
+        String[] projection1 = new String[]{"_idCategorie", "nom"};
 
         // Pass the URL, projection and I'll cover the other options below
         Cursor data = getActivity().getContentResolver().query(CategoriesProvider.CONTENT_URI, projection1, null, null, null, null);

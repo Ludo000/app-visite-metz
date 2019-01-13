@@ -86,7 +86,7 @@ public class SitesFavorisProvider extends ContentProvider {
             // If the incoming URI was for all of sites_table
             case SITES:
                 qb.setProjectionMap(SITES_FAVORIS_PROJECTION_MAP);
-                sortOrder = "_id DESC";
+                sortOrder = "_idFavoris DESC";
                 break;
 
             /*
@@ -96,21 +96,21 @@ public class SitesFavorisProvider extends ContentProvider {
              */
             case SITE_ID:
                 String id = uri.getPathSegments().get(1);
-                qb.appendWhere( "_id = " + id);
+                qb.appendWhere( "_idFavoris = " + id);
                 break;
 
             default:
                 /*
                  * By default sort on student names
                  */
-                sortOrder = "NOM";
+                sortOrder = "_idFavoris";
         }
 
         if (sortOrder == null || sortOrder.equals("")) {
             /*
              * By default sort on student names
              */
-            sortOrder = "NOM";
+            sortOrder = "_idFavoris";
         }
 
         Cursor c = qb.query(db,	projection,	selection,
@@ -132,7 +132,7 @@ public class SitesFavorisProvider extends ContentProvider {
 
             case SITE_ID:
                 String id = uri.getPathSegments().get(1);
-                count = db.delete(Table_Site, "_id = " + id +
+                count = db.delete(Table_Site, "_idFavoris = " + id +
                                 (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
                 break;
             default:
@@ -168,7 +168,7 @@ public class SitesFavorisProvider extends ContentProvider {
                  * Then, append the value to the WHERE clause for the query
                  */
                 String id = uri.getPathSegments().get(1);
-                count = db.update(Table_Site, values,"_id = " + id +
+                count = db.update(Table_Site, values,"_idFavoris = " + id +
                         (!TextUtils.isEmpty(selection) ? " AND (" +selection + ')' : ""), selectionArgs);
                 break;
             default:

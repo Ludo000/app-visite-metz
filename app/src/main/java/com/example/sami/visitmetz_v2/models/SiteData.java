@@ -9,12 +9,12 @@ public class SiteData implements Serializable {
     private Double latitude;
     private Double longitude;
     private String adresse;
-    private String categorie;
+    private int idCategorie;
     private String resume;
     private byte[] image;
     private int id_ext, id;
 
-    public SiteData(int id, int id_ext, String nom, double latitude, double longitude, String adresse, String categorie, String resume, byte[] image)
+    public SiteData(int id, int id_ext, String nom, double latitude, double longitude, String adresse, int idCategorie, String resume, byte[] image)
     {
         this.id = id;
         this.id_ext= id_ext;
@@ -23,7 +23,7 @@ public class SiteData implements Serializable {
         this.latitude = latitude;
         this.longitude = longitude;
         this.adresse = adresse;
-        this.categorie = categorie;
+        this.idCategorie = idCategorie;
         this.resume = resume;
     }
 
@@ -51,13 +51,13 @@ public class SiteData implements Serializable {
         this.latitude = latitude;
     }
 
-    public String getCategorie() {
-        return categorie;
+    public int getIdCategorie() {
+        return idCategorie;
     }
 
 
-    public void setCategorie(String categorie) {
-        this.categorie = categorie;
+    public void setCategorie(int idCategorie) {
+        this.idCategorie = idCategorie;
     }
 
     public String getResume() {
@@ -95,7 +95,7 @@ public class SiteData implements Serializable {
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
                 ", adresse='" + adresse + '\'' +
-                ", categorie='" + categorie + '\'' +
+                ", categorie='" + idCategorie + '\'' +
                 ", resume='" + resume + '\'' +
                 ", image=" + Arrays.toString(image) +
                 ", id_ext=" + id_ext +

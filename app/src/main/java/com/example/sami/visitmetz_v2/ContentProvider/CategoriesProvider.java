@@ -95,7 +95,7 @@ public class CategoriesProvider extends ContentProvider {
                 if (TextUtils.isEmpty(sortOrder)) {
                     // A projection map maps from passed column names to database column names
                     qb.setProjectionMap(CATEGORIES_PROJECTION_MAP);
-                    sortOrder = "_id ASC";
+                    sortOrder = "_idCategorie ASC";
                 }
                 break;
 
@@ -106,21 +106,21 @@ public class CategoriesProvider extends ContentProvider {
              */
             case CATEGORIE_ID:
                 String id = uri.getPathSegments().get(1);
-                qb.appendWhere( "_id = " + id);
+                qb.appendWhere( "_idCategorie = " + id);
                 break;
 
             default:
                 /*
                  * By default sort on student names
                  */
-                sortOrder = "NOM";
+                sortOrder = "nom";
         }
 
         if (sortOrder == null || sortOrder.equals("")){
             /*
              * By default sort on student names
              */
-            sortOrder = "NOM";
+            sortOrder = "nom";
         }
 
         Cursor c = qb.query(db,	projection,	selection,
@@ -142,7 +142,7 @@ public class CategoriesProvider extends ContentProvider {
 
             case CATEGORIE_ID:
                 String id = uri.getPathSegments().get(1);
-                count = db.delete(DatabaseHelper.Table_Categorie, "_id = " + id +
+                count = db.delete(DatabaseHelper.Table_Categorie, "_idCategorie = " + id +
                                 (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
                 break;
             default:
@@ -177,7 +177,7 @@ public class CategoriesProvider extends ContentProvider {
                  * Then, append the value to the WHERE clause for the query
                  */
                 String id = uri.getPathSegments().get(1);
-                count = db.update(DatabaseHelper.Table_Categorie, values,"_id = " + id +
+                count = db.update(DatabaseHelper.Table_Categorie, values,"_idCategorie = " + id +
                         (!TextUtils.isEmpty(selection) ? " AND (" +selection + ')' : ""), selectionArgs);
                 break;
             default:

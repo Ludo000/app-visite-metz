@@ -19,17 +19,12 @@ public class EcouteurLoadEvenement_2 implements LoaderManager.LoaderCallbacks<Cu
 
     private SitesFavorisOverviewFragment.MyAdapter mAdapter;
 
-
-    // If non-null, this is the current filter the user has provided.
-    private String mCurFilter;
-
     // Projection contains the columns we want
     private String[] projection = new String[]{"_idFavoris", "_id"};
 
-    public EcouteurLoadEvenement_2(Context context, SitesFavorisOverviewFragment.MyAdapter adapter, String curFilter) {
+    public EcouteurLoadEvenement_2(Context context, SitesFavorisOverviewFragment.MyAdapter adapter) {
         this.context = context;
         this.mAdapter = adapter;
-        this.mCurFilter = curFilter;
     }
 
     @NonNull

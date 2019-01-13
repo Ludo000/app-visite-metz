@@ -39,43 +39,39 @@ public class SyncButtonSyncListener extends SyncButtonListener {
                     values.put("LATITUDE", siteData.getLatitude());
                     values.put("LONGITUDE", siteData.getLongitude());
                     values.put("ADRESSE_POSTALE", siteData.getAdresse());
-                    values.put("_idCategorie", siteData.getIdCategorie());
                     values.put("RESUME", siteData.getResume());
                     values.put("IMAGE", siteData.getImage());
-                    this.resolver.insert(SitesProvider.CONTENT_URI, values);
 
                     //Ajout de la catégorie
                     String[] projectionCategorie = new String[]{"_idCategorie", "nom"};
+                    String[] selectionargCategorie = new String[]{"" + siteData.getCategorie()};
 
-
-                    String[] selectionargCategorie = new String[]{"" + siteData.getIdCategorie()};
-
+                    //test de l'unicité de la catégorie
                     @SuppressLint("Recycle")
-                    Cursor categorie = this.resolver.query(CategoriesProvider.CONTENT_URI, projectionCategorie, "_idCategorie = ?", selectionargCategorie, null);
-                    if (categorie != null) {
-                        if (categorie.moveToFirst()) {
-                            String nomCategorie = categorie.getString(categorie.getColumnIndex("_idCategorie"));
-                            //test de l'unicité de la catégorie
-                            @SuppressLint("Recycle")
-                            Cursor foundCategorie = this.resolver.query(CategoriesProvider.CONTENT_URI, projectionCategorie, "nom = ?", new String[]{nomCategorie}, null);
-                            if (foundCategorie != null) {
-                                if (foundCategorie.moveToFirst()) {
-                                    Log.e("ERR : duplica categorie", nomCategorie);
-                                } else {
-                                    ContentValues valuesCategorie = new ContentValues();
-                                    valuesCategorie.put("nom", siteData.getCategorie());
-                                    this.resolver.insert(CategoriesProvider.CONTENT_URI, valuesCategorie);
+                    Cursor foundCategorie = this.resolver.query(CategoriesProvider.CONTENT_URI, projectionCategorie, "nom = ?", selectionargCategorie, null);
+                    if (foundCategorie != null) {
+                        if (foundCategorie.moveToFirst()) {
+                            Log.e("ERR : duplica categorie", siteData.getCategorie());
+                        } else {
+                            // si pas de duplica
+                            ContentValues valuesCategorie = new ContentValues();
+                            valuesCategorie.put("nom", siteData.getCategorie());
+                            this.resolver.insert(CategoriesProvider.CONTENT_URI, valuesCategorie);
 
+                            //on récupère l'id de la catégorie ainsi créée
+                            @SuppressLint("Recycle")
+                            Cursor foundCategorieId = this.resolver.query(CategoriesProvider.CONTENT_URI, new String[]{"_idCategorie", "nom"}, "nom = ?", new String[]{"" + siteData.getCategorie()}, null);
+                            if (foundCategorieId != null) {
+                                if (foundCategorieId.moveToFirst()) {
+                                    siteData.setCategorie(Integer.parseInt(foundCategorieId.getString(foundCategorieId.getColumnIndex("_idCategorie"))));
                                 }
                             }
-                        } else {
-                            Log.d("#### ==> ", "Categorie introuvable!");
                         }
-                    } else {
-                        Log.d("#### ==> ", "ERROR Categorie !");
+                        values.put("_idCategorie", siteData.getIdCategorie());
+                        this.resolver.insert(SitesProvider.CONTENT_URI, values);
+
+
                     }
-
-
                 }
             }
         }

@@ -133,7 +133,7 @@ public class SitesFavorisOverviewFragment extends Fragment {
         public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, Cursor cursor) {
             SitesFavorisOverviewFragment.MyViewHolder holder = (SitesFavorisOverviewFragment.MyViewHolder) viewHolder;
 
-            //cursor.moveToPosition(cursor.getPosition());
+            cursor.moveToPosition(cursor.getPosition());
             holder.setData(cursor);
         }
 
